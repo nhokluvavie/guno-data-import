@@ -1,0 +1,108 @@
+# application.yml - Production Configuration
+
+spring:
+  application:
+    name: shopee-etl-production
+
+  # Production Database Configuration
+  datasource:
+    url: jdbc:postgresql://103.97.125.92:5432/guno_db?useSSL=false
+    username: guno_user
+    password: UYUgjL80moKrc6WTDLbg
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # More conservative for production
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          batch_size: 50  # Larger batch size for production
+        order_inserts: true
+        order_updates: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  main:
+    banner-mode: "console"  # Show banner in production
+
+# ETL Configuration for Production
+etl:
+  # Platform Settings
+  platforms:
+    shopee:
+      enabled: false
+      name: SHOPEE
+    tiktok:
+      enabled: true
+      name: TIKTOK
+
+  # API Configuration
+  api:
+    shopee:
+      base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/shopee
+      auth-header: x-webhook-api-key
+      api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
+      timeout: 120s  # Longer timeout for production
+      page-size: 50  # Larger page size for efficiency
+      max-retries: 3  # More retries for stability
+
+    tiktok:
+      base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/tiktok
+      auth-header: x-webhook-api-key
+      api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
+      timeout: 120s
+      page-size: 50
+      max-retries: 3
+
+  # Scheduler Settings - Production
+  scheduler:
+    enabled: true  # ENABLED for production
+    fixed-rate: 30000  # 30 seconds as requested
+    initial-delay: 5000  # 5 second startup delay
+    max-consecutive-failures: 5  # More tolerance for production
+
+  # Database Settings
+  database:
+    batch-size: 50  # Larger batches for production
+
+# Production Logging
+logging:
+  level:
+    root: INFO
+    com.guno.etl: INFO
+    com.guno.etl.service: INFO
+    com.guno.etl.scheduler: INFO
+    org.springframework.web.reactive: WARN
+    org.springframework.transaction: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.boot: INFO
+
+  # Log to file in production
+  file:
+    name: logs/shopee-etl-production.log
+    max-size: 100MB
+    max-history: 30
+
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n"
+
+# Production Server Settings
+server:
+  port: 8080
+  servlet:
+    context-path: /etl
+  compression:
+    enabled: true
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10

@@ -1,0 +1,92 @@
+# application-test.yml - FIXED Configuration
+
+spring:
+  application:
+    name: shopee-etl-test
+
+  # Test Database Configuration
+  datasource:
+    url: jdbc:postgresql://103.97.125.92:5432/guno_db_test?useSSL=false
+    username: guno_user
+    password: UYUgjL80moKrc6WTDLbg
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 10000
+      idle-timeout: 300000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          batch_size: 20
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  main:
+    banner-mode: "off"
+
+# FIXED: Simplified ETL Configuration
+etl:
+  # Platform Settings
+  platforms:
+    shopee:
+      enabled: false
+      name: SHOPEE
+    tiktok:
+      enabled: true  # Enable for testing
+      name: TIKTOK
+
+  # API Configuration (shared structure)
+  api:
+    shopee:
+      base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/shopee
+      auth-header: x-webhook-api-key
+      api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
+      timeout: 60s
+      page-size: 10
+      max-retries: 2
+
+    tiktok:
+      base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/tiktok
+      auth-header: x-webhook-api-key
+      api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
+      timeout: 60s
+      page-size: 10
+      max-retries: 2
+
+  # Scheduler Settings
+  scheduler:
+    enabled: false  # Disabled for testing
+    fixed-rate: 10000
+    initial-delay: 1000
+    max-consecutive-failures: 2
+
+  # Database Settings
+  database:
+    batch-size: 20
+
+# Test-specific settings
+test:
+  max-orders-to-test: 10
+  skip-database-cleanup: false
+  timeout-seconds: 60
+  retry-attempts: 2
+
+# Logging for tests
+logging:
+  level:
+    com.guno.etl: INFO
+    com.guno.etl.service: DEBUG
+    org.springframework.web.reactive: WARN
+    org.springframework.transaction: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.test: INFO
+
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n"
