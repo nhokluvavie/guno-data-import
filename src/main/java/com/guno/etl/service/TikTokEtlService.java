@@ -1,4 +1,4 @@
-// TikTokEtlService.java - Complete TikTok ETL Service Implementation
+// TikTokEtlService.java - TikTok ETL Service (Clean Implementation)
 package com.guno.etl.service;
 
 import com.guno.etl.dto.TikTokApiResponse;
@@ -13,15 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDateTime;
-import java.time.LocalDate;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
-import java.util.ArrayList;
 
 @Service
 public class TikTokEtlService {
@@ -31,489 +28,137 @@ public class TikTokEtlService {
     @Autowired
     private TikTokApiService apiService;
 
-    // All 11 repositories (same as Shopee)
-    @Autowired
-    private CustomerRepository customerRepository;
+    // All repositories
+    @Autowired private CustomerRepository customerRepository;
+    @Autowired private OrderRepository orderRepository;
+    @Autowired private OrderItemRepository orderItemRepository;
+    @Autowired private ProductRepository productRepository;
+    @Autowired private GeographyInfoRepository geographyInfoRepository;
+    @Autowired private StatusRepository statusRepository;
+    @Autowired private OrderStatusRepository orderStatusRepository;
+    @Autowired private OrderStatusDetailRepository orderStatusDetailRepository;
+    @Autowired private PaymentInfoRepository paymentInfoRepository;
+    @Autowired private ShippingInfoRepository shippingInfoRepository;
+    @Autowired private ProcessingDateInfoRepository processingDateInfoRepository;
 
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private GeographyInfoRepository geographyInfoRepository;
-
-    @Autowired
-    private StatusRepository statusRepository;
-
-    @Autowired
-    private OrderStatusRepository orderStatusRepository;
-
-    @Autowired
-    private OrderStatusDetailRepository orderStatusDetailRepository;
-
-    @Autowired
-    private PaymentInfoRepository paymentInfoRepository;
-
-    @Autowired
-    private ShippingInfoRepository shippingInfoRepository;
-
-    @Autowired
-    private ProcessingDateInfoRepository processingDateInfoRepository;
-
-    // TikTok platform configuration
     @Value("${etl.platforms.tiktok.name:TIKTOK}")
     private String platformName;
 
-    // ===== MAIN ETL METHODS FOR TIKTOK =====
+    // ===== MAIN ETL METHOD =====
 
-    /**
-     * Process updated TikTok orders from API (main method for scheduler)
-     */
+    @Transactional
     public EtlResult processUpdatedOrders() {
-        log.info("=== Starting TikTok ETL process for updated orders ===");
+        log.info("=== Starting TikTok ETL process ===");
 
         EtlResult result = new EtlResult();
         result.setStartTime(LocalDateTime.now());
 
         try {
-            // Fetch updated orders from TikTok API
+            // Fetch data from TikTok API
             TikTokApiResponse response = apiService.fetchUpdatedOrders();
 
             if (response == null || response.getStatus() != 1) {
-                String error = "TikTok API call failed: " + (response != null ? response.getMessage() : "null response");
                 result.setSuccess(false);
-                result.setErrorMessage(error);
+                result.setErrorMessage("TikTok API call failed");
                 return result;
             }
 
             List<TikTokOrderDto> orders = response.getData().getOrders();
-            log.info("Received {} TikTok orders from API", orders.size());
-
-            result = processOrdersWithErrorHandling(orders);
-
-        } catch (Exception e) {
-            log.error("Error in TikTok ETL process: {}", e.getMessage(), e);
-            result.setSuccess(false);
-            result.setErrorMessage("TikTok ETL process failed: " + e.getMessage());
-        } finally {
-            result.setEndTime(LocalDateTime.now());
-            result.calculateDuration();
-        }
-
-        log.info("=== TikTok ETL process completed: {}/{} orders processed in {} ms ===",
-                result.getOrdersProcessed(), result.getTotalOrders(), result.getDurationMs());
-
-        return result;
-    }
-
-    /**
-     * Process multiple TikTok orders with individual error handling
-     */
-    private EtlResult processOrdersWithErrorHandling(List<TikTokOrderDto> orders) {
-        EtlResult result = new EtlResult();
-        result.setTotalOrders(orders.size());
-
-        for (TikTokOrderDto order : orders) {
-            try {
-                processOrderUpsert(order);
-                result.incrementProcessed();
-                log.debug("Successfully processed TikTok order: {}", order.getOrderId());
-            } catch (Exception e) {
-                log.error("Failed to process TikTok order {}: {}", order.getOrderId(), e.getMessage());
-                result.addFailedOrder(new FailedOrder(order.getOrderId(), e.getMessage()));
+            if (orders == null || orders.isEmpty()) {
+                log.info("No TikTok orders to process");
+                result.setSuccess(true);
+                result.setTotalOrders(0);
+                return result;
             }
-        }
 
-        boolean success = result.getOrdersProcessed() > 0 || result.getTotalOrders() == 0;
-        result.setSuccess(success);
+            // Process each order
+            int successCount = 0;
+            for (TikTokOrderDto orderDto : orders) {
+                try {
+                    processOrderUpsert(orderDto);
+                    successCount++;
+                } catch (Exception e) {
+                    log.error("Failed to process TikTok order: {}", orderDto.getOrderId(), e);
+                    result.addFailedOrder(orderDto.getOrderId(), e.getMessage());
+                }
+            }
 
-        return result;
-    }
+            result.setSuccess(true);
+            result.setTotalOrders(orders.size());
+            result.setOrdersProcessed(successCount);
+            result.setEndTime(LocalDateTime.now());
 
-    /**
-     * Process single TikTok order with UPSERT logic - ALL 9 TABLES
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void processOrderUpsert(TikTokOrderDto orderDto) {
-        try {
-            log.debug("Starting TikTok UPSERT for order: {}", orderDto.getOrderId());
-
-            // Process all related entities with UPSERT logic (same structure as Shopee)
-            processCustomerUpsert(orderDto);
-            processOrderEntityUpsert(orderDto);
-            processOrderItemsUpsert(orderDto);
-            processProductsUpsert(orderDto);
-            processGeographyInfoUpsert(orderDto);
-
-            // Process additional tables (same as Shopee)
-            processDateInfoUpsert(orderDto);
-            processPaymentInfoUpsert(orderDto);
-            processShippingInfoUpsert(orderDto);
-            processStatusInfoUpsert(orderDto);
-            processOrderStatusTransition(orderDto);
-            processOrderStatusDetailUpsert(orderDto);
-
-            log.info("TikTok order {} UPSERT completed successfully - ALL 9 TABLES", orderDto.getOrderId());
+            log.info("TikTok ETL completed: {}/{} orders processed", successCount, orders.size());
+            return result;
 
         } catch (Exception e) {
-            log.error("Failed to process TikTok order upsert for {}: {}", orderDto.getOrderId(), e.getMessage());
-            throw e; // Re-throw to trigger transaction rollback
+            log.error("TikTok ETL process failed", e);
+            result.setSuccess(false);
+            result.setErrorMessage(e.getMessage());
+            result.setEndTime(LocalDateTime.now());
+            return result;
         }
     }
 
-    // ===== TIKTOK-SPECIFIC UPSERT METHODS (same pattern as Shopee) =====
+    // ===== PROCESS SINGLE ORDER =====
+
+    private void processOrderUpsert(TikTokOrderDto orderDto) {
+        String orderId = orderDto.getOrderId();
+        log.debug("Processing TikTok order: {}", orderId);
+
+        // Process tables individually to isolate errors
+        try { processCustomerUpsert(orderDto); } catch (Exception e) { log.error("Customer upsert failed for order {}", orderId, e); }
+        try { processOrderEntityUpsert(orderDto); } catch (Exception e) { log.error("Order upsert failed for order {}", orderId, e); }
+        try { processOrderItemsUpsert(orderDto); } catch (Exception e) { log.error("Order items upsert failed for order {}", orderId, e); }
+        try { processProductsUpsert(orderDto); } catch (Exception e) { log.error("Products upsert failed for order {}", orderId, e); }
+        try { processGeographyUpsert(orderDto); } catch (Exception e) { log.error("Geography upsert failed for order {}", orderId, e); }
+        try { processPaymentInfoUpsert(orderDto); } catch (Exception e) { log.error("Payment info upsert failed for order {}", orderId, e); }
+        try { processShippingInfoUpsert(orderDto); } catch (Exception e) { log.error("Shipping info upsert failed for order {}", orderId, e); }
+        try { processDateInfoUpsert(orderDto); } catch (Exception e) { log.error("Date info upsert failed for order {}", orderId, e); }
+        try { processStatusInfoUpsert(orderDto); } catch (Exception e) { log.error("Status info upsert failed for order {}", orderId, e); }
+    }
+
+    // ===== CUSTOMER PROCESSING =====
 
     private void processCustomerUpsert(TikTokOrderDto orderDto) {
-        try {
-            String phoneHash = HashUtil.hashPhone(extractPhoneFromTikTok(orderDto));
+        if (orderDto.getData() == null || orderDto.getData().getRecipientAddress() == null) {
+            return;
+        }
 
-            Optional<Customer> existingCustomer = customerRepository.findByPhoneHash(phoneHash);
+        String phone = orderDto.getData().getRecipientAddress().getPhoneNumber();
+        if (phone == null) return;
 
-            if (existingCustomer.isPresent()) {
-                // UPDATE existing customer metrics
-                Customer customer = existingCustomer.get();
-                updateCustomerMetrics(customer, orderDto);
-                customerRepository.save(customer);
-                log.debug("Updated TikTok customer: {}", customer.getCustomerId());
-            } else {
-                // INSERT new customer
-                Customer newCustomer = createCustomerFromTikTokOrder(orderDto, phoneHash);
-                customerRepository.save(newCustomer);
-                log.debug("Created new TikTok customer: {}", newCustomer.getCustomerId());
-            }
-        } catch (Exception e) {
-            log.error("Failed to process TikTok customer upsert: {}", e.getMessage());
-            throw e;
+        String phoneHash = HashUtil.hashPhone(phone);
+        String customerId = HashUtil.generateCustomerId(platformName, phoneHash);
+
+        Optional<Customer> existing = customerRepository.findById(customerId);
+
+        if (existing.isPresent()) {
+            // Update existing customer
+            Customer customer = existing.get();
+            updateCustomerFromTikTok(customer, orderDto);
+            customerRepository.save(customer);
+            log.debug("Updated TikTok customer: {}", customerId);
+        } else {
+            // Create new customer
+            Customer newCustomer = createCustomerFromTikTok(orderDto, phoneHash, customerId);
+            customerRepository.save(newCustomer);
+            log.debug("Created new TikTok customer: {}", customerId);
         }
     }
 
-    private void processOrderEntityUpsert(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-            Optional<Order> existingOrder = orderRepository.findById(orderId);
-
-            if (existingOrder.isPresent()) {
-                // UPDATE existing order
-                Order order = existingOrder.get();
-                updateOrderFromTikTok(order, orderDto);
-                orderRepository.save(order);
-                log.debug("Updated TikTok order: {}", orderId);
-            } else {
-                // INSERT new order
-                Order newOrder = createOrderFromTikTok(orderDto);
-                orderRepository.save(newOrder);
-                log.debug("Created new TikTok order: {}", orderId);
-            }
-        } catch (Exception e) {
-            log.error("Failed to process TikTok order entity upsert: {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    private void processOrderItemsUpsert(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-
-            // DELETE existing items for this order (same as Shopee)
-            List<OrderItem> existingItems = orderItemRepository.findByOrderIdOrderByItemSequence(orderId);
-            orderItemRepository.deleteAll(existingItems);
-            log.debug("Deleted existing TikTok order items for order: {}", orderId);
-
-            // INSERT new items
-            List<TikTokItemDto> items = orderDto.getData().getLineItems();
-            if (items != null && !items.isEmpty()) {
-                for (int i = 0; i < items.size(); i++) {
-                    TikTokItemDto item = items.get(i);
-                    OrderItem orderItem = createOrderItemFromTikTok(orderId, item, i + 1);
-                    orderItemRepository.save(orderItem);
-                }
-                log.debug("Created {} TikTok order items for order: {}", items.size(), orderId);
-            }
-        } catch (Exception e) {
-            log.error("Failed to process TikTok order items upsert: {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    private void processProductsUpsert(TikTokOrderDto orderDto) {
-        try {
-            List<TikTokItemDto> items = orderDto.getData().getLineItems();
-            if (items == null || items.isEmpty()) return;
-
-            for (TikTokItemDto item : items) {
-                String sku = item.getSkuId() != null ? item.getSkuId() : "SKU_" + item.getProductId();
-
-                // FIX: Handle List<Product> instead of Optional<Product>
-                List<Product> existingProducts = productRepository.findBySku(sku);
-
-                if (!existingProducts.isEmpty()) {
-                    // UPDATE existing product (take first one if multiple)
-                    Product product = existingProducts.get(0);
-                    updateProductFromTikTok(product, item);
-                    productRepository.save(product);
-                    log.debug("Updated TikTok product: {}", sku);
-                } else {
-                    // INSERT new product
-                    Product newProduct = createProductFromTikTok(item, sku);
-                    productRepository.save(newProduct);
-                    log.debug("Created new TikTok product: {}", sku);
-                }
-            }
-        } catch (Exception e) {
-            log.error("Failed to process TikTok products upsert: {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    private void processGeographyInfoUpsert(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-            Optional<GeographyInfo> existingGeography = geographyInfoRepository.findById(orderId);
-
-            if (existingGeography.isPresent()) {
-                // UPDATE existing geography
-                GeographyInfo geography = existingGeography.get();
-                updateGeographyFromTikTok(geography, orderDto);
-                geographyInfoRepository.save(geography);
-                log.debug("Updated TikTok geography for order: {}", orderId);
-            } else {
-                // INSERT new geography
-                GeographyInfo newGeography = createGeographyFromTikTok(orderDto);
-                geographyInfoRepository.save(newGeography);
-                log.debug("Created new TikTok geography for order: {}", orderId);
-            }
-        } catch (Exception e) {
-            log.error("Failed to process TikTok geography upsert: {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    // ===== ADDITIONAL TABLE PROCESSING (same pattern as Shopee) =====
-
-    private void processDateInfoUpsert(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-            log.debug("Processing TikTok date info for order: {}", orderId);
-
-            Optional<ProcessingDateInfo> existingDateInfo = processingDateInfoRepository.findById(orderId);
-
-            if (existingDateInfo.isPresent()) {
-                ProcessingDateInfo existing = existingDateInfo.get();
-                ProcessingDateInfo newDateInfo = createProcessingDateInfoEntityFromTikTok(orderDto);
-
-                if (newDateInfo != null) {
-                    updateDateInfoFields(existing, newDateInfo);
-                    processingDateInfoRepository.save(existing);
-                    log.debug("Updated TikTok date info for order: {}", orderId);
-                }
-            } else {
-                ProcessingDateInfo newDateInfo = createProcessingDateInfoEntityFromTikTok(orderDto);
-                if (newDateInfo != null) {
-                    processingDateInfoRepository.save(newDateInfo);
-                    log.debug("Created new TikTok date info for order: {}", orderId);
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to process TikTok date info for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-        }
-    }
-
-    private void processPaymentInfoUpsert(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-            log.debug("Processing TikTok payment info for order: {}", orderId);
-
-            Optional<PaymentInfo> existingPaymentInfo = paymentInfoRepository.findById(orderId);
-
-            if (existingPaymentInfo.isPresent()) {
-                PaymentInfo existing = existingPaymentInfo.get();
-                PaymentInfo newPaymentInfo = createPaymentInfoEntityFromTikTok(orderDto);
-
-                if (newPaymentInfo != null) {
-                    updatePaymentInfoFields(existing, newPaymentInfo);
-                    paymentInfoRepository.save(existing);
-                    log.debug("Updated TikTok payment info for order: {}", orderId);
-                }
-            } else {
-                PaymentInfo newPaymentInfo = createPaymentInfoEntityFromTikTok(orderDto);
-                if (newPaymentInfo != null) {
-                    paymentInfoRepository.save(newPaymentInfo);
-                    log.debug("Created new TikTok payment info for order: {}", orderId);
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to process TikTok payment info for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-        }
-    }
-
-    private void processShippingInfoUpsert(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-            log.debug("Processing TikTok shipping info for order: {}", orderId);
-
-            Optional<ShippingInfo> existingShippingInfo = shippingInfoRepository.findById(orderId);
-
-            if (existingShippingInfo.isPresent()) {
-                ShippingInfo existing = existingShippingInfo.get();
-                ShippingInfo newShippingInfo = createShippingInfoEntityFromTikTok(orderDto);
-
-                if (newShippingInfo != null) {
-                    updateShippingInfoFields(existing, newShippingInfo);
-                    shippingInfoRepository.save(existing);
-                    log.debug("Updated TikTok shipping info for order: {}", orderId);
-                }
-            } else {
-                ShippingInfo newShippingInfo = createShippingInfoEntityFromTikTok(orderDto);
-                if (newShippingInfo != null) {
-                    shippingInfoRepository.save(newShippingInfo);
-                    log.debug("Created new TikTok shipping info for order: {}", orderId);
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to process TikTok shipping info for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-        }
-    }
-
-    private void processStatusInfoUpsert(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-            String tiktokStatus = orderDto.getStatus();
-            log.debug("Processing TikTok status info for order: {} with status: {}", orderId, tiktokStatus);
-
-            Optional<Status> existingStatus = statusRepository.findByPlatformAndPlatformStatusCode(
-                    platformName, tiktokStatus);
-
-            if (existingStatus.isPresent()) {
-                // UPDATE existing status
-                Status existing = existingStatus.get();
-                existing.setStandardStatusName(mapTikTokStatusToStandard(tiktokStatus));
-                existing.setStatusCategory(determineStatusCategoryFromTikTok(tiktokStatus));
-                statusRepository.save(existing);
-                log.debug("Updated TikTok status mapping for platform {} status {}", platformName, tiktokStatus);
-            } else {
-                // CREATE new status mapping automatically
-                Status newStatus = createStatusEntityFromTikTok(orderDto);
-                if (newStatus != null) {
-                    statusRepository.save(newStatus);
-                    log.info("✅ Created TikTok status mapping: {} -> {}", tiktokStatus, newStatus.getStandardStatusName());
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to process TikTok status info for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-        }
-    }
-
-    private void processOrderStatusTransition(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-            log.debug("Processing TikTok order status transition for order: {}", orderId);
-
-            String tiktokStatus = orderDto.getStatus();
-            Optional<Status> statusEntity = statusRepository.findByPlatformAndPlatformStatusCode(
-                    platformName, tiktokStatus);
-
-            if (!statusEntity.isPresent()) {
-                log.warn("TikTok status entity not found for platform {} status {}, skipping transition",
-                        platformName, tiktokStatus);
-                return;
-            }
-
-            Long statusKey = statusEntity.get().getStatusKey();
-            Optional<OrderStatus> existingTransition = orderStatusRepository.findByStatusKeyAndOrderId(
-                    statusKey, orderId);
-
-            if (existingTransition.isPresent()) {
-                OrderStatus existing = existingTransition.get();
-                OrderStatus newTransition = createOrderStatusEntityFromTikTok(orderDto, statusKey);
-
-                if (newTransition != null) {
-                    updateOrderStatusFields(existing, newTransition);
-                    orderStatusRepository.save(existing);
-                    log.debug("Updated TikTok status transition for order: {} to status: {}", orderId, tiktokStatus);
-                }
-            } else {
-                OrderStatus newTransition = createOrderStatusEntityFromTikTok(orderDto, statusKey);
-                if (newTransition != null) {
-                    orderStatusRepository.save(newTransition);
-                    log.debug("Created new TikTok status transition for order: {} to status: {}", orderId, tiktokStatus);
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to process TikTok order status transition for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-        }
-    }
-
-    private void processOrderStatusDetailUpsert(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-            log.debug("Processing TikTok order status detail for order: {}", orderId);
-
-            String tiktokStatus = orderDto.getStatus();
-            Optional<Status> statusEntity = statusRepository.findByPlatformAndPlatformStatusCode(
-                    platformName, tiktokStatus);
-
-            if (!statusEntity.isPresent()) {
-                log.warn("TikTok status entity not found for platform {} status {}, skipping status detail",
-                        platformName, tiktokStatus);
-                return;
-            }
-
-            Long statusKey = statusEntity.get().getStatusKey();
-            Optional<OrderStatusDetail> existingDetail = orderStatusDetailRepository.findByStatusKeyAndOrderId(
-                    statusKey, orderId);
-
-            if (existingDetail.isPresent()) {
-                OrderStatusDetail existing = existingDetail.get();
-                OrderStatusDetail newDetail = createOrderStatusDetailEntityFromTikTok(orderDto, statusKey);
-
-                if (newDetail != null) {
-                    updateOrderStatusDetailFields(existing, newDetail);
-                    orderStatusDetailRepository.save(existing);
-                    log.debug("Updated TikTok status detail for order: {} status: {}", orderId, tiktokStatus);
-                }
-            } else {
-                OrderStatusDetail newDetail = createOrderStatusDetailEntityFromTikTok(orderDto, statusKey);
-                if (newDetail != null) {
-                    orderStatusDetailRepository.save(newDetail);
-                    log.debug("Created new TikTok status detail for order: {} status: {}", orderId, tiktokStatus);
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to process TikTok order status detail for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-        }
-    }
-
-    // ===== TIKTOK-SPECIFIC ENTITY CREATION METHODS =====
-
-    private Customer createCustomerFromTikTokOrder(TikTokOrderDto orderDto, String phoneHash) {
+    private Customer createCustomerFromTikTok(TikTokOrderDto orderDto, String phoneHash, String customerId) {
         String email = orderDto.getData().getBuyerEmail();
         String emailHash = email != null ? HashUtil.hashEmail(email) : null;
-        String customerId = HashUtil.generateCustomerId(platformName, phoneHash);
+        Double totalAmount = parseAmount(orderDto.getData().getPayment().getTotalAmount());
 
         return Customer.builder()
                 .customerId(customerId)
-                .customerKey(customerRepository.findNextCustomerKey()) // or generate
+                .customerKey(System.currentTimeMillis() % 1000000L)
                 .platformCustomerId(orderDto.getData().getUserId())
                 .phoneHash(phoneHash)
                 .emailHash(emailHash)
-                .gender(null) // TikTok doesn't provide
+                .gender(null)
                 .ageGroup(null)
                 .customerSegment("REGULAR")
                 .customerTier("STANDARD")
@@ -521,9 +166,9 @@ public class TikTokEtlService {
                 .firstOrderDate(convertTimestamp(orderDto.getCreateTime()))
                 .lastOrderDate(convertTimestamp(orderDto.getCreateTime()))
                 .totalOrders(1)
-                .totalSpent(parseAmount(orderDto.getData().getPayment().getTotalAmount()))
-                .averageOrderValue(parseAmount(orderDto.getData().getPayment().getTotalAmount()))
-                .totalItemsPurchased(1)
+                .totalSpent(totalAmount)
+                .averageOrderValue(totalAmount)
+                .totalItemsPurchased(countTikTokItems(orderDto))
                 .daysSinceFirstOrder(0)
                 .daysSinceLastOrder(0)
                 .purchaseFrequencyDays(0.0)
@@ -532,9 +177,9 @@ public class TikTokEtlService {
                 .codPreferenceRate(orderDto.getData().getIsCod() ? 1.0 : 0.0)
                 .favoriteCategory(null)
                 .favoriteBrand(null)
-                .preferredPaymentMethod(detectTikTokPaymentMethod(orderDto))
+                .preferredPaymentMethod(orderDto.getData().getIsCod() ? "COD" : "PREPAID")
                 .preferredPlatform("TIKTOK")
-                .primaryShippingProvince(extractProvinceFromTikTok(orderDto))
+                .primaryShippingProvince(extractProvince(orderDto))
                 .shipsToMultipleProvinces(false)
                 .loyaltyPoints(0)
                 .referralCount(0)
@@ -542,662 +187,630 @@ public class TikTokEtlService {
                 .build();
     }
 
-    // ===== ORDER ENTITY - FIXED =====
-    private Order createOrderFromTikTok(TikTokOrderDto orderDto) {
-        String phoneHash = HashUtil.hashPhone(extractPhoneFromTikTok(orderDto));
-        String customerId = HashUtil.generateCustomerId(platformName, phoneHash);
-
-        return Order.builder()
-                .orderId(orderDto.getOrderId())
-                .customerId(customerId)
-                .shopId(null) // TikTok doesn't provide shop concept
-                .orderCount(1)
-                .itemQuantity(1) // TikTok line items typically 1
-                .totalItemsInOrder(orderDto.getData().getLineItems() != null ?
-                        orderDto.getData().getLineItems().size() : 1)
-                .grossRevenue(parseAmount(orderDto.getData().getPayment().getTotalAmount()))
-                .netRevenue(parseAmount(orderDto.getData().getPayment().getTotalAmount()))
-                .shippingFee(parseAmount(orderDto.getData().getPayment().getShippingFee()))
-                .taxAmount(0.0) // TikTok doesn't provide tax info
-                .discountAmount(0.0) // TikTok doesn't provide discount
-                .codAmount(orderDto.getData().getIsCod() ?
-                        parseAmount(orderDto.getData().getPayment().getTotalAmount()) : 0.0)
-                .platformFee(0.0) // TikTok doesn't provide platform fee
-                .sellerDiscount(0.0)
-                .platformDiscount(0.0)
-                .originalPrice(parseAmount(orderDto.getData().getPayment().getTotalAmount()))
-                .estimatedShippingFee(parseAmount(orderDto.getData().getPayment().getShippingFee()))
-                .actualShippingFee(parseAmount(orderDto.getData().getPayment().getShippingFee()))
-                .shippingWeightGram(500) // Default weight
-                .daysToShip(2) // Default 2 days
-                .isDelivered(orderDto.getStatus().equalsIgnoreCase("DELIVERED"))
-                .isCancelled(orderDto.getStatus().equalsIgnoreCase("CANCELLED"))
-                .isReturned(false) // TikTok doesn't provide return info
-                .isCod(orderDto.getData().getIsCod())
-                .isNewCustomer(true) // Assume new for TikTok
-                .isRepeatCustomer(false)
-                .isBulkOrder(false)
-                .isPromotionalOrder(false)
-                .isSameDayDelivery(false)
-                .orderToShipHours(48) // Default 48 hours
-                .shipToDeliveryHours(48) // Default 48 hours
-                .totalFulfillmentHours(96) // Default 96 hours
-                .customerOrderSequence(1)
-                .customerLifetimeOrders(1)
-                .customerLifetimeValue(parseAmount(orderDto.getData().getPayment().getTotalAmount()))
-                .daysSinceLastOrder(0)
-                .promotionImpact(0.0)
-                .adRevenue(0.0)
-                .organicRevenue(parseAmount(orderDto.getData().getPayment().getTotalAmount()))
-                .aov(parseAmount(orderDto.getData().getPayment().getTotalAmount()))
-                .shippingCostRatio(calculateShippingRatio(orderDto))
-                .createdAt(convertTimestamp(orderDto.getCreateTime()))
-                .build();
-    }
-
-    private OrderItem createOrderItemFromTikTok(String orderId, TikTokItemDto itemDto, int sequence) {
-        String sku = itemDto.getSkuId() != null ? itemDto.getSkuId() : "SKU_" + itemDto.getProductId();
-
-        return OrderItem.builder()
-                .orderId(orderId)
-                .sku(sku)
-                .platformProductId(platformName)
-                .quantity(1) // TikTok line items typically have quantity 1
-                .unitPrice(parseAmount(itemDto.getSalePrice()))
-                .totalPrice(parseAmount(itemDto.getSalePrice()))
-                .itemDiscount(calculateItemDiscount(itemDto))
-                .promotionType(null) // TikTok doesn't provide promotion details
-                .promotionCode(null)
-                .itemStatus("ACTIVE")
-                .itemSequence(sequence)
-                .opId(System.currentTimeMillis() + sequence)
-                .build();
-    }
-
-    // ===== PRODUCT ENTITY - FIXED =====
-    private Product createProductFromTikTok(TikTokItemDto itemDto, String sku) {
-        return Product.builder()
-                .sku(sku)
-                .platformProductId(platformName)
-                .productId(String.valueOf(itemDto.getProductId()))
-                .variationId(itemDto.getSkuId())
-                .barcode(null) // TikTok doesn't provide barcode
-                .productName(itemDto.getProductName())
-                .productDescription(null) // TikTok doesn't provide description
-                .brand(null) // TikTok doesn't provide brand
-                .model(null)
-                .categoryLevel1(null) // TikTok doesn't provide category
-                .categoryLevel2(null)
-                .categoryLevel3(null)
-                .categoryPath(null)
-                .color(null) // TikTok doesn't provide color
-                .size(null)
-                .material(null)
-                .weightGram(500) // Default weight
-                .dimensions(null)
-                .costPrice(0.0) // TikTok doesn't provide cost
-                .retailPrice(parseAmount(itemDto.getSalePrice()))
-                .originalPrice(parseAmount(itemDto.getOriginalPrice()))
-                .priceRange(calculatePriceRange(parseAmount(itemDto.getSalePrice())))
-                .isActive(true)
-                .isFeatured(false)
-                .isSeasonal(false)
-                .isNewArrival(false)
-                .isBestSeller(false)
-                .primaryImageUrl(itemDto.getSkuImage())
-                .imageCount(itemDto.getSkuImage() != null ? 1 : 0)
-                .seoTitle(null)
-                .seoKeywords(null)
-                .build();
-    }
-
-    // ===== GEOGRAPHY INFO ENTITY - FIXED =====
-    private GeographyInfo createGeographyFromTikTok(TikTokOrderDto orderDto) {
-        var address = orderDto.getData().getRecipientAddress();
-
-        return GeographyInfo.builder()
-                .orderId(orderDto.getOrderId())
-                .geographyKey(System.currentTimeMillis()) // Generate key
-                .countryCode("VN") // Default Vietnam
-                .countryName("Vietnam")
-                .regionCode(null) // TikTok doesn't provide region
-                .regionName(extractRegionFromTikTok(address))
-                .provinceCode(null)
-                .provinceName(extractProvinceFromTikTok(address))
-                .provinceType("PROVINCE")
-                .districtCode(null)
-                .districtName(extractDistrictFromTikTok(address))
-                .districtType("DISTRICT")
-                .wardCode(null)
-                .wardName(extractWardFromTikTok(address))
-                .wardType("WARD")
-                .isUrban(true) // Default urban
-                .isMetropolitan(false)
-                .isCoastal(false)
-                .isBorder(false)
-                .economicTier("TIER_2") // Default tier 2
-                .populationDensity("MEDIUM")
-                .incomeLevel("MIDDLE")
-                .shippingZone("DOMESTIC")
-                .deliveryComplexity("STANDARD")
-                .standardDeliveryDays(2)
-                .expressDeliveryAvailable(true)
-                .latitude(0.0) // Default coordinates
-                .longitude(0.0)
-                .build();
-    }
-
-    // ===== ADDITIONAL TABLE ENTITY CREATION =====
-
-    private ProcessingDateInfo createProcessingDateInfoEntityFromTikTok(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-
-            Long createTimeStamp = orderDto.getCreateTime();
-            LocalDateTime createTime = createTimeStamp != null ?
-                    LocalDateTime.ofInstant(Instant.ofEpochSecond(createTimeStamp), ZoneId.systemDefault()) :
-                    LocalDateTime.now();
-
-            LocalDate orderDate = createTime.toLocalDate();
-
-            return ProcessingDateInfo.builder()
-                    .orderId(orderId)
-                    .fullDate(orderDate)
-                    .year(orderDate.getYear())
-                    .month(orderDate.getMonthValue())
-                    .day(orderDate.getDayOfMonth())
-                    .quarter((orderDate.getMonthValue() - 1) / 3 + 1)
-                    .dayOfWeek(orderDate.getDayOfWeek().getValue())
-                    .dayOfYear(orderDate.getDayOfYear())
-                    .weekOfYear(orderDate.get(java.time.temporal.WeekFields.ISO.weekOfYear()))
-                    .isWeekend(orderDate.getDayOfWeek().getValue() >= 6)
-                    .isHoliday(false)
-                    .holidayName(null)
-                    .seasonName(determineSeason(orderDate.getMonthValue()))
-                    .businessQuarter("Q" + ((orderDate.getMonthValue() - 1) / 3 + 1))
-                    .fiscalYear(orderDate.getYear())
-                    .hour(createTime.getHour())
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Failed to create ProcessingDateInfo for TikTok order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-            return null;
-        }
-    }
-
-    private PaymentInfo createPaymentInfoEntityFromTikTok(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-
-            Boolean isCod = orderDto.getData().getIsCod();
-            String paymentMethod = detectTikTokPaymentMethod(orderDto);
-            Double totalAmount = parseAmount(orderDto.getData().getPayment().getTotalAmount());
-
-            return PaymentInfo.builder()
-                    .orderId(orderId)
-                    .paymentMethod(paymentMethod)
-                    .paymentCategory(categorizeTikTokPaymentMethod(paymentMethod))
-                    .isCod(isCod != null ? isCod : false)
-                    .currency(orderDto.getData().getPayment().getCurrency() != null ?
-                            orderDto.getData().getPayment().getCurrency() : "VND")
-                    .totalAmount(totalAmount)
-                    .transactionFee(0.0)
-                    .paymentStatus("COMPLETED")
-                    .paymentGateway(detectTikTokPaymentGateway(paymentMethod))
-                    .riskScore(0.0)
-                    .isVerified(true)
-                    .processingTime(0)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Failed to create PaymentInfo for TikTok order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-            return null;
-        }
-    }
-
-    private ShippingInfo createShippingInfoEntityFromTikTok(TikTokOrderDto orderDto) {
-        try {
-            String orderId = orderDto.getOrderId();
-
-            String shippingProvider = orderDto.getData().getShippingProvider() != null ?
-                    orderDto.getData().getShippingProvider() : "TikTok Default";
-
-            return ShippingInfo.builder()
-                    .orderId(orderId)
-                    .shippingProvider(shippingProvider)
-                    .shippingProviderId(generateTikTokProviderInfo(shippingProvider))
-                    .trackingNumber(orderDto.getData().getTrackingNumber())
-                    .shippingMethod("STANDARD")
-                    .shippingZone(detectTikTokShippingZone(orderDto))
-                    .weightGram(500) // Default: 500g
-                    .dimensionCm("20x15x10") // Default dimensions
-                    .shippingCost(0.0) // Default: free shipping
-                    .deliveryDays(2.0) // Estimate: 2 days
-                    .averageDeliveryDays(2.0)
-                    .onTimeDeliveryRate(0.85) // Estimate: 85% on-time rate
-                    .shippingCategory("STANDARD")
-                    .isExpressDelivery(false)
-                    .isInternational(false)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Failed to create ShippingInfo for TikTok order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-            return null;
-        }
-    }
-
-    private Status createStatusEntityFromTikTok(TikTokOrderDto orderDto) {
-        try {
-            String tiktokStatus = orderDto.getStatus();
-            String standardStatus = mapTikTokStatusToStandard(tiktokStatus);
-            String statusCategory = determineStatusCategoryFromTikTok(tiktokStatus);
-
-            return Status.builder()
-                    .platform(platformName)
-                    .platformStatusCode(tiktokStatus)
-                    .standardStatusName(standardStatus)
-                    .statusCategory(statusCategory)
-                    .isActive(true)
-                    .sortOrder(getDefaultSortOrder(tiktokStatus))
-                    .description("Auto-created TikTok status mapping for " + tiktokStatus)
-                    .statusColor(getStatusColor(standardStatus))
-                    .allowedTransitions(getAllowedTransitions(standardStatus))
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Failed to create Status entity for TikTok order {}: {}",
-                    orderDto.getOrderId(), e.getMessage());
-            return null;
-        }
-    }
-
-    private OrderStatus createOrderStatusEntityFromTikTok(TikTokOrderDto orderDto, Long statusKey) {
-        try {
-            String orderId = orderDto.getOrderId();
-            Long updateTime = orderDto.getUpdateTime();
-
-            LocalDateTime statusTime = updateTime != null ?
-                    LocalDateTime.ofInstant(Instant.ofEpochSecond(updateTime), ZoneId.systemDefault()) :
-                    LocalDateTime.now();
-
-            return OrderStatus.builder()
-                    .statusKey(statusKey)
-                    .orderId(orderId)
-                    .statusTimestamp(statusTime)
-                    .previousStatus(null)
-                    .statusDuration(0)
-                    .isCurrentStatus(true)
-                    .statusSource("TIKTOK_API")
-                    .statusReason("Order status from TikTok platform")
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Failed to create OrderStatus for TikTok order {} with statusKey {}: {}",
-                    orderDto.getOrderId(), statusKey, e.getMessage());
-            return null;
-        }
-    }
-
-    private OrderStatusDetail createOrderStatusDetailEntityFromTikTok(TikTokOrderDto orderDto, Long statusKey) {
-        try {
-            String orderId = orderDto.getOrderId();
-            String tiktokStatus = orderDto.getStatus();
-            String standardStatus = mapTikTokStatusToStandard(tiktokStatus);
-
-            return OrderStatusDetail.builder()
-                    .statusKey(statusKey)
-                    .orderId(orderId)
-                    .statusDescription("TikTok order status: " + tiktokStatus)
-                    .statusRules(generateTikTokStatusRules(standardStatus))
-                    .canCancel(isStatusCancellable(standardStatus))
-                    .canReturn(isStatusReturnable(standardStatus))
-                    .canModify(isStatusModifiable(standardStatus))
-                    .estimatedDelivery(estimateDeliveryFromStatus(orderDto, standardStatus))
-                    .customerNotified(true)
-                    .internalNotes("Status updated via TikTok ETL")
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Failed to create OrderStatusDetail for TikTok order {} with statusKey {}: {}",
-                    orderDto.getOrderId(), statusKey, e.getMessage());
-            return null;
-        }
-    }
-
-    // ===== HELPER METHODS FOR TIKTOK DATA EXTRACTION =====
-
-    private double calculateShippingRatio(TikTokOrderDto orderDto) {
-        double totalAmount = parseAmount(orderDto.getData().getPayment().getTotalAmount());
-        double shippingFee = parseAmount(orderDto.getData().getPayment().getShippingFee());
-        return totalAmount > 0 ? shippingFee / totalAmount : 0.0;
-    }
-
-    private double calculateItemDiscount(TikTokItemDto itemDto) {
-        double originalPrice = parseAmount(itemDto.getOriginalPrice());
-        double salePrice = parseAmount(itemDto.getSalePrice());
-        return originalPrice - salePrice;
-    }
-
-    private String extractPhoneFromTikTok(TikTokOrderDto orderDto) {
-        return orderDto.getData().getRecipientAddress().getPhoneNumber();
-    }
-
-    private String extractProvinceFromTikTok(Object address) {
-        // TikTok has district_info array, extract province from it
-        return "Default Province"; // Implement based on TikTok address structure
-    }
-
-    private String extractDistrictFromTikTok(Object address) {
-        return "Default District"; // Implement based on TikTok address structure
-    }
-
-    private String extractWardFromTikTok(Object address) {
-        return "Default Ward"; // Implement based on TikTok address structure
-    }
-
-    private String extractRegionFromTikTok(Object address) {
-        return "Default Region"; // Implement based on TikTok address structure
-    }
-
-    // ===== UPDATE METHODS - FIXED =====
-
-    private void updateCustomerMetrics(Customer customer, TikTokOrderDto orderDto) {
+    private void updateCustomerFromTikTok(Customer customer, TikTokOrderDto orderDto) {
         customer.setLastOrderDate(convertTimestamp(orderDto.getCreateTime()));
         customer.setTotalOrders(customer.getTotalOrders() + 1);
         customer.setTotalSpent(customer.getTotalSpent() + parseAmount(orderDto.getData().getPayment().getTotalAmount()));
         customer.setAverageOrderValue(customer.getTotalSpent() / customer.getTotalOrders());
-        customer.setTotalItemsPurchased(customer.getTotalItemsPurchased() + 1);
-        customer.setDaysSinceLastOrder(0);
-        // Update COD preference rate
-        double codOrders = orderDto.getData().getIsCod() ? 1 : 0;
-        customer.setCodPreferenceRate((customer.getCodPreferenceRate() * (customer.getTotalOrders() - 1) + codOrders) / customer.getTotalOrders());
+        customer.setTotalItemsPurchased(customer.getTotalItemsPurchased() + countTikTokItems(orderDto));
+    }
+
+    // ===== ORDER PROCESSING =====
+
+    private void processOrderEntityUpsert(TikTokOrderDto orderDto) {
+        String orderId = orderDto.getOrderId();
+
+        Optional<Order> existing = orderRepository.findById(orderId);
+
+        if (existing.isPresent()) {
+            // Update existing order
+            Order order = existing.get();
+            updateOrderFromTikTok(order, orderDto);
+            orderRepository.save(order);
+            log.debug("Updated TikTok order: {}", orderId);
+        } else {
+            // Create new order
+            Order newOrder = createOrderFromTikTok(orderDto);
+            orderRepository.save(newOrder);
+            log.debug("Created new TikTok order: {}", orderId);
+        }
+    }
+
+    private Order createOrderFromTikTok(TikTokOrderDto orderDto) {
+        String phoneHash = HashUtil.hashPhone(orderDto.getData().getRecipientAddress().getPhoneNumber());
+        String customerId = HashUtil.generateCustomerId(platformName, phoneHash);
+        Double totalAmount = parseAmount(orderDto.getData().getPayment().getTotalAmount());
+        Double shippingFee = parseAmount(orderDto.getData().getPayment().getShippingFee());
+
+        return Order.builder()
+                .orderId(orderDto.getOrderId())
+                .customerId(customerId)
+                .shopId(orderDto.getShopId())
+                .internalUuid(orderDto.getId())
+                .orderCount(1)
+                .itemQuantity(countTikTokItems(orderDto))
+                .totalItemsInOrder(countTikTokItems(orderDto))
+                .grossRevenue(totalAmount)
+                .netRevenue(totalAmount - shippingFee)
+                .shippingFee(shippingFee)
+                .taxAmount(parseAmount(orderDto.getData().getPayment().getTax()))
+                .discountAmount(parseAmount(orderDto.getData().getPayment().getSellerDiscount()))
+                .codAmount(orderDto.getData().getIsCod() ? totalAmount : 0.0)
+                .platformFee(0.0)
+                .sellerDiscount(parseAmount(orderDto.getData().getPayment().getSellerDiscount()))
+                .platformDiscount(parseAmount(orderDto.getData().getPayment().getPlatformDiscount()))
+                .originalPrice(parseAmount(orderDto.getData().getPayment().getOriginalTotalProductPrice()))
+                .estimatedShippingFee(parseAmount(orderDto.getData().getPayment().getOriginalShippingFee()))
+                .actualShippingFee(shippingFee)
+                .shippingWeightGram(500) // Default
+                .daysToShip(1)
+                .isDelivered("DELIVERED".equals(orderDto.getStatus()))
+                .isCancelled("CANCELLED".equals(orderDto.getStatus()))
+                .isReturned(false)
+                .isCod(orderDto.getData().getIsCod())
+                .isNewCustomer(true)
+                .isRepeatCustomer(false)
+                .isBulkOrder(false)
+                .isPromotionalOrder(hasDiscount(orderDto))
+                .isSameDayDelivery(false)
+                .orderToShipHours(24)
+                .shipToDeliveryHours(48)
+                .totalFulfillmentHours(72)
+                .customerOrderSequence(1)
+                .customerLifetimeOrders(1)
+                .customerLifetimeValue(totalAmount)
+                .daysSinceLastOrder(0)
+                .promotionImpact(parseAmount(orderDto.getData().getPayment().getSellerDiscount()))
+                .adRevenue(0.0)
+                .organicRevenue(totalAmount)
+                .aov(totalAmount)
+                .shippingCostRatio(shippingFee / totalAmount)
+                .createdAt(convertTimestamp(orderDto.getCreateTime()))
+                .rawData(1)
+                .platformSpecificData(1)
+                .build();
     }
 
     private void updateOrderFromTikTok(Order order, TikTokOrderDto orderDto) {
-        order.setGrossRevenue(parseAmount(orderDto.getData().getPayment().getTotalAmount()));
-        order.setNetRevenue(parseAmount(orderDto.getData().getPayment().getTotalAmount()));
-        order.setShippingFee(parseAmount(orderDto.getData().getPayment().getShippingFee()));
-        order.setActualShippingFee(parseAmount(orderDto.getData().getPayment().getShippingFee()));
-        order.setIsDelivered(orderDto.getStatus().equalsIgnoreCase("DELIVERED"));
-        order.setIsCancelled(orderDto.getStatus().equalsIgnoreCase("CANCELLED"));
-        order.setIsCod(orderDto.getData().getIsCod());
-        order.setCodAmount(orderDto.getData().getIsCod() ?
-                parseAmount(orderDto.getData().getPayment().getTotalAmount()) : 0.0);
-        order.setShippingCostRatio(calculateShippingRatio(orderDto));
+        order.setIsDelivered("DELIVERED".equals(orderDto.getStatus()));
+        order.setIsCancelled("CANCELLED".equals(orderDto.getStatus()));
+        // Update other fields as needed
+    }
+
+    // ===== ORDER ITEMS PROCESSING =====
+
+    private void processOrderItemsUpsert(TikTokOrderDto orderDto) {
+        if (orderDto.getData() == null || orderDto.getData().getLineItems() == null) {
+            return;
+        }
+
+        for (TikTokItemDto item : orderDto.getData().getLineItems()) {
+            try {
+                processOrderItemUpsert(orderDto, item);
+            } catch (Exception e) {
+                log.error("Failed to process TikTok order item: {} - {}", orderDto.getOrderId(), item.getSkuId(), e);
+            }
+        }
+    }
+
+    private void processOrderItemUpsert(TikTokOrderDto orderDto, TikTokItemDto item) {
+        String orderId = orderDto.getOrderId();
+        String sku = item.getSkuId();
+        String platformProductId = platformName;
+
+        OrderItemId itemId = new OrderItemId(orderId, sku, platformProductId);
+        Optional<OrderItem> existing = orderItemRepository.findById(itemId);
+
+        if (existing.isPresent()) {
+            OrderItem orderItem = existing.get();
+            updateOrderItemFromTikTok(orderItem, item);
+            orderItemRepository.save(orderItem);
+            log.debug("Updated TikTok order item: {} - {}", orderId, sku);
+        } else {
+            OrderItem newOrderItem = createOrderItemFromTikTok(orderDto, item);
+            orderItemRepository.save(newOrderItem);
+            log.debug("Created new TikTok order item: {} - {}", orderId, sku);
+        }
+    }
+
+    private OrderItem createOrderItemFromTikTok(TikTokOrderDto orderDto, TikTokItemDto item) {
+        Double unitPrice = parseAmount(item.getSalePrice());
+
+        return OrderItem.builder()
+                .orderId(orderDto.getOrderId())
+                .sku(item.getSkuId())
+                .platformProductId(platformName)
+                .quantity(1) // TikTok doesn't provide quantity per line
+                .unitPrice(unitPrice)
+                .totalPrice(unitPrice)
+                .itemDiscount(parseAmount(item.getOriginalPrice()) - parseAmount(item.getSalePrice()))
+                .promotionType(hasItemDiscount(item) ? "SALE" : null)
+                .promotionCode(null)
+                .itemStatus(orderDto.getStatus())
+                .itemSequence(1)
+                .opId(System.currentTimeMillis() % 1000000L)
+                .build();
+    }
+
+    private void updateOrderItemFromTikTok(OrderItem orderItem, TikTokItemDto item) {
+        orderItem.setUnitPrice(parseAmount(item.getSalePrice()));
+        orderItem.setTotalPrice(parseAmount(item.getSalePrice()));
+    }
+
+    // ===== PRODUCT PROCESSING =====
+
+    private void processProductsUpsert(TikTokOrderDto orderDto) {
+        if (orderDto.getData() == null || orderDto.getData().getLineItems() == null) {
+            return;
+        }
+
+        for (TikTokItemDto item : orderDto.getData().getLineItems()) {
+            try {
+                processProductUpsert(item);
+            } catch (Exception e) {
+                log.error("Failed to process TikTok product: {}", item.getSkuId(), e);
+            }
+        }
+    }
+
+    private void processProductUpsert(TikTokItemDto item) {
+        String sku = item.getSkuId();
+        String platformProductId = platformName;
+
+        ProductId productId = new ProductId(sku, platformProductId);
+        Optional<Product> existing = productRepository.findById(productId);
+
+        if (existing.isPresent()) {
+            Product product = existing.get();
+            updateProductFromTikTok(product, item);
+            productRepository.save(product);
+            log.debug("Updated TikTok product: {}", sku);
+        } else {
+            Product newProduct = createProductFromTikTok(item);
+            productRepository.save(newProduct);
+            log.debug("Created new TikTok product: {}", sku);
+        }
+    }
+
+    private Product createProductFromTikTok(TikTokItemDto item) {
+        return Product.builder()
+                .sku(item.getSkuId())
+                .platformProductId(platformName)
+                .productId(item.getProductId())
+                .variationId(item.getSkuId())
+                .barcode(null)
+                .productName(item.getProductName())
+                .productDescription("TikTok product")
+                .brand("TikTok Brand")
+                .model("TikTok Model")
+                .categoryLevel1("General")
+                .categoryLevel2("TikTok Category")
+                .categoryLevel3("TikTok Product")
+                .categoryPath("General > TikTok Category > TikTok Product")
+                .color("Default")
+                .size("Default")
+                .material("Default")
+                .weightGram(500)
+                .dimensions("10x10x10")
+                .costPrice(parseAmount(item.getSalePrice()) * 0.7)
+                .retailPrice(parseAmount(item.getSalePrice()))
+                .originalPrice(parseAmount(item.getOriginalPrice()))
+                .priceRange("MEDIUM")
+                .isActive(true)
+                .isFeatured(false)
+                .isSeasonal(false)
+                .isNewArrival(true)
+                .isBestSeller(false)
+                .primaryImageUrl(item.getSkuImage())
+                .imageCount(item.getSkuImage() != null ? 1 : 0)
+                .seoTitle(item.getProductName())
+                .seoKeywords("tiktok,product")
+                .build();
     }
 
     private void updateProductFromTikTok(Product product, TikTokItemDto item) {
-        product.setProductName(item.getProductName());
         product.setRetailPrice(parseAmount(item.getSalePrice()));
         product.setOriginalPrice(parseAmount(item.getOriginalPrice()));
-        product.setPriceRange(calculatePriceRange(parseAmount(item.getSalePrice())));
-        product.setPrimaryImageUrl(item.getSkuImage());
-        product.setImageCount(item.getSkuImage() != null ? 1 : 0);
+        if (item.getSkuImage() != null) {
+            product.setPrimaryImageUrl(item.getSkuImage());
+        }
+    }
+
+    // ===== GEOGRAPHY PROCESSING =====
+
+    private void processGeographyUpsert(TikTokOrderDto orderDto) {
+        String orderId = orderDto.getOrderId();
+
+        Optional<GeographyInfo> existing = geographyInfoRepository.findById(orderId);
+
+        if (existing.isPresent()) {
+            GeographyInfo geography = existing.get();
+            updateGeographyFromTikTok(geography, orderDto);
+            geographyInfoRepository.save(geography);
+            log.debug("Updated TikTok geography: {}", orderId);
+        } else {
+            GeographyInfo newGeography = createGeographyFromTikTok(orderDto);
+            geographyInfoRepository.save(newGeography);
+            log.debug("Created new TikTok geography: {}", orderId);
+        }
+    }
+
+    private GeographyInfo createGeographyFromTikTok(TikTokOrderDto orderDto) {
+        return GeographyInfo.builder()
+                .orderId(orderDto.getOrderId())
+                .geographyKey(System.currentTimeMillis() % 1000000L)
+                .countryCode("VN")
+                .countryName("Vietnam")
+                .regionCode(orderDto.getData().getRecipientAddress().getRegionCode())
+                .regionName("Vietnam Region")
+                .provinceCode(null)
+                .provinceName(extractProvince(orderDto))
+                .provinceType("Province")
+                .districtCode(null)
+                .districtName(extractDistrict(orderDto))
+                .districtType("District")
+                .wardCode(null)
+                .wardName(null)
+                .wardType("Ward")
+                .isUrban(true)
+                .isMetropolitan(false)
+                .isCoastal(false)
+                .isBorder(false)
+                .economicTier("TIER_2")
+                .populationDensity("MEDIUM")
+                .incomeLevel("MEDIUM")
+                .shippingZone("ZONE_2")
+                .deliveryComplexity("STANDARD")
+                .standardDeliveryDays(2)
+                .expressDeliveryAvailable(true)
+                .latitude(21.0)
+                .longitude(105.0)
+                .build();
     }
 
     private void updateGeographyFromTikTok(GeographyInfo geography, TikTokOrderDto orderDto) {
-        var address = orderDto.getData().getRecipientAddress();
-        geography.setProvinceName(extractProvinceFromTikTok(address));
-        geography.setDistrictName(extractDistrictFromTikTok(address));
-        geography.setWardName(extractWardFromTikTok(address));
-        geography.setRegionName(extractRegionFromTikTok(address));
+        // Update if needed
     }
 
-    // ===== UTILITY METHODS FOR TIKTOK PROCESSING =====
+    // ===== PAYMENT INFO PROCESSING =====
 
-    private String determineSeason(int month) {
+    private void processPaymentInfoUpsert(TikTokOrderDto orderDto) {
+        String orderId = orderDto.getOrderId();
+
+        Optional<PaymentInfo> existing = paymentInfoRepository.findById(orderId);
+
+        if (existing.isPresent()) {
+            PaymentInfo payment = existing.get();
+            updatePaymentFromTikTok(payment, orderDto);
+            paymentInfoRepository.save(payment);
+        } else {
+            PaymentInfo newPayment = createPaymentFromTikTok(orderDto);
+            paymentInfoRepository.save(newPayment);
+        }
+    }
+
+    private PaymentInfo createPaymentFromTikTok(TikTokOrderDto orderDto) {
+        return PaymentInfo.builder()
+                .orderId(orderDto.getOrderId())
+                .paymentKey(System.currentTimeMillis() % 1000000L)
+                .paymentMethod(orderDto.getData().getIsCod() ? "COD" : "PREPAID")
+                .paymentCategory(orderDto.getData().getIsCod() ? "COD" : "ONLINE")
+                .paymentProvider("TikTok")
+                .isCod(orderDto.getData().getIsCod())
+                .isPrepaid(!orderDto.getData().getIsCod())
+                .isInstallment(false)
+                .installmentMonths(0)
+                .supportsRefund(true)
+                .supportsPartialRefund(true)
+                .refundProcessingDays(7)
+                .riskLevel("LOW")
+                .requiresVerification(false)
+                .fraudScore(0.1)
+                .transactionFeeRate(0.03)
+                .processingFee(0.0)
+                .paymentProcessingTimeMinutes(5)
+                .settlementDays(3)
+                .build();
+    }
+
+    private void updatePaymentFromTikTok(PaymentInfo payment, TikTokOrderDto orderDto) {
+        // Update if needed
+    }
+
+    // ===== SHIPPING INFO PROCESSING =====
+
+    private void processShippingInfoUpsert(TikTokOrderDto orderDto) {
+        String orderId = orderDto.getOrderId();
+
+        Optional<ShippingInfo> existing = shippingInfoRepository.findById(orderId);
+
+        if (existing.isPresent()) {
+            ShippingInfo shipping = existing.get();
+            updateShippingFromTikTok(shipping, orderDto);
+            shippingInfoRepository.save(shipping);
+        } else {
+            ShippingInfo newShipping = createShippingFromTikTok(orderDto);
+            shippingInfoRepository.save(newShipping);
+        }
+    }
+
+    private ShippingInfo createShippingFromTikTok(TikTokOrderDto orderDto) {
+        return ShippingInfo.builder()
+                .orderId(orderDto.getOrderId())
+                .shippingKey(System.currentTimeMillis() % 1000000L)
+                .providerId("TIKTOK_SHIPPING")
+                .providerName("TikTok Shipping")
+                .providerType("PLATFORM")
+                .providerTier("STANDARD")
+                .serviceType("STANDARD")
+                .serviceTier("REGULAR")
+                .deliveryCommitment("2-3 days")
+                .shippingMethod("GROUND")
+                .pickupType("PICKUP_FROM_SELLER")
+                .deliveryType("HOME_DELIVERY")
+                .baseFee(parseAmount(orderDto.getData().getPayment().getShippingFee()))
+                .weightBasedFee(0.0)
+                .distanceBasedFee(0.0)
+                .codFee(orderDto.getData().getIsCod() ? 5000.0 : 0.0)
+                .insuranceFee(0.0)
+                .supportsCod(true)
+                .supportsInsurance(false)
+                .supportsFragile(false)
+                .supportsRefrigerated(false)
+                .providesTracking(true)
+                .providesSmsUpdates(false)
+                .averageDeliveryDays(2.5)
+                .onTimeDeliveryRate(0.85)
+                .successDeliveryRate(0.95)
+                .damageRate(0.02)
+                .coverageProvinces("ALL")
+                .coverageNationwide(true)
+                .coverageInternational(false)
+                .build();
+    }
+
+    private void updateShippingFromTikTok(ShippingInfo shipping, TikTokOrderDto orderDto) {
+        // Update if needed
+    }
+
+    // ===== DATE INFO PROCESSING =====
+
+    private void processDateInfoUpsert(TikTokOrderDto orderDto) {
+        String orderId = orderDto.getOrderId();
+
+        Optional<ProcessingDateInfo> existing = processingDateInfoRepository.findById(orderId);
+
+        if (existing.isPresent()) {
+            ProcessingDateInfo dateInfo = existing.get();
+            updateDateInfoFromTikTok(dateInfo, orderDto);
+            processingDateInfoRepository.save(dateInfo);
+        } else {
+            ProcessingDateInfo newDateInfo = createDateInfoFromTikTok(orderDto);
+            processingDateInfoRepository.save(newDateInfo);
+        }
+    }
+
+    private ProcessingDateInfo createDateInfoFromTikTok(TikTokOrderDto orderDto) {
+        LocalDateTime orderDate = convertTimestamp(orderDto.getCreateTime());
+
+        return ProcessingDateInfo.builder()
+                .orderId(orderDto.getOrderId())
+                .dateKey(System.currentTimeMillis() % 1000000L)
+                .fullDate(orderDate)
+                .dayOfWeek(orderDate.getDayOfWeek().getValue())
+                .dayOfWeekName(orderDate.getDayOfWeek().name())
+                .dayOfMonth(orderDate.getDayOfMonth())
+                .dayOfYear(orderDate.getDayOfYear())
+                .weekOfYear(orderDate.get(java.time.temporal.WeekFields.ISO.weekOfYear()))
+                .monthOfYear(orderDate.getMonthValue())
+                .monthName(orderDate.getMonth().name())
+                .quarterOfYear((orderDate.getMonthValue() - 1) / 3 + 1)
+                .quarterName("Q" + ((orderDate.getMonthValue() - 1) / 3 + 1))
+                .year(orderDate.getYear())
+                .isWeekend(orderDate.getDayOfWeek().getValue() >= 6)
+                .isHoliday(false)
+                .holidayName(null)
+                .isBusinessDay(orderDate.getDayOfWeek().getValue() <= 5)
+                .fiscalYear(orderDate.getYear())
+                .fiscalQuarter((orderDate.getMonthValue() - 1) / 3 + 1)
+                .isShoppingSeason(isShoppingSeason(orderDate))
+                .seasonName(getSeasonName(orderDate))
+                .isPeakHour(isPeakHour(orderDate))
+                .build();
+    }
+
+    private void updateDateInfoFromTikTok(ProcessingDateInfo dateInfo, TikTokOrderDto orderDto) {
+        // Update if needed
+    }
+
+    // ===== STATUS PROCESSING =====
+
+    private void processStatusInfoUpsert(TikTokOrderDto orderDto) {
+        try {
+            String orderId = orderDto.getOrderId();
+            log.debug("Processing status info for order: {}", orderId);
+
+            // Map TikTok status to standard status
+            String tiktokStatus = orderDto.getStatus(); // "DELIVERED", "CANCELLED", etc.
+            String standardStatus = mapTikTokStatusToStandard(tiktokStatus);
+
+            // Check if status already exists for this platform + status combination
+            Optional<Status> existingStatus = statusRepository.findByPlatformAndPlatformStatusCode(
+                    platformName, tiktokStatus);
+
+            if (existingStatus.isPresent()) {
+                // UPDATE existing status if needed
+                Status existing = existingStatus.get();
+                existing.setStandardStatusName(standardStatus);
+                existing.setStatusCategory(getStatusCategory(standardStatus));
+
+                statusRepository.save(existing);
+                log.debug("Updated status mapping for platform {} status {}", platformName, tiktokStatus);
+            } else {
+                // INSERT new status mapping
+                Status newStatus = createStatusEntityFromTikTok(orderDto);
+                if (newStatus != null) {
+                    statusRepository.save(newStatus);
+                    log.debug("Created new status mapping for platform {} status {}", platformName, tiktokStatus);
+                } else {
+                    log.warn("Failed to create status entity for order: {}", orderId);
+                }
+            }
+
+        } catch (Exception e) {
+            // Individual table error isolation - log error and continue
+            log.error("Failed to process status info for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            // Don't throw exception - continue with other tables
+        }
+    }
+
+    private Status createStatusEntityFromTikTok(TikTokOrderDto orderDto) {
+        String tiktokStatus = orderDto.getStatus();
+
+        return Status.builder()
+                .platform(platformName)                                    // "TIKTOK"
+                .platformStatusCode(tiktokStatus)                          // "DELIVERED"
+                .platformStatusName(tiktokStatus)                          // "DELIVERED"
+                .standardStatusCode(mapTikTokStatusToStandard(tiktokStatus)) // "COMPLETED"
+                .standardStatusName(mapTikTokStatusToStandard(tiktokStatus)) // "COMPLETED"
+                .statusCategory(getStatusCategory(tiktokStatus))           // "FINAL"
+                .build();
+    }
+
+    // ===== UTILITY METHODS =====
+
+    private Double parseAmount(String amount) {
+        if (amount == null || amount.trim().isEmpty()) {
+            return 0.0;
+        }
+        try {
+            return Double.parseDouble(amount.trim());
+        } catch (NumberFormatException e) {
+            log.warn("Failed to parse amount: {}", amount);
+            return 0.0;
+        }
+    }
+
+    private LocalDateTime convertTimestamp(Long timestamp) {
+        if (timestamp == null) {
+            return LocalDateTime.now();
+        }
+        return LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.systemDefault());
+    }
+
+    private int countTikTokItems(TikTokOrderDto orderDto) {
+        if (orderDto.getData() == null || orderDto.getData().getLineItems() == null) {
+            return 1;
+        }
+        return orderDto.getData().getLineItems().size();
+    }
+
+    private String extractProvince(TikTokOrderDto orderDto) {
+        try {
+            List<TikTokOrderDto.TikTokDistrictInfo> districtInfoList =
+                    orderDto.getData().getRecipientAddress().getDistrictInfo();
+
+            if (districtInfoList != null && !districtInfoList.isEmpty()) {
+                // Lấy element đầu tiên (thường là Province/City level)
+                return districtInfoList.get(0).getAddressName();
+            }
+        } catch (Exception e) {
+            log.warn("Failed to extract province from TikTok order", e);
+        }
+        return "Unknown Province";
+    }
+
+    private String extractDistrict(TikTokOrderDto orderDto) {
+        try {
+            List<TikTokOrderDto.TikTokDistrictInfo> districtInfoList =
+                    orderDto.getData().getRecipientAddress().getDistrictInfo();
+
+            if (districtInfoList != null && districtInfoList.size() > 1) {
+                // Lấy element thứ 2 (thường là District level)
+                return districtInfoList.get(1).getAddressName();
+            }
+        } catch (Exception e) {
+            log.warn("Failed to extract district from TikTok order", e);
+        }
+        return "Unknown District";
+    }
+
+    private boolean hasDiscount(TikTokOrderDto orderDto) {
+        Double sellerDiscount = parseAmount(orderDto.getData().getPayment().getSellerDiscount());
+        Double platformDiscount = parseAmount(orderDto.getData().getPayment().getPlatformDiscount());
+        return sellerDiscount > 0 || platformDiscount > 0;
+    }
+
+    private boolean hasItemDiscount(TikTokItemDto item) {
+        Double originalPrice = parseAmount(item.getOriginalPrice());
+        Double salePrice = parseAmount(item.getSalePrice());
+        return originalPrice > salePrice;
+    }
+
+    private String mapTikTokStatusToStandard(String tiktokStatus) {
+        switch (tiktokStatus) {
+            case "DELIVERED": return "COMPLETED";
+            case "CANCELLED": return "CANCELLED";
+            case "AWAITING_SHIPMENT": return "READY_TO_SHIP";
+            case "IN_TRANSIT": return "SHIPPING";
+            case "AWAITING_PAYMENT": return "UNPAID";
+            default: return "PROCESSING";
+        }
+    }
+
+    private boolean isShoppingSeason(LocalDateTime date) {
+        int month = date.getMonthValue();
+        return month == 11 || month == 12 || month == 1; // Nov-Dec-Jan
+    }
+
+    private String getSeasonName(LocalDateTime date) {
+        int month = date.getMonthValue();
         if (month >= 3 && month <= 5) return "SPRING";
         if (month >= 6 && month <= 8) return "SUMMER";
         if (month >= 9 && month <= 11) return "AUTUMN";
         return "WINTER";
     }
 
-    private String detectTikTokPaymentMethod(TikTokOrderDto orderDto) {
-        Boolean isCod = orderDto.getData().getIsCod();
-        if (isCod != null && isCod) {
-            return "COD";
-        }
-        return "ONLINE"; // Default for TikTok
+    private boolean isPeakHour(LocalDateTime date) {
+        int hour = date.getHour();
+        return (hour >= 10 && hour <= 12) || (hour >= 19 && hour <= 21);
     }
 
-    private String categorizeTikTokPaymentMethod(String paymentMethod) {
-        switch (paymentMethod.toUpperCase()) {
-            case "COD": return "CASH_ON_DELIVERY";
-            case "ONLINE": return "DIGITAL_PAYMENT";
-            default: return "OTHER";
-        }
-    }
-
-    private String detectTikTokPaymentGateway(String paymentMethod) {
-        if ("COD".equals(paymentMethod)) return "CASH";
-        return "TIKTOK_PAY"; // Default TikTok payment gateway
-    }
-
-    private Double parseAmount(String amountStr) {
-        try {
-            return amountStr != null ? Double.parseDouble(amountStr) : 0.0;
-        } catch (NumberFormatException e) {
-            return 0.0;
-        }
-    }
-
-    private String generateTikTokProviderInfo(String provider) {
-        return "TIKTOK_" + provider.toUpperCase().replaceAll("\\s+", "_");
-    }
-
-    private String detectTikTokShippingZone(TikTokOrderDto orderDto) {
-        return "DOMESTIC"; // Default for TikTok
-    }
-
-    private String mapTikTokStatusToStandard(String tiktokStatus) {
-        if (tiktokStatus == null) return "OTHER";
-
-        switch (tiktokStatus.toUpperCase()) {
-            case "DELIVERED":
-            case "COMPLETED": return "COMPLETED";
-            case "CANCELLED":
-            case "CANCELED": return "CANCELLED";
-            case "AWAITING_SHIPMENT":
-            case "READY_TO_SHIP": return "READY_TO_SHIP";
-            case "IN_TRANSIT":
-            case "SHIPPING": return "IN_TRANSIT";
-            case "PENDING":
-            case "AWAITING_PAYMENT": return "PENDING_PAYMENT";
-            case "PROCESSING": return "PROCESSING";
-            default:
-                log.warn("Unknown TikTok status: {}, mapping to OTHER", tiktokStatus);
-                return "OTHER";
-        }
-    }
-
-    private String determineStatusCategoryFromTikTok(String tiktokStatus) {
-        String standardStatus = mapTikTokStatusToStandard(tiktokStatus);
-        switch (standardStatus) {
-            case "COMPLETED":
+    private String getStatusCategory(String status) {
+        switch (status) {
+            case "DELIVERED": return "FINAL";
             case "CANCELLED": return "FINAL";
-            case "IN_TRANSIT":
-            case "READY_TO_SHIP": return "IN_PROGRESS";
-            case "PENDING_PAYMENT":
-            case "PROCESSING": return "INITIAL";
-            default: return "OTHER";
+            case "AWAITING_SHIPMENT": return "PROCESSING";
+            case "IN_TRANSIT": return "SHIPPING";
+            case "AWAITING_PAYMENT": return "PENDING";
+            default: return "PROCESSING";
         }
     }
 
-    private int getDefaultSortOrder(String tiktokStatus) {
-        String standardStatus = mapTikTokStatusToStandard(tiktokStatus);
-        switch (standardStatus) {
-            case "PENDING_PAYMENT": return 1;
-            case "PROCESSING": return 2;
-            case "READY_TO_SHIP": return 3;
-            case "IN_TRANSIT": return 4;
-            case "COMPLETED": return 5;
-            case "CANCELLED": return 6;
-            default: return 99;
-        }
-    }
-
-    private String getStatusColor(String standardStatus) {
-        switch (standardStatus) {
-            case "COMPLETED": return "#28a745"; // Green
-            case "CANCELLED": return "#dc3545"; // Red
-            case "IN_TRANSIT": return "#007bff"; // Blue
-            case "READY_TO_SHIP": return "#ffc107"; // Yellow
-            case "PENDING_PAYMENT": return "#6c757d"; // Gray
-            default: return "#17a2b8"; // Teal
-        }
-    }
-
-    private String getAllowedTransitions(String standardStatus) {
-        switch (standardStatus) {
-            case "PENDING_PAYMENT": return "PROCESSING,CANCELLED";
-            case "PROCESSING": return "READY_TO_SHIP,CANCELLED";
-            case "READY_TO_SHIP": return "IN_TRANSIT,CANCELLED";
-            case "IN_TRANSIT": return "COMPLETED,CANCELLED";
-            case "COMPLETED": return ""; // No transitions from completed
-            case "CANCELLED": return ""; // No transitions from cancelled
-            default: return "";
-        }
-    }
-
-    private String generateTikTokStatusRules(String standardStatus) {
-        switch (standardStatus) {
-            case "COMPLETED": return "Order delivered successfully";
-            case "CANCELLED": return "Order has been cancelled";
-            case "IN_TRANSIT": return "Order is being delivered";
-            case "READY_TO_SHIP": return "Order is ready for shipment";
-            case "PENDING_PAYMENT": return "Waiting for payment confirmation";
-            default: return "Standard order processing rules apply";
-        }
-    }
-
-    private boolean isStatusCancellable(String standardStatus) {
-        return !standardStatus.equals("COMPLETED") && !standardStatus.equals("CANCELLED");
-    }
-
-    private boolean isStatusReturnable(String standardStatus) {
-        return standardStatus.equals("COMPLETED");
-    }
-
-    private boolean isStatusModifiable(String standardStatus) {
-        return standardStatus.equals("PENDING_PAYMENT") || standardStatus.equals("PROCESSING");
-    }
-
-    private LocalDateTime estimateDeliveryFromStatus(TikTokOrderDto orderDto, String standardStatus) {
-        LocalDateTime now = LocalDateTime.now();
-        switch (standardStatus) {
-            case "PENDING_PAYMENT":
-            case "PROCESSING": return now.plusDays(3);
-            case "READY_TO_SHIP": return now.plusDays(2);
-            case "IN_TRANSIT": return now.plusDays(1);
-            case "COMPLETED": return now; // Already delivered
-            default: return now.plusDays(3); // Default estimate
-        }
-    }
-
-    private String calculatePriceRange(Double price) {
-        if (price == null || price <= 0) return "UNDER_100K";
-        if (price < 100000) return "UNDER_100K";
-        if (price < 500000) return "100K_500K";
-        if (price < 1000000) return "500K_1M";
-        if (price < 2000000) return "1M_2M";
-        return "OVER_2M";
-    }
-
-    private LocalDateTime convertTimestamp(Long timestamp) {
-        if (timestamp == null) return LocalDateTime.now();
-        return LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.systemDefault());
-    }
-
-    // ===== UPDATE FIELD HELPER METHODS =====
-
-    private void updateDateInfoFields(ProcessingDateInfo existing, ProcessingDateInfo newInfo) {
-        existing.setFullDate(newInfo.getFullDate());
-        existing.setYear(newInfo.getYear());
-        existing.setMonth(newInfo.getMonth());
-        existing.setDay(newInfo.getDay());
-        existing.setQuarter(newInfo.getQuarter());
-        existing.setDayOfWeek(newInfo.getDayOfWeek());
-        existing.setDayOfYear(newInfo.getDayOfYear());
-        existing.setWeekOfYear(newInfo.getWeekOfYear());
-        existing.setIsWeekend(newInfo.getIsWeekend());
-        existing.setSeasonName(newInfo.getSeasonName());
-        existing.setBusinessQuarter(newInfo.getBusinessQuarter());
-        existing.setFiscalYear(newInfo.getFiscalYear());
-        existing.setHour(newInfo.getHour());
-    }
-
-    private void updatePaymentInfoFields(PaymentInfo existing, PaymentInfo newInfo) {
-        existing.setPaymentMethod(newInfo.getPaymentMethod());
-        existing.setPaymentCategory(newInfo.getPaymentCategory());
-        existing.setIsCod(newInfo.getIsCod());
-        existing.setCurrency(newInfo.getCurrency());
-        existing.setTotalAmount(newInfo.getTotalAmount());
-        existing.setPaymentStatus(newInfo.getPaymentStatus());
-        existing.setPaymentGateway(newInfo.getPaymentGateway());
-    }
-
-    private void updateShippingInfoFields(ShippingInfo existing, ShippingInfo newInfo) {
-        existing.setShippingProvider(newInfo.getShippingProvider());
-        existing.setShippingProviderId(newInfo.getShippingProviderId());
-        existing.setTrackingNumber(newInfo.getTrackingNumber());
-        existing.setShippingMethod(newInfo.getShippingMethod());
-        existing.setShippingZone(newInfo.getShippingZone());
-        existing.setShippingCost(newInfo.getShippingCost());
-        existing.setDeliveryDays(newInfo.getDeliveryDays());
-    }
-
-    private void updateOrderStatusFields(OrderStatus existing, OrderStatus newInfo) {
-        existing.setStatusTimestamp(newInfo.getStatusTimestamp());
-        existing.setIsCurrentStatus(newInfo.getIsCurrentStatus());
-        existing.setStatusSource(newInfo.getStatusSource());
-        existing.setStatusReason(newInfo.getStatusReason());
-    }
-
-    private void updateOrderStatusDetailFields(OrderStatusDetail existing, OrderStatusDetail newInfo) {
-        existing.setStatusDescription(newInfo.getStatusDescription());
-        existing.setStatusRules(newInfo.getStatusRules());
-        existing.setCanCancel(newInfo.getCanCancel());
-        existing.setCanReturn(newInfo.getCanReturn());
-        existing.setCanModify(newInfo.getCanModify());
-        existing.setEstimatedDelivery(newInfo.getEstimatedDelivery());
-        existing.setCustomerNotified(newInfo.getCustomerNotified());
-        existing.setInternalNotes(newInfo.getInternalNotes());
-    }
-
-    // ===== ETL RESULT CLASSES (same as ShopeeEtlService) =====
+    // ===== RESULT CLASSES =====
 
     public static class EtlResult {
         private boolean success;
+        private String errorMessage;
         private int totalOrders;
         private int ordersProcessed;
-        private String errorMessage;
         private LocalDateTime startTime;
         private LocalDateTime endTime;
-        private long durationMs;
-        private List<FailedOrder> failedOrders = new ArrayList<>();
+        private java.util.List<FailedOrder> failedOrders = new java.util.ArrayList<>();
 
         // Getters and setters
         public boolean isSuccess() { return success; }
         public void setSuccess(boolean success) { this.success = success; }
+
+        public String getErrorMessage() { return errorMessage; }
+        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
 
         public int getTotalOrders() { return totalOrders; }
         public void setTotalOrders(int totalOrders) { this.totalOrders = totalOrders; }
 
         public int getOrdersProcessed() { return ordersProcessed; }
         public void setOrdersProcessed(int ordersProcessed) { this.ordersProcessed = ordersProcessed; }
-        public void incrementProcessed() { this.ordersProcessed++; }
-
-        public String getErrorMessage() { return errorMessage; }
-        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
 
         public LocalDateTime getStartTime() { return startTime; }
         public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
@@ -1205,15 +818,19 @@ public class TikTokEtlService {
         public LocalDateTime getEndTime() { return endTime; }
         public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
 
-        public long getDurationMs() { return durationMs; }
-        public void calculateDuration() {
-            if (startTime != null && endTime != null) {
-                this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
-            }
+        public java.util.List<FailedOrder> getFailedOrders() { return failedOrders; }
+        public void setFailedOrders(java.util.List<FailedOrder> failedOrders) { this.failedOrders = failedOrders; }
+
+        public void addFailedOrder(String orderId, String error) {
+            failedOrders.add(new FailedOrder(orderId, error));
         }
 
-        public List<FailedOrder> getFailedOrders() { return failedOrders; }
-        public void addFailedOrder(FailedOrder failedOrder) { this.failedOrders.add(failedOrder); }
+        public long getDurationMs() {
+            if (startTime != null && endTime != null) {
+                return java.time.Duration.between(startTime, endTime).toMillis();
+            }
+            return 0;
+        }
     }
 
     public static class FailedOrder {
@@ -1225,7 +842,11 @@ public class TikTokEtlService {
             this.errorMessage = errorMessage;
         }
 
+        // Getters and setters
         public String getOrderId() { return orderId; }
+        public void setOrderId(String orderId) { this.orderId = orderId; }
+
         public String getErrorMessage() { return errorMessage; }
+        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
     }
 }

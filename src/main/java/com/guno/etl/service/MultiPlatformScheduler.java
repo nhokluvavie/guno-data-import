@@ -30,10 +30,10 @@ public class MultiPlatformScheduler {
     private TikTokApiService tiktokApiService;
 
     // Platform enable/disable flags
-    @Value("${etl.platforms.shopee.enabled:true}")
+    @Value("${etl.platforms.shopee.enabled:false}")
     private boolean shopeeEnabled;
 
-    @Value("${etl.platforms.tiktok.enabled:true}")
+    @Value("${etl.platforms.tiktok.enabled}")
     private boolean tiktokEnabled;
 
     @Value("${etl.scheduler.enabled:true}")
