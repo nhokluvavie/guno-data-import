@@ -1,6 +1,7 @@
 // TikTokEtlService.java - TikTok ETL Service (Clean Implementation)
 package com.guno.etl.service;
 
+import com.guno.etl.dto.ShopeeOrderDto;
 import com.guno.etl.dto.TikTokApiResponse;
 import com.guno.etl.dto.TikTokOrderDto;
 import com.guno.etl.dto.TikTokItemDto;
@@ -109,8 +110,8 @@ public class TikTokEtlService {
         // Process tables individually to isolate errors
         try { processCustomerUpsert(orderDto); } catch (Exception e) { log.error("Customer upsert failed for order {}", orderId, e); }
         try { processOrderEntityUpsert(orderDto); } catch (Exception e) { log.error("Order upsert failed for order {}", orderId, e); }
-        try { processOrderItemsUpsert(orderDto); } catch (Exception e) { log.error("Order items upsert failed for order {}", orderId, e); }
         try { processProductsUpsert(orderDto); } catch (Exception e) { log.error("Products upsert failed for order {}", orderId, e); }
+        try { processOrderItemsUpsert(orderDto); } catch (Exception e) { log.error("Order items upsert failed for order {}", orderId, e); }
         try { processGeographyUpsert(orderDto); } catch (Exception e) { log.error("Geography upsert failed for order {}", orderId, e); }
         try { processPaymentInfoUpsert(orderDto); } catch (Exception e) { log.error("Payment info upsert failed for order {}", orderId, e); }
         try { processShippingInfoUpsert(orderDto); } catch (Exception e) { log.error("Shipping info upsert failed for order {}", orderId, e); }
@@ -277,66 +278,6 @@ public class TikTokEtlService {
         // Update other fields as needed
     }
 
-    // ===== ORDER ITEMS PROCESSING =====
-
-    private void processOrderItemsUpsert(TikTokOrderDto orderDto) {
-        if (orderDto.getData() == null || orderDto.getData().getLineItems() == null) {
-            return;
-        }
-
-        for (TikTokItemDto item : orderDto.getData().getLineItems()) {
-            try {
-                processOrderItemUpsert(orderDto, item);
-            } catch (Exception e) {
-                log.error("Failed to process TikTok order item: {} - {}", orderDto.getOrderId(), item.getSkuId(), e);
-            }
-        }
-    }
-
-    private void processOrderItemUpsert(TikTokOrderDto orderDto, TikTokItemDto item) {
-        String orderId = orderDto.getOrderId();
-        String sku = item.getSkuId();
-        String platformProductId = platformName;
-
-        OrderItemId itemId = new OrderItemId(orderId, sku, platformProductId);
-        Optional<OrderItem> existing = orderItemRepository.findById(itemId);
-
-        if (existing.isPresent()) {
-            OrderItem orderItem = existing.get();
-            updateOrderItemFromTikTok(orderItem, item);
-            orderItemRepository.save(orderItem);
-            log.debug("Updated TikTok order item: {} - {}", orderId, sku);
-        } else {
-            OrderItem newOrderItem = createOrderItemFromTikTok(orderDto, item);
-            orderItemRepository.save(newOrderItem);
-            log.debug("Created new TikTok order item: {} - {}", orderId, sku);
-        }
-    }
-
-    private OrderItem createOrderItemFromTikTok(TikTokOrderDto orderDto, TikTokItemDto item) {
-        Double unitPrice = parseAmount(item.getSalePrice());
-
-        return OrderItem.builder()
-                .orderId(orderDto.getOrderId())
-                .sku(item.getSkuId())
-                .platformProductId(platformName)
-                .quantity(1) // TikTok doesn't provide quantity per line
-                .unitPrice(unitPrice)
-                .totalPrice(unitPrice)
-                .itemDiscount(parseAmount(item.getOriginalPrice()) - parseAmount(item.getSalePrice()))
-                .promotionType(hasItemDiscount(item) ? "SALE" : null)
-                .promotionCode(null)
-                .itemStatus(orderDto.getStatus())
-                .itemSequence(1)
-                .opId(System.currentTimeMillis() % 1000000L)
-                .build();
-    }
-
-    private void updateOrderItemFromTikTok(OrderItem orderItem, TikTokItemDto item) {
-        orderItem.setUnitPrice(parseAmount(item.getSalePrice()));
-        orderItem.setTotalPrice(parseAmount(item.getSalePrice()));
-    }
-
     // ===== PRODUCT PROCESSING =====
 
     private void processProductsUpsert(TikTokOrderDto orderDto) {
@@ -354,7 +295,7 @@ public class TikTokEtlService {
     }
 
     private void processProductUpsert(TikTokItemDto item) {
-        String sku = item.getSkuId();
+        String sku = item.getSellerSku();
         String platformProductId = platformName;
 
         ProductId productId = new ProductId(sku, platformProductId);
@@ -374,10 +315,10 @@ public class TikTokEtlService {
 
     private Product createProductFromTikTok(TikTokItemDto item) {
         return Product.builder()
-                .sku(item.getSkuId())
+                .sku(item.getSellerSku())
                 .platformProductId(platformName)
                 .productId(item.getProductId())
-                .variationId(item.getSkuId())
+                .variationId(item.getSellerSku())
                 .barcode(null)
                 .productName(item.getProductName())
                 .productDescription("TikTok product")
@@ -413,6 +354,76 @@ public class TikTokEtlService {
         product.setOriginalPrice(parseAmount(item.getOriginalPrice()));
         if (item.getSkuImage() != null) {
             product.setPrimaryImageUrl(item.getSkuImage());
+        }
+    }
+
+    // ===== ORDER ITEMS PROCESSING =====
+    private void processOrderItemsUpsert(TikTokOrderDto orderDto) {
+        try {
+            String orderId = orderDto.getOrderId();
+            log.debug("Processing order items for order: {}", orderId);
+
+            if (orderDto.getData() == null || orderDto.getData().getLineItems() == null) {
+                log.warn("No line items found for order: {}", orderId);
+                return;
+            }
+
+            // ✅ DELETE existing items first (like Shopee)
+            List<OrderItem> existingItems = orderItemRepository.findByOrderIdOrderByItemSequence(orderId);
+            if (!existingItems.isEmpty()) {
+                orderItemRepository.deleteAll(existingItems);
+                log.debug("Deleted {} existing items for order: {}", existingItems.size(), orderId);
+            }
+
+            // ✅ INSERT new items (like Shopee)
+            List<TikTokItemDto> items = orderDto.getData().getLineItems();
+            for (int i = 0; i < items.size(); i++) {
+                TikTokItemDto item = items.get(i);
+                try {
+                    OrderItem orderItem = createOrderItemFromTikTokItem(orderDto, item, i + 1);
+                    if (orderItem != null) {
+                        orderItemRepository.save(orderItem);
+                        log.debug("Created order item for order: {} - SKU: {}", orderId, item.getSkuId());
+                    } else {
+                        log.warn("Failed to create order item entity for order: {} - SKU: {}", orderId, item.getSkuId());
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to process order item for order: {} - SKU: {}", orderId, item.getSkuId(), e);
+                    // Continue với items khác
+                }
+            }
+
+            log.debug("Order items processing completed for order: {}", orderId);
+
+        } catch (Exception e) {
+            log.error("Failed to process order items for order {}: {}", orderDto.getOrderId(), e.getMessage());
+            throw e; // ✅ Re-throw để trigger rollback
+        }
+    }
+
+    private OrderItem createOrderItemFromTikTokItem(TikTokOrderDto orderDto, TikTokItemDto item, int itemSequence) {
+        try {
+            String orderId = orderDto.getOrderId();
+            String sku = item.getSellerSku();
+
+            return OrderItem.builder()
+                    .orderId(orderId)
+                    .sku(sku)
+                    .platformProductId(platformName) // "TIKTOK"
+                    .quantity(1) // TikTok default quantity
+                    .unitPrice(parseAmount(item.getSalePrice()))
+                    .totalPrice(parseAmount(item.getSalePrice()))
+                    .itemDiscount(parseAmount(item.getOriginalPrice()) - parseAmount(item.getSalePrice()))
+                    .promotionType(hasItemDiscount(item) ? "SALE" : null)
+                    .promotionCode(null)
+                    .itemStatus(orderDto.getStatus())
+                    .itemSequence(itemSequence)
+                    .opId(System.currentTimeMillis() % 1000000L)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Failed to create OrderItem entity for SKU: {}", item.getSkuId(), e);
+            return null;
         }
     }
 
@@ -628,54 +639,33 @@ public class TikTokEtlService {
     private void processStatusInfoUpsert(TikTokOrderDto orderDto) {
         try {
             String orderId = orderDto.getOrderId();
-            log.debug("Processing status info for order: {}", orderId);
+            String tiktokStatus = orderDto.getStatus();
+            log.debug("Processing status info for order: {} with status: {}", orderId, tiktokStatus);
 
-            // Map TikTok status to standard status
-            String tiktokStatus = orderDto.getStatus(); // "DELIVERED", "CANCELLED", etc.
-            String standardStatus = mapTikTokStatusToStandard(tiktokStatus);
-
-            // Check if status already exists for this platform + status combination
+            // ✅ ASSUME status mapping already exists (created by StatusMappingInitializer)
             Optional<Status> existingStatus = statusRepository.findByPlatformAndPlatformStatusCode(
                     platformName, tiktokStatus);
 
             if (existingStatus.isPresent()) {
-                // UPDATE existing status if needed
+                // ✅ UPDATE existing status if needed
                 Status existing = existingStatus.get();
+                String standardStatus = mapTikTokStatusToStandard(tiktokStatus);
+
                 existing.setStandardStatusName(standardStatus);
                 existing.setStatusCategory(getStatusCategory(standardStatus));
-
                 statusRepository.save(existing);
-                log.debug("Updated status mapping for platform {} status {}", platformName, tiktokStatus);
+
+                log.debug("Updated TikTok status mapping for platform {} status {}", platformName, tiktokStatus);
             } else {
-                // INSERT new status mapping
-                Status newStatus = createStatusEntityFromTikTok(orderDto);
-                if (newStatus != null) {
-                    statusRepository.save(newStatus);
-                    log.debug("Created new status mapping for platform {} status {}", platformName, tiktokStatus);
-                } else {
-                    log.warn("Failed to create status entity for order: {}", orderId);
-                }
+                // ⚠️ This should not happen if StatusMappingInitializer works correctly
+                log.warn("Status mapping not found for platform {} status {} - StatusMappingInitializer may have failed",
+                        platformName, tiktokStatus);
             }
 
         } catch (Exception e) {
-            // Individual table error isolation - log error and continue
             log.error("Failed to process status info for order {}: {}",
                     orderDto.getOrderId(), e.getMessage());
-            // Don't throw exception - continue with other tables
         }
-    }
-
-    private Status createStatusEntityFromTikTok(TikTokOrderDto orderDto) {
-        String tiktokStatus = orderDto.getStatus();
-
-        return Status.builder()
-                .platform(platformName)                                    // "TIKTOK"
-                .platformStatusCode(tiktokStatus)                          // "DELIVERED"
-                .platformStatusName(tiktokStatus)                          // "DELIVERED"
-                .standardStatusCode(mapTikTokStatusToStandard(tiktokStatus)) // "COMPLETED"
-                .standardStatusName(mapTikTokStatusToStandard(tiktokStatus)) // "COMPLETED"
-                .statusCategory(getStatusCategory(tiktokStatus))           // "FINAL"
-                .build();
     }
 
     // ===== UTILITY METHODS =====

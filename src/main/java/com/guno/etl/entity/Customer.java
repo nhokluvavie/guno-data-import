@@ -54,7 +54,7 @@ public class Customer {
     private String customerSegment;
 
     @Column(name = "customer_tier")
-    @Pattern(regexp = "BRONZE|SILVER|GOLD|PLATINUM|VIP", flags = Pattern.Flag.CASE_INSENSITIVE,
+    @Pattern(regexp = "BRONZE|SILVER|GOLD|PLATINUM|VIP|STANDARD", flags = Pattern.Flag.CASE_INSENSITIVE,
             message = "Customer tier must be valid tier")
     private String customerTier;
 
