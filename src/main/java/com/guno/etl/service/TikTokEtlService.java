@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -117,6 +118,8 @@ public class TikTokEtlService {
         try { processShippingInfoUpsert(orderDto); } catch (Exception e) { log.error("Shipping info upsert failed for order {}", orderId, e); }
         try { processDateInfoUpsert(orderDto); } catch (Exception e) { log.error("Date info upsert failed for order {}", orderId, e); }
         try { processStatusInfoUpsert(orderDto); } catch (Exception e) { log.error("Status info upsert failed for order {}", orderId, e); }
+        try { processOrderStatusTransition(orderDto); } catch (Exception e) { log.error("Order Status info transit failed for order {}", orderId, e); }
+        try { processOrderStatusDetailUpsert(orderDto); } catch (Exception e) { log.error("Order Status Detail info upsert failed for order {}", orderId, e); }
     }
 
     // ===== CUSTOMER PROCESSING =====
@@ -668,7 +671,340 @@ public class TikTokEtlService {
         }
     }
 
+    private void processOrderStatusTransition(TikTokOrderDto orderDto) {
+        try {
+            String orderId = orderDto.getOrderId();
+            log.debug("Processing order status transition for order: {}", orderId);
+
+            // Map TikTok status to get status key
+            String tiktokStatus = orderDto.getStatus();
+            Optional<Status> statusEntity = statusRepository.findByPlatformAndPlatformStatusCode(
+                    platformName, tiktokStatus);
+
+            if (!statusEntity.isPresent()) {
+                log.warn("Status entity not found for platform {} status {}, skipping status transition",
+                        platformName, tiktokStatus);
+                return;
+            }
+
+            Long statusKey = statusEntity.get().getStatusKey();
+
+            // Check if status transition already exists for this status + order combination
+            Optional<OrderStatus> existingTransition = orderStatusRepository.findByStatusKeyAndOrderId(
+                    statusKey, orderId);
+
+            if (existingTransition.isPresent()) {
+                // UPDATE existing status transition
+                OrderStatus existing = existingTransition.get();
+                OrderStatus newTransition = createOrderStatusEntity(orderDto, statusKey);
+
+                if (newTransition != null) {
+                    // Update fields - direct mapping, no calculations
+                    existing.setTransitionTimestamp(newTransition.getTransitionTimestamp());
+                    existing.setDurationInPreviousStatusHours(newTransition.getDurationInPreviousStatusHours());
+                    existing.setTransitionReason(newTransition.getTransitionReason());
+                    existing.setTransitionTrigger(newTransition.getTransitionTrigger());
+                    existing.setChangedBy(newTransition.getChangedBy());
+                    existing.setIsOnTimeTransition(newTransition.getIsOnTimeTransition());
+                    existing.setIsExpectedTransition(newTransition.getIsExpectedTransition());
+
+                    orderStatusRepository.save(existing);
+                    log.debug("Updated status transition for order: {} to status: {}", orderId, tiktokStatus);
+                } else {
+                    log.warn("Failed to create new status transition entity for order: {}", orderId);
+                }
+            } else {
+                // INSERT new transition
+                OrderStatus newTransition = createOrderStatusEntity(orderDto, statusKey);
+                if (newTransition != null) {
+                    orderStatusRepository.save(newTransition);
+                    log.debug("Created new status transition for order: {} to status: {}", orderId, tiktokStatus);
+                } else {
+                    log.warn("Failed to create status transition entity for order: {}", orderId);
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to process order status transition for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+        }
+    }
+
+    private OrderStatus createOrderStatusEntity(TikTokOrderDto orderDto, Long statusKey) {
+        try {
+            String orderId = orderDto.getOrderId();
+            // Get timestamp data from API - direct mapping
+            Long updateTimeUnix = orderDto.getUpdateTime(); // Direct value
+            LocalDateTime transitionTime = updateTimeUnix != null ?
+                    LocalDateTime.ofInstant(Instant.ofEpochSecond(updateTimeUnix), java.time.ZoneId.systemDefault()) :
+                    LocalDateTime.now(); // Default: current time
+
+            // Generate date key for transition date
+            Integer transitionDateKey = generateDateKey(transitionTime.toLocalDate());
+
+            return OrderStatus.builder()
+                    .statusKey(statusKey)
+                    .orderId(orderId)
+                    .transitionDateKey(transitionDateKey)
+                    .transitionTimestamp(convertTimestamp(orderDto.getUpdateTime()))
+                    .durationInPreviousStatusHours(24) // Default 24 hours
+                    .transitionReason("TikTok order status update")
+                    .transitionTrigger("SYSTEM")
+                    .changedBy("TIKTOK_API")
+                    .isOnTimeTransition(true)
+                    .isExpectedTransition(true)
+                    .historyKey(System.currentTimeMillis() % 1000000L)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Failed to create OrderStatus entity for order: {}", orderDto.getOrderId(), e);
+            return null;
+        }
+    }
+
+    private void processOrderStatusDetailUpsert(TikTokOrderDto orderDto) {
+        try {
+            String orderId = orderDto.getOrderId();
+            log.debug("Processing order status detail for order: {}", orderId);
+
+            // Get status key for current order status
+            String tiktokStatus = orderDto.getStatus();
+            Optional<Status> statusEntity = statusRepository.findByPlatformAndPlatformStatusCode(
+                    platformName, tiktokStatus);
+
+            if (!statusEntity.isPresent()) {
+                log.warn("Status entity not found for platform {} status {}, skipping status detail",
+                        platformName, tiktokStatus);
+                return;
+            }
+
+            Long statusKey = statusEntity.get().getStatusKey();
+
+            // Check if status detail already exists for this status + order combination
+            Optional<OrderStatusDetail> existingDetail = orderStatusDetailRepository.findByStatusKeyAndOrderId(
+                    statusKey, orderId);
+
+            if (existingDetail.isPresent()) {
+                // UPDATE existing status detail
+                OrderStatusDetail existing = existingDetail.get();
+                OrderStatusDetail newDetail = createOrderStatusDetailEntity(orderDto, statusKey);
+
+                if (newDetail != null) {
+                    // Update fields - direct mapping, no calculations
+                    existing.setIsActiveOrder(newDetail.getIsActiveOrder());
+                    existing.setIsCompletedOrder(newDetail.getIsCompletedOrder());
+                    existing.setIsRevenueRecognized(newDetail.getIsRevenueRecognized());
+                    existing.setIsRefundable(newDetail.getIsRefundable());
+                    existing.setIsCancellable(newDetail.getIsCancellable());
+                    existing.setIsTrackable(newDetail.getIsTrackable());
+                    existing.setNextPossibleStatuses(newDetail.getNextPossibleStatuses());
+                    existing.setAutoTransitionHours(newDetail.getAutoTransitionHours());
+                    existing.setRequiresManualAction(newDetail.getRequiresManualAction());
+                    existing.setStatusColor(newDetail.getStatusColor());
+                    existing.setStatusIcon(newDetail.getStatusIcon());
+                    existing.setCustomerVisible(newDetail.getCustomerVisible());
+                    existing.setCustomerDescription(newDetail.getCustomerDescription());
+                    existing.setAverageDurationHours(newDetail.getAverageDurationHours());
+                    existing.setSuccessRate(newDetail.getSuccessRate());
+
+                    orderStatusDetailRepository.save(existing);
+                    log.debug("Updated status detail for order: {} status: {}", orderId, tiktokStatus);
+                } else {
+                    log.warn("Failed to create new status detail entity for order: {}", orderId);
+                }
+            } else {
+                // INSERT new status detail
+                OrderStatusDetail newDetail = createOrderStatusDetailEntity(orderDto, statusKey);
+                if (newDetail != null) {
+                    orderStatusDetailRepository.save(newDetail);
+                    log.debug("Created new status detail for order: {} status: {}", orderId, tiktokStatus);
+                } else {
+                    log.warn("Failed to create status detail entity for order: {}", orderId);
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to process order status detail for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+        }
+    }
+
+    private OrderStatusDetail createOrderStatusDetailEntity(TikTokOrderDto orderDto, Long statusKey) {
+        try {
+            String tiktokStatus = orderDto.getStatus();
+
+            return OrderStatusDetail.builder()
+                    .statusKey(statusKey)
+                    .orderId(orderDto.getOrderId())
+                    .isActiveOrder(determineIfActiveOrder(tiktokStatus))
+                    .isCompletedOrder(determineIfCompletedOrder(tiktokStatus))
+                    .isRevenueRecognized(determineIfRevenueRecognized(tiktokStatus))
+                    .isRefundable(determineIfRefundable(tiktokStatus))
+                    .isCancellable(determineIfCancellable(tiktokStatus))
+                    .isTrackable(determineIfTrackable(tiktokStatus))
+                    .nextPossibleStatuses(generateNextPossibleStatuses(tiktokStatus))
+                    .autoTransitionHours(determineAutoTransitionHours(tiktokStatus))
+                    .requiresManualAction(determineIfRequiresManualAction(tiktokStatus))
+                    .statusColor(determineStatusColor(tiktokStatus))
+                    .statusIcon(determineStatusIcon(tiktokStatus))
+                    .customerVisible(true)
+                    .customerDescription(generateCustomerDescription(tiktokStatus))
+                    .averageDurationHours(getDefaultAverageDuration(tiktokStatus))
+                    .successRate(getDefaultSuccessRate(tiktokStatus))
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Failed to create OrderStatusDetail entity for order: {}", orderDto.getOrderId(), e);
+            return null;
+        }
+    }
+
     // ===== UTILITY METHODS =====
+
+    private Integer generateDateKey(LocalDate date) {
+        if (date == null) return null;
+
+        // Generate date key in format YYYYMMDD
+        return date.getYear() * 10000 + date.getMonthValue() * 100 + date.getDayOfMonth();
+    }
+
+    private boolean determineIfActiveOrder(String status) {
+        return !("DELIVERED".equals(status) || "CANCELLED".equals(status));
+    }
+
+    private boolean determineIfCompletedOrder(String status) {
+        return "DELIVERED".equals(status);
+    }
+
+    private boolean determineIfRevenueRecognized(String status) {
+        return "DELIVERED".equals(status);
+    }
+
+    private boolean determineIfRefundable(String status) {
+        return "DELIVERED".equals(status) || "CANCELLED".equals(status);
+    }
+
+    private boolean determineIfCancellable(String status) {
+        return !("DELIVERED".equals(status) || "CANCELLED".equals(status) || "IN_TRANSIT".equals(status));
+    }
+
+    private boolean determineIfTrackable(String status) {
+        return "IN_TRANSIT".equals(status) || "AWAITING_SHIPMENT".equals(status);
+    }
+
+    private boolean determineIfRequiresManualAction(String status) {
+        return "AWAITING_PAYMENT".equals(status);
+    }
+
+    private String generateNextPossibleStatuses(String currentStatus) {
+        switch (currentStatus) {
+            case "AWAITING_PAYMENT":
+                return "AWAITING_SHIPMENT,CANCELLED";
+            case "AWAITING_SHIPMENT":
+                return "IN_TRANSIT,CANCELLED";
+            case "IN_TRANSIT":
+                return "DELIVERED";
+            case "DELIVERED":
+                return ""; // Final state
+            case "CANCELLED":
+                return ""; // Final state
+            default:
+                return "";
+        }
+    }
+
+    private Integer determineAutoTransitionHours(String status) {
+        switch (status) {
+            case "AWAITING_PAYMENT":
+                return 24;
+            case "AWAITING_SHIPMENT":
+                return 48;
+            case "IN_TRANSIT":
+                return 72;
+            default:
+                return 0;
+        }
+    }
+
+    private String determineStatusColor(String status) {
+        switch (status) {
+            case "DELIVERED":
+                return "GREEN";
+            case "CANCELLED":
+                return "RED";
+            case "IN_TRANSIT":
+                return "BLUE";
+            case "AWAITING_SHIPMENT":
+                return "ORANGE";
+            case "AWAITING_PAYMENT":
+                return "YELLOW";
+            default:
+                return "GRAY";
+        }
+    }
+
+    private String determineStatusIcon(String status) {
+        switch (status) {
+            case "DELIVERED":
+                return "check-circle";
+            case "CANCELLED":
+                return "x-circle";
+            case "IN_TRANSIT":
+                return "truck";
+            case "AWAITING_SHIPMENT":
+                return "package";
+            case "AWAITING_PAYMENT":
+                return "credit-card";
+            default:
+                return "help-circle";
+        }
+    }
+
+    private String generateCustomerDescription(String status) {
+        switch (status) {
+            case "AWAITING_PAYMENT":
+                return "Chờ thanh toán";
+            case "AWAITING_SHIPMENT":
+                return "Chờ giao hàng";
+            case "IN_TRANSIT":
+                return "Đang vận chuyển";
+            case "DELIVERED":
+                return "Đã giao hàng thành công";
+            case "CANCELLED":
+                return "Đơn hàng đã bị hủy";
+            default:
+                return "Trạng thái không xác định";
+        }
+    }
+
+    private Double getDefaultAverageDuration(String status) {
+        switch (status) {
+            case "AWAITING_PAYMENT":
+                return 12.0; // 12 hours
+            case "AWAITING_SHIPMENT":
+                return 24.0; // 24 hours
+            case "IN_TRANSIT":
+                return 48.0; // 48 hours
+            default:
+                return 24.0; // Default 24 hours
+        }
+    }
+
+    private Double getDefaultSuccessRate(String status) {
+        switch (status) {
+            case "DELIVERED":
+                return 1.0; // 100% success
+            case "CANCELLED":
+                return 0.0; // 0% success
+            case "IN_TRANSIT":
+            case "AWAITING_SHIPMENT":
+                return 0.95; // 95% success rate
+            case "AWAITING_PAYMENT":
+                return 0.75; // 75% success rate
+            default:
+                return 0.85; // Default 85% success rate
+        }
+    }
 
     private Double parseAmount(String amount) {
         if (amount == null || amount.trim().isEmpty()) {

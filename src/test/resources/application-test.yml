@@ -18,7 +18,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
@@ -41,6 +41,9 @@ etl:
     tiktok:
       enabled: true  # Enable for testing
       name: TIKTOK
+    facebook:
+      enabled: true
+      name: FACEBOOK
 
   # API Configuration (shared structure)
   api:
@@ -60,6 +63,13 @@ etl:
       page-size: 10
       max-retries: 2
 
+    facebook:
+      base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/facebook
+      auth-header: x-webhook-api-key
+      api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
+      timeout: 60s
+      page-size: 10
+      max-retries: 2
   # Scheduler Settings
   scheduler:
     enabled: false  # Disabled for testing
