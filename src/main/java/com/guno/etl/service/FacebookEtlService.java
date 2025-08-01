@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -708,5 +709,57 @@ public class FacebookEtlService {
             return String.format("Facebook Order from Page: %s (ID: %s)", page.getName(), page.getId());
         }
         return "Facebook Order";
+    }
+
+    public static class EtlResult {
+        private boolean success;
+        private String errorMessage;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private int totalOrders;
+        private int ordersProcessed;
+        private List<FailedOrder> failedOrders = new ArrayList<>();
+
+        // Getters and setters
+        public boolean isSuccess() { return success; }
+        public void setSuccess(boolean success) { this.success = success; }
+
+        public String getErrorMessage() { return errorMessage; }
+        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+
+        public LocalDateTime getStartTime() { return startTime; }
+        public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
+
+        public LocalDateTime getEndTime() { return endTime; }
+        public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
+
+        public int getTotalOrders() { return totalOrders; }
+        public void setTotalOrders(int totalOrders) { this.totalOrders = totalOrders; }
+
+        public int getOrdersProcessed() { return ordersProcessed; }
+        public void setOrdersProcessed(int ordersProcessed) { this.ordersProcessed = ordersProcessed; }
+
+        public List<FailedOrder> getFailedOrders() { return failedOrders; }
+        public void setFailedOrders(List<FailedOrder> failedOrders) { this.failedOrders = failedOrders; }
+
+        public void addFailedOrder(String orderId, String errorMessage) {
+            failedOrders.add(new FailedOrder(orderId, errorMessage));
+        }
+    }
+
+    public static class FailedOrder {
+        private String orderId;
+        private String errorMessage;
+
+        public FailedOrder(String orderId, String errorMessage) {
+            this.orderId = orderId;
+            this.errorMessage = errorMessage;
+        }
+
+        public String getOrderId() { return orderId; }
+        public void setOrderId(String orderId) { this.orderId = orderId; }
+
+        public String getErrorMessage() { return errorMessage; }
+        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
     }
 }
