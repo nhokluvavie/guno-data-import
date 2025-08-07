@@ -153,7 +153,7 @@ public class FacebookApiService {
                     log.info(result);
                     return result;
                 } else {
-                    String result = "Facebook API returned error: " + response.getMessage();
+                    String result = "Facebook API returned error: " + response.getStatus();
                     log.warn(result);
                     return result;
                 }
@@ -177,7 +177,7 @@ public class FacebookApiService {
         try {
             FacebookApiResponse response = fetchUpdatedOrders(1, 1);
             if (response != null && response.getData() != null) {
-                return response.getData().getCount() != null ? response.getData().getCount() : 0;
+                return response.getData().getTotal() != null ? response.getData().getTotal() : 0;
             }
             return 0;
         } catch (Exception e) {
@@ -193,7 +193,7 @@ public class FacebookApiService {
         try {
             FacebookApiResponse response = fetchOrdersForDate(date, 1, 1);
             if (response != null && response.getData() != null) {
-                return response.getData().getCount() != null ? response.getData().getCount() : 0;
+                return response.getData().getTotal() != null ? response.getData().getTotal() : 0;
             }
             return 0;
         } catch (Exception e) {

@@ -1,55 +1,39 @@
-// FacebookApiResponse.java - Facebook API Response DTO
+// FacebookApiResponse.java - OPTIMIZED
 package com.guno.etl.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
 import java.util.List;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FacebookApiResponse {
 
     @JsonProperty("status")
     private Integer status;
 
-    @JsonProperty("message")
-    private String message;
-
-    @JsonProperty("code")
-    private Integer code;
-
     @JsonProperty("data")
-    private FacebookDataWrapper data;
+    private FacebookData data;
 
-    // Getters and setters
-    public Integer getStatus() { return status; }
-    public void setStatus(Integer status) { this.status = status; }
-
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
-
-    public Integer getCode() { return code; }
-    public void setCode(Integer code) { this.code = code; }
-
-    public FacebookDataWrapper getData() { return data; }
-    public void setData(FacebookDataWrapper data) { this.data = data; }
-
-    public static class FacebookDataWrapper {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class FacebookData {
 
         @JsonProperty("orders")
         private List<FacebookOrderDto> orders;
 
-        @JsonProperty("count")
-        private Integer count;
+        @JsonProperty("total")
+        private Integer total;
 
         @JsonProperty("page")
         private Integer page;
 
-        // Getters and setters
-        public List<FacebookOrderDto> getOrders() { return orders; }
-        public void setOrders(List<FacebookOrderDto> orders) { this.orders = orders; }
-
-        public Integer getCount() { return count; }
-        public void setCount(Integer count) { this.count = count; }
-
-        public Integer getPage() { return page; }
-        public void setPage(Integer page) { this.page = page; }
+        @JsonProperty("limit")
+        private Integer limit;
     }
 }

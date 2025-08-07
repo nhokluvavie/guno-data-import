@@ -752,7 +752,8 @@ public class FacebookEtlService {
         return Order.builder()
                 .orderId(orderDto.getOrderId())
                 .customerId(customerId)
-                .shopId(orderDto.getShopId() != null ? orderDto.getShopId().toString() : null)
+                .shopId(orderDto.getData().getPage() != null ?
+                        orderDto.getData().getPage().getId() : null)
 
                 // ✅ DIRECT mapping từ Facebook API - NO công thức
                 .codAmount(data.getCod() != null ? data.getCod().doubleValue() : null)
@@ -877,15 +878,15 @@ public class FacebookEtlService {
                 .variationId(itemDto.getVariationId())
                 .productName(itemDto.getProductName())
                 .productDescription(itemDto.getProductDescription())
-                .brand(itemDto.getProductBrandName()) // ✅ Correct field name
+                .brand(itemDto.getBrandName()) // ✅ Correct field name
                 .model(null) // ❌ Not available in Facebook
                 .barcode(itemDto.getProductBarcode())
 
                 // ✅ Category từ Facebook fields
-                .categoryLevel1(itemDto.getProductCategoryName()) // ✅ Correct field name
+                .categoryLevel1(itemDto.getCategoryName()) // ✅ Correct field name
                 .categoryLevel2(null) // ❌ Not available
                 .categoryLevel3(null) // ❌ Not available
-                .categoryPath(itemDto.getProductCategoryName())
+                .categoryPath(itemDto.getCategoryName())
 
                 // ❌ NOT available in Facebook
                 .color(null)

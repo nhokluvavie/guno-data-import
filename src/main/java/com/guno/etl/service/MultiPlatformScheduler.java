@@ -1,470 +1,379 @@
-// MultiPlatformScheduler.java - Unified Scheduler for Shopee + TikTok ETL
+// MultiPlatformScheduler.java - OPTIMIZED VERSION with Facebook Support
 package com.guno.etl.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.guno.etl.service.ShopeeEtlService;
+import com.guno.etl.service.TikTokEtlService;
+import com.guno.etl.service.FacebookEtlService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@Slf4j
+@ConditionalOnProperty(
+        value = "etl.scheduler.enabled",
+        havingValue = "true",
+        matchIfMissing = false
+)
 public class MultiPlatformScheduler {
 
-    private static final Logger log = LoggerFactory.getLogger(MultiPlatformScheduler.class);
+    // ===== SERVICES =====
 
-    @Autowired
+    @Autowired(required = false)
     private ShopeeEtlService shopeeEtlService;
 
-    @Autowired
+    @Autowired(required = false)
     private TikTokEtlService tiktokEtlService;
 
-    @Autowired
-    private ShopeeApiService shopeeApiService;
+    @Autowired(required = false)
+    private FacebookEtlService facebookEtlService;
 
-    @Autowired
-    private TikTokApiService tiktokApiService;
+    // ===== CONFIGURATION =====
 
-    // Platform enable/disable flags
+    @Value("${etl.scheduler.enabled:false}")
+    private boolean schedulerEnabled;
+
     @Value("${etl.platforms.shopee.enabled:false}")
     private boolean shopeeEnabled;
 
-    @Value("${etl.platforms.tiktok.enabled}")
+    @Value("${etl.platforms.tiktok.enabled:false}")
     private boolean tiktokEnabled;
 
-    @Value("${etl.scheduler.enabled:true}")
-    private boolean schedulerEnabled;
+    @Value("${etl.platforms.facebook.enabled:false}")
+    private boolean facebookEnabled;
 
-    @Value("${etl.scheduler.max-consecutive-failures:5}")
+    @Value("${etl.scheduler.max-consecutive-failures:3}")
     private int maxConsecutiveFailures;
 
-    // Statistics tracking
-    private final AtomicLong executionCount = new AtomicLong(0);
-    private final AtomicLong shopeeSuccessCount = new AtomicLong(0);
-    private final AtomicLong shopeeFailureCount = new AtomicLong(0);
-    private final AtomicLong tiktokSuccessCount = new AtomicLong(0);
-    private final AtomicLong tiktokFailureCount = new AtomicLong(0);
-    private final AtomicLong shopeeConsecutiveFailures = new AtomicLong(0);
-    private final AtomicLong tiktokConsecutiveFailures = new AtomicLong(0);
+    @Value("${etl.scheduler.parallel-execution:true}")
+    private boolean parallelExecution;
 
+    // ===== MONITORING & STATISTICS =====
+
+    private final AtomicLong executionCount = new AtomicLong(0);
+    private final AtomicBoolean isExecuting = new AtomicBoolean(false);
+
+    // Platform-specific counters
+    private final Map<String, AtomicLong> successCounts = new ConcurrentHashMap<>();
+    private final Map<String, AtomicLong> failureCounts = new ConcurrentHashMap<>();
+    private final Map<String, AtomicLong> consecutiveFailures = new ConcurrentHashMap<>();
+    private final Map<String, LocalDateTime> lastExecutionTimes = new ConcurrentHashMap<>();
+    private final Map<String, String> lastErrorMessages = new ConcurrentHashMap<>();
+
+    // Overall tracking
     private LocalDateTime lastSuccessTime;
     private LocalDateTime lastFailureTime;
-    private String lastErrorMessage;
+
+    public MultiPlatformScheduler() {
+        // Initialize counters for all platforms
+        initializePlatformCounters("SHOPEE");
+        initializePlatformCounters("TIKTOK");
+        initializePlatformCounters("FACEBOOK");
+    }
+
+    private void initializePlatformCounters(String platform) {
+        successCounts.put(platform, new AtomicLong(0));
+        failureCounts.put(platform, new AtomicLong(0));
+        consecutiveFailures.put(platform, new AtomicLong(0));
+    }
 
     // ===== MAIN SCHEDULER METHOD =====
 
     /**
      * Main scheduler method - runs every 30 seconds
+     * OPTIMIZED: Parallel execution + better error handling + comprehensive monitoring
      */
-    @Scheduled(fixedRateString = "${etl.scheduler.fixed-rate:30000}",
-            initialDelayString = "${etl.scheduler.initial-delay:10000}")
+    @Scheduled(
+            fixedRateString = "${etl.scheduler.fixed-rate:30000}",
+            initialDelayString = "${etl.scheduler.initial-delay:5000}"
+    )
     public void processAllPlatforms() {
         if (!schedulerEnabled) {
-            log.debug("Multi-platform scheduler is disabled");
+            log.debug("🔒 Multi-platform scheduler is disabled");
+            return;
+        }
+
+        // Prevent concurrent executions
+        if (!isExecuting.compareAndSet(false, true)) {
+            log.warn("⚠️ Previous ETL execution still running, skipping this cycle");
             return;
         }
 
         long executionNumber = executionCount.incrementAndGet();
         LocalDateTime startTime = LocalDateTime.now();
 
-        log.info("=== Multi-Platform ETL Cycle #{} Started ===", executionNumber);
+        log.info("🚀 Multi-Platform ETL Cycle #{} Started", executionNumber);
 
-        boolean anySuccess = false;
+        try {
+            if (parallelExecution) {
+                processAllPlatformsParallel();
+            } else {
+                processAllPlatformsSequential();
+            }
 
-        // Process Shopee platform
-        if (shopeeEnabled) {
-            boolean shopeeSuccess = processShopeeOrders();
-            anySuccess = anySuccess || shopeeSuccess;
-        } else {
-            log.debug("Shopee platform is disabled, skipping");
-        }
+            lastSuccessTime = LocalDateTime.now();
+            log.info("✅ Multi-Platform ETL Cycle #{} Completed in {}ms",
+                    executionNumber, Duration.between(startTime, LocalDateTime.now()).toMillis());
 
-        // Process TikTok platform
-        if (tiktokEnabled) {
-            boolean tiktokSuccess = processTikTokOrders();
-            anySuccess = anySuccess || tiktokSuccess;
-        } else {
-            log.debug("TikTok platform is disabled, skipping");
-        }
-
-        // Update global success/failure tracking
-        if (anySuccess) {
-            lastSuccessTime = startTime;
-        } else {
-            lastFailureTime = startTime;
-            lastErrorMessage = "All enabled platforms failed";
-        }
-
-        LocalDateTime endTime = LocalDateTime.now();
-        long durationMs = java.time.Duration.between(startTime, endTime).toMillis();
-
-        log.info("=== Multi-Platform ETL Cycle #{} Completed in {} ms ===",
-                executionNumber, durationMs);
-
-        // Log summary statistics every 10 cycles
-        if (executionNumber % 10 == 0) {
-            logStatisticsSummary();
+        } catch (Exception e) {
+            lastFailureTime = LocalDateTime.now();
+            log.error("❌ Multi-Platform ETL Cycle #{} Failed: {}", executionNumber, e.getMessage(), e);
+        } finally {
+            isExecuting.set(false);
+            logExecutionSummary();
         }
     }
 
-    // ===== PLATFORM-SPECIFIC PROCESSING =====
+    // ===== EXECUTION STRATEGIES =====
 
     /**
-     * Process Shopee orders with error handling
+     * OPTIMIZED: Parallel execution for better performance
      */
-    private boolean processShopeeOrders() {
+    private void processAllPlatformsParallel() {
+        log.info("🔄 Processing platforms in PARALLEL mode");
+
+        CompletableFuture<Boolean> shopeeTask = CompletableFuture.supplyAsync(() -> {
+            if (shopeeEnabled && shopeeEtlService != null) {
+                return processPlatform("SHOPEE", shopeeEtlService::processUpdatedOrders);
+            }
+            return true;
+        });
+
+        CompletableFuture<Boolean> tiktokTask = CompletableFuture.supplyAsync(() -> {
+            if (tiktokEnabled && tiktokEtlService != null) {
+                return processPlatform("TIKTOK", tiktokEtlService::processUpdatedOrders);
+            }
+            return true;
+        });
+
+        CompletableFuture<Boolean> facebookTask = CompletableFuture.supplyAsync(() -> {
+            if (facebookEnabled && facebookEtlService != null) {
+                return processPlatform("FACEBOOK", facebookEtlService::processUpdatedOrders);
+            }
+            return true;
+        });
+
+        // Wait for all platforms to complete
+        CompletableFuture.allOf(shopeeTask, tiktokTask, facebookTask).join();
+    }
+
+    /**
+     * Sequential execution for debugging or resource constraints
+     */
+    private void processAllPlatformsSequential() {
+        log.info("🔄 Processing platforms in SEQUENTIAL mode");
+
+        if (shopeeEnabled && shopeeEtlService != null) {
+            processPlatform("SHOPEE", shopeeEtlService::processUpdatedOrders);
+        }
+
+        if (tiktokEnabled && tiktokEtlService != null) {
+            processPlatform("TIKTOK", tiktokEtlService::processUpdatedOrders);
+        }
+
+        if (facebookEnabled && facebookEtlService != null) {
+            processPlatform("FACEBOOK", facebookEtlService::processUpdatedOrders);
+        }
+    }
+
+    // ===== PLATFORM PROCESSING =====
+
+    /**
+     * OPTIMIZED: Generic platform processing with comprehensive monitoring
+     */
+    private boolean processPlatform(String platformName, PlatformProcessor processor) {
+        if (!isPlatformHealthy(platformName)) {
+            log.warn("⚠️ Skipping {} due to consecutive failures", platformName);
+            return false;
+        }
+
+        LocalDateTime startTime = LocalDateTime.now();
+
         try {
-            log.debug("Processing Shopee orders...");
+            log.info("🔄 Processing {} platform...", platformName);
 
-            ShopeeEtlService.EtlResult result = shopeeEtlService.processUpdatedOrders();
+            Object result = processor.process();
+            boolean success = evaluateResult(result);
 
-            if (result.isSuccess()) {
-                shopeeSuccessCount.incrementAndGet();
-                shopeeConsecutiveFailures.set(0);
-
-                log.info("Shopee ETL SUCCESS: {}/{} orders processed in {} ms",
-                        result.getOrdersProcessed(), result.getTotalOrders(), result.getDurationMs());
-
+            if (success) {
+                handlePlatformSuccess(platformName, startTime);
                 return true;
             } else {
-                handleShopeeFailure("ETL process failed: " + result.getErrorMessage());
+                handlePlatformFailure(platformName, "ETL processing returned failure", startTime);
                 return false;
             }
 
         } catch (Exception e) {
-            handleShopeeFailure("Exception during Shopee ETL: " + e.getMessage());
+            handlePlatformFailure(platformName, e.getMessage(), startTime);
             return false;
         }
     }
 
     /**
-     * Process TikTok orders with error handling
+     * Evaluate ETL result based on type
      */
-    private boolean processTikTokOrders() {
-        try {
-            log.debug("Processing TikTok orders...");
+    private boolean evaluateResult(Object result) {
+        if (result == null) return false;
 
-            TikTokEtlService.EtlResult result = tiktokEtlService.processUpdatedOrders();
-
-            if (result.isSuccess()) {
-                tiktokSuccessCount.incrementAndGet();
-                tiktokConsecutiveFailures.set(0);
-
-                log.info("TikTok ETL SUCCESS: {}/{} orders processed in {} ms",
-                        result.getOrdersProcessed(), result.getTotalOrders(), result.getDurationMs());
-
-                return true;
-            } else {
-                handleTikTokFailure("ETL process failed: " + result.getErrorMessage());
-                return false;
-            }
-
-        } catch (Exception e) {
-            handleTikTokFailure("Exception during TikTok ETL: " + e.getMessage());
-            return false;
+        // Handle different result types from ETL services
+        if (result instanceof ShopeeEtlService.EtlResult) {
+            return ((ShopeeEtlService.EtlResult) result).isSuccess();
+        } else if (result instanceof TikTokEtlService.EtlResult) {
+            return ((TikTokEtlService.EtlResult) result).isSuccess();
+        } else if (result instanceof FacebookEtlService.EtlResult) {
+            return ((FacebookEtlService.EtlResult) result).isSuccess();
+        } else if (result instanceof Boolean) {
+            return (Boolean) result;
         }
+
+        return true; // Default to success if unclear
     }
 
-    // ===== FAILURE HANDLING =====
-
-    private void handleShopeeFailure(String errorMessage) {
-        shopeeFailureCount.incrementAndGet();
-        long consecutiveFailures = shopeeConsecutiveFailures.incrementAndGet();
-
-        log.error("Shopee ETL FAILED (consecutive failures: {}): {}", consecutiveFailures, errorMessage);
-
-        if (consecutiveFailures >= maxConsecutiveFailures) {
-            log.error("🚨 ALERT: Shopee has {} consecutive failures! Consider investigating.", consecutiveFailures);
-        }
-    }
-
-    private void handleTikTokFailure(String errorMessage) {
-        tiktokFailureCount.incrementAndGet();
-        long consecutiveFailures = tiktokConsecutiveFailures.incrementAndGet();
-
-        log.error("TikTok ETL FAILED (consecutive failures: {}): {}", consecutiveFailures, errorMessage);
-
-        if (consecutiveFailures >= maxConsecutiveFailures) {
-            log.error("🚨 ALERT: TikTok has {} consecutive failures! Consider investigating.", consecutiveFailures);
-        }
-    }
-
-    // ===== HEALTH CHECK SCHEDULER =====
+    // ===== HEALTH MONITORING =====
 
     /**
-     * Health check scheduler - runs every 5 minutes
+     * OPTIMIZED: Circuit breaker pattern for platform health
      */
-    @Scheduled(fixedRateString = "${etl.scheduler.health-check-interval:300000}")
-    public void performHealthCheck() {
-        if (!schedulerEnabled) {
-            return;
-        }
-
-        log.info("=== Multi-Platform Health Check ===");
-
-        // Check Shopee API health
-        if (shopeeEnabled) {
-            boolean shopeeHealthy = shopeeApiService.isApiHealthy();
-            log.info("Shopee API Health: {}", shopeeHealthy ? "HEALTHY" : "UNHEALTHY");
-        }
-
-        // Check TikTok API health
-        if (tiktokEnabled) {
-            boolean tiktokHealthy = tiktokApiService.isApiHealthy();
-            log.info("TikTok API Health: {}", tiktokHealthy ? "HEALTHY" : "UNHEALTHY");
-        }
-
-        logStatisticsSummary();
-    }
-
-    // ===== MANUAL CONTROL METHODS =====
-
-    /**
-     * Manually trigger ETL for all enabled platforms
-     */
-    public MultiPlatformEtlResult triggerManualEtl() {
-        log.info("Manual ETL trigger initiated");
-
-        MultiPlatformEtlResult result = new MultiPlatformEtlResult();
-        result.setStartTime(LocalDateTime.now());
-
-        // Process Shopee if enabled
-        if (shopeeEnabled) {
-            try {
-                ShopeeEtlService.EtlResult shopeeResult = shopeeEtlService.processUpdatedOrders();
-                result.setShopeeResult(shopeeResult);
-                result.setShopeeSuccess(shopeeResult.isSuccess());
-            } catch (Exception e) {
-                result.setShopeeSuccess(false);
-                result.setShopeeError("Shopee ETL failed: " + e.getMessage());
+    private boolean isPlatformHealthy(String platformName) {
+        long failures = consecutiveFailures.get(platformName).get();
+        if (failures >= maxConsecutiveFailures) {
+            LocalDateTime lastExecution = lastExecutionTimes.get(platformName);
+            if (lastExecution != null &&
+                    Duration.between(lastExecution, LocalDateTime.now()).toMinutes() < 5) {
+                return false; // Circuit breaker: wait 5 minutes before retry
             }
         }
-
-        // Process TikTok if enabled
-        if (tiktokEnabled) {
-            try {
-                TikTokEtlService.EtlResult tiktokResult = tiktokEtlService.processUpdatedOrders();
-                result.setTiktokResult(tiktokResult);
-                result.setTiktokSuccess(tiktokResult.isSuccess());
-            } catch (Exception e) {
-                result.setTiktokSuccess(false);
-                result.setTiktokError("TikTok ETL failed: " + e.getMessage());
-            }
-        }
-
-        result.setEndTime(LocalDateTime.now());
-        result.calculateDuration();
-
-        log.info("Manual ETL completed: Shopee={}, TikTok={}, Duration={}ms",
-                result.isShopeeSuccess(), result.isTiktokSuccess(), result.getDurationMs());
-
-        return result;
+        return true;
     }
 
-    /**
-     * Enable/disable scheduler
-     */
-    public void enableScheduler() {
-        this.schedulerEnabled = true;
-        log.info("Multi-platform scheduler ENABLED");
+    private void handlePlatformSuccess(String platformName, LocalDateTime startTime) {
+        successCounts.get(platformName).incrementAndGet();
+        consecutiveFailures.get(platformName).set(0); // Reset failure count
+        lastExecutionTimes.put(platformName, LocalDateTime.now());
+
+        long duration = Duration.between(startTime, LocalDateTime.now()).toMillis();
+        log.info("✅ {} processing completed successfully in {}ms", platformName, duration);
     }
 
-    public void disableScheduler() {
-        this.schedulerEnabled = false;
-        log.info("Multi-platform scheduler DISABLED");
+    private void handlePlatformFailure(String platformName, String errorMessage, LocalDateTime startTime) {
+        failureCounts.get(platformName).incrementAndGet();
+        consecutiveFailures.get(platformName).incrementAndGet();
+        lastExecutionTimes.put(platformName, LocalDateTime.now());
+        lastErrorMessages.put(platformName, errorMessage);
+
+        long duration = Duration.between(startTime, LocalDateTime.now()).toMillis();
+        log.error("❌ {} processing failed after {}ms: {}", platformName, duration, errorMessage);
     }
 
-    /**
-     * Reset statistics
-     */
-    public void resetStatistics() {
-        executionCount.set(0);
-        shopeeSuccessCount.set(0);
-        shopeeFailureCount.set(0);
-        tiktokSuccessCount.set(0);
-        tiktokFailureCount.set(0);
-        shopeeConsecutiveFailures.set(0);
-        tiktokConsecutiveFailures.set(0);
-        lastSuccessTime = null;
-        lastFailureTime = null;
-        lastErrorMessage = null;
+    // ===== MONITORING & STATISTICS =====
 
-        log.info("Multi-platform scheduler statistics reset");
-    }
+    private void logExecutionSummary() {
+        log.info("📊 Platform Statistics:");
 
-    // ===== STATISTICS AND MONITORING =====
+        for (String platform : new String[]{"SHOPEE", "TIKTOK", "FACEBOOK"}) {
+            long success = successCounts.get(platform).get();
+            long failure = failureCounts.get(platform).get();
+            long consecutive = consecutiveFailures.get(platform).get();
 
-    private void logStatisticsSummary() {
-        log.info("=== Multi-Platform Scheduler Statistics ===");
-        log.info("Total Executions: {}", executionCount.get());
-        log.info("Shopee - Success: {}, Failures: {}, Consecutive Failures: {}",
-                shopeeSuccessCount.get(), shopeeFailureCount.get(), shopeeConsecutiveFailures.get());
-        log.info("TikTok - Success: {}, Failures: {}, Consecutive Failures: {}",
-                tiktokSuccessCount.get(), tiktokFailureCount.get(), tiktokConsecutiveFailures.get());
-
-        // Calculate success rates
-        long totalShopee = shopeeSuccessCount.get() + shopeeFailureCount.get();
-        long totalTikTok = tiktokSuccessCount.get() + tiktokFailureCount.get();
-
-        double shopeeSuccessRate = totalShopee > 0 ? (double) shopeeSuccessCount.get() / totalShopee * 100.0 : 0.0;
-        double tiktokSuccessRate = totalTikTok > 0 ? (double) tiktokSuccessCount.get() / totalTikTok * 100.0 : 0.0;
-
-        log.info("Success Rates - Shopee: {:.1f}%, TikTok: {:.1f}%", shopeeSuccessRate, tiktokSuccessRate);
-
-        if (lastSuccessTime != null) {
-            log.info("Last Success: {}", lastSuccessTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        }
-
-        if (lastFailureTime != null) {
-            log.info("Last Failure: {} - {}",
-                    lastFailureTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                    lastErrorMessage);
+            log.info("   {} - Success: {}, Failures: {}, Consecutive Failures: {}",
+                    platform, success, failure, consecutive);
         }
     }
 
-    /**
-     * Get current scheduler statistics
-     */
-    public MultiPlatformStatistics getStatistics() {
-        MultiPlatformStatistics stats = new MultiPlatformStatistics();
+    // ===== PUBLIC API FOR MONITORING =====
 
-        stats.setExecutionCount(executionCount.get());
-        stats.setShopeeSuccessCount(shopeeSuccessCount.get());
-        stats.setShopeeFailureCount(shopeeFailureCount.get());
-        stats.setTiktokSuccessCount(tiktokSuccessCount.get());
-        stats.setTiktokFailureCount(tiktokFailureCount.get());
-        stats.setShopeeConsecutiveFailures(shopeeConsecutiveFailures.get());
-        stats.setTiktokConsecutiveFailures(tiktokConsecutiveFailures.get());
-        stats.setLastSuccessTime(lastSuccessTime);
-        stats.setLastFailureTime(lastFailureTime);
-        stats.setLastErrorMessage(lastErrorMessage);
-        stats.setSchedulerEnabled(schedulerEnabled);
-        stats.setShopeeEnabled(shopeeEnabled);
-        stats.setTiktokEnabled(tiktokEnabled);
+    public Map<String, Object> getSchedulerStatistics() {
+        Map<String, Object> stats = new ConcurrentHashMap<>();
+
+        stats.put("schedulerEnabled", schedulerEnabled);
+        stats.put("totalExecutions", executionCount.get());
+        stats.put("isCurrentlyExecuting", isExecuting.get());
+        stats.put("lastSuccessTime", lastSuccessTime);
+        stats.put("lastFailureTime", lastFailureTime);
+        stats.put("parallelExecution", parallelExecution);
+
+        // Platform-specific stats
+        Map<String, Object> platformStats = new ConcurrentHashMap<>();
+        for (String platform : new String[]{"SHOPEE", "TIKTOK", "FACEBOOK"}) {
+            Map<String, Object> platformData = new ConcurrentHashMap<>();
+            platformData.put("enabled", isPlatformEnabled(platform));
+            platformData.put("successCount", successCounts.get(platform).get());
+            platformData.put("failureCount", failureCounts.get(platform).get());
+            platformData.put("consecutiveFailures", consecutiveFailures.get(platform).get());
+            platformData.put("lastExecutionTime", lastExecutionTimes.get(platform));
+            platformData.put("lastErrorMessage", lastErrorMessages.get(platform));
+            platformData.put("isHealthy", isPlatformHealthy(platform));
+
+            platformStats.put(platform, platformData);
+        }
+        stats.put("platforms", platformStats);
 
         return stats;
     }
 
-    // ===== RESULT CLASSES =====
-
-    public static class MultiPlatformEtlResult {
-        private LocalDateTime startTime;
-        private LocalDateTime endTime;
-        private long durationMs;
-
-        private boolean shopeeSuccess;
-        private boolean tiktokSuccess;
-        private String shopeeError;
-        private String tiktokError;
-
-        private ShopeeEtlService.EtlResult shopeeResult;
-        private TikTokEtlService.EtlResult tiktokResult;
-
-        // Getters and setters
-        public LocalDateTime getStartTime() { return startTime; }
-        public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-
-        public LocalDateTime getEndTime() { return endTime; }
-        public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
-
-        public long getDurationMs() { return durationMs; }
-
-        public void calculateDuration() {
-            if (startTime != null && endTime != null) {
-                this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
-            }
-        }
-
-        public boolean isShopeeSuccess() { return shopeeSuccess; }
-        public void setShopeeSuccess(boolean shopeeSuccess) { this.shopeeSuccess = shopeeSuccess; }
-
-        public boolean isTiktokSuccess() { return tiktokSuccess; }
-        public void setTiktokSuccess(boolean tiktokSuccess) { this.tiktokSuccess = tiktokSuccess; }
-
-        public String getShopeeError() { return shopeeError; }
-        public void setShopeeError(String shopeeError) { this.shopeeError = shopeeError; }
-
-        public String getTiktokError() { return tiktokError; }
-        public void setTiktokError(String tiktokError) { this.tiktokError = tiktokError; }
-
-        public ShopeeEtlService.EtlResult getShopeeResult() { return shopeeResult; }
-        public void setShopeeResult(ShopeeEtlService.EtlResult shopeeResult) { this.shopeeResult = shopeeResult; }
-
-        public TikTokEtlService.EtlResult getTiktokResult() { return tiktokResult; }
-        public void setTiktokResult(TikTokEtlService.EtlResult tiktokResult) { this.tiktokResult = tiktokResult; }
-
-        public boolean isOverallSuccess() {
-            return shopeeSuccess || tiktokSuccess; // Success if at least one platform succeeds
+    private boolean isPlatformEnabled(String platform) {
+        switch (platform) {
+            case "SHOPEE": return shopeeEnabled;
+            case "TIKTOK": return tiktokEnabled;
+            case "FACEBOOK": return facebookEnabled;
+            default: return false;
         }
     }
 
-    public static class MultiPlatformStatistics {
-        private long executionCount;
-        private long shopeeSuccessCount;
-        private long shopeeFailureCount;
-        private long tiktokSuccessCount;
-        private long tiktokFailureCount;
-        private long shopeeConsecutiveFailures;
-        private long tiktokConsecutiveFailures;
-        private LocalDateTime lastSuccessTime;
-        private LocalDateTime lastFailureTime;
-        private String lastErrorMessage;
-        private boolean schedulerEnabled;
-        private boolean shopeeEnabled;
-        private boolean tiktokEnabled;
+    /**
+     * Manual trigger for specific platform
+     */
+    public boolean triggerPlatform(String platformName) {
+        log.info("🎯 Manual trigger requested for {} platform", platformName);
 
-        // Getters and setters
-        public long getExecutionCount() { return executionCount; }
-        public void setExecutionCount(long executionCount) { this.executionCount = executionCount; }
-
-        public long getShopeeSuccessCount() { return shopeeSuccessCount; }
-        public void setShopeeSuccessCount(long shopeeSuccessCount) { this.shopeeSuccessCount = shopeeSuccessCount; }
-
-        public long getShopeeFailureCount() { return shopeeFailureCount; }
-        public void setShopeeFailureCount(long shopeeFailureCount) { this.shopeeFailureCount = shopeeFailureCount; }
-
-        public long getTiktokSuccessCount() { return tiktokSuccessCount; }
-        public void setTiktokSuccessCount(long tiktokSuccessCount) { this.tiktokSuccessCount = tiktokSuccessCount; }
-
-        public long getTiktokFailureCount() { return tiktokFailureCount; }
-        public void setTiktokFailureCount(long tiktokFailureCount) { this.tiktokFailureCount = tiktokFailureCount; }
-
-        public long getShopeeConsecutiveFailures() { return shopeeConsecutiveFailures; }
-        public void setShopeeConsecutiveFailures(long shopeeConsecutiveFailures) { this.shopeeConsecutiveFailures = shopeeConsecutiveFailures; }
-
-        public long getTiktokConsecutiveFailures() { return tiktokConsecutiveFailures; }
-        public void setTiktokConsecutiveFailures(long tiktokConsecutiveFailures) { this.tiktokConsecutiveFailures = tiktokConsecutiveFailures; }
-
-        public LocalDateTime getLastSuccessTime() { return lastSuccessTime; }
-        public void setLastSuccessTime(LocalDateTime lastSuccessTime) { this.lastSuccessTime = lastSuccessTime; }
-
-        public LocalDateTime getLastFailureTime() { return lastFailureTime; }
-        public void setLastFailureTime(LocalDateTime lastFailureTime) { this.lastFailureTime = lastFailureTime; }
-
-        public String getLastErrorMessage() { return lastErrorMessage; }
-        public void setLastErrorMessage(String lastErrorMessage) { this.lastErrorMessage = lastErrorMessage; }
-
-        public boolean isSchedulerEnabled() { return schedulerEnabled; }
-        public void setSchedulerEnabled(boolean schedulerEnabled) { this.schedulerEnabled = schedulerEnabled; }
-
-        public boolean isShopeeEnabled() { return shopeeEnabled; }
-        public void setShopeeEnabled(boolean shopeeEnabled) { this.shopeeEnabled = shopeeEnabled; }
-
-        public boolean isTiktokEnabled() { return tiktokEnabled; }
-        public void setTiktokEnabled(boolean tiktokEnabled) { this.tiktokEnabled = tiktokEnabled; }
-
-        public double getShopeeSuccessRate() {
-            long total = shopeeSuccessCount + shopeeFailureCount;
-            return total > 0 ? (double) shopeeSuccessCount / total * 100.0 : 0.0;
+        switch (platformName.toUpperCase()) {
+            case "SHOPEE":
+                if (shopeeEnabled && shopeeEtlService != null) {
+                    return processPlatform("SHOPEE", shopeeEtlService::processUpdatedOrders);
+                }
+                break;
+            case "TIKTOK":
+                if (tiktokEnabled && tiktokEtlService != null) {
+                    return processPlatform("TIKTOK", tiktokEtlService::processUpdatedOrders);
+                }
+                break;
+            case "FACEBOOK":
+                if (facebookEnabled && facebookEtlService != null) {
+                    return processPlatform("FACEBOOK", facebookEtlService::processUpdatedOrders);
+                }
+                break;
+            default:
+                log.warn("⚠️ Unknown platform: {}", platformName);
+                return false;
         }
 
-        public double getTiktokSuccessRate() {
-            long total = tiktokSuccessCount + tiktokFailureCount;
-            return total > 0 ? (double) tiktokSuccessCount / total * 100.0 : 0.0;
-        }
+        log.warn("⚠️ Platform {} is disabled or service unavailable", platformName);
+        return false;
+    }
+
+    /**
+     * Manual trigger for all enabled platforms
+     */
+    public void triggerAllPlatforms() {
+        log.info("🎯 Manual trigger requested for all platforms");
+        processAllPlatforms();
+    }
+
+    // ===== FUNCTIONAL INTERFACE =====
+
+    @FunctionalInterface
+    private interface PlatformProcessor {
+        Object process() throws Exception;
     }
 }

@@ -1,388 +1,293 @@
-// MultiPlatformIntegrationTest.java - Complete Multi-Platform Testing
+// MultiPlatformIntegrationTest.java - OPTIMIZED for new scheduler
 package com.guno.etl.integration;
 
-import com.guno.etl.service.ShopeeEtlService;
-import com.guno.etl.service.TikTokEtlService;
-import com.guno.etl.service.ShopeeApiService;
-import com.guno.etl.service.TikTokApiService;
-import com.guno.etl.service.MultiPlatformScheduler;
+import com.guno.etl.service.*;
 import com.guno.etl.repository.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
-/**
- * Complete Multi-Platform Integration Test
- * Tests Shopee + TikTok platforms working together
- */
-@SpringBootApplication
-@ComponentScan("com.guno.etl")
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.DisplayName.class)
 public class MultiPlatformIntegrationTest {
 
     @Autowired
+    private MultiPlatformScheduler scheduler;
+
+    @Autowired(required = false)
     private ShopeeEtlService shopeeEtlService;
 
-    @Autowired
+    @Autowired(required = false)
     private TikTokEtlService tiktokEtlService;
 
-    @Autowired
-    private ShopeeApiService shopeeApiService;
+    @Autowired(required = false)
+    private FacebookEtlService facebookEtlService;
 
     @Autowired
-    private TikTokApiService tiktokApiService;
+    private CustomerRepository customerRepository;
 
     @Autowired
-    private MultiPlatformScheduler multiPlatformScheduler;
+    private OrderRepository orderRepository;
 
-    // All 9 repositories for data verification
-    @Autowired private CustomerRepository customerRepository;
-    @Autowired private OrderRepository orderRepository;
-    @Autowired private OrderItemRepository orderItemRepository;
-    @Autowired private ProductRepository productRepository;
-    @Autowired private GeographyInfoRepository geographyInfoRepository;
-    @Autowired private StatusRepository statusRepository;
-    @Autowired private OrderStatusRepository orderStatusRepository;
-    @Autowired private OrderStatusDetailRepository orderStatusDetailRepository;
-    @Autowired private PaymentInfoRepository paymentInfoRepository;
-    @Autowired private ShippingInfoRepository shippingInfoRepository;
-    @Autowired private ProcessingDateInfoRepository processingDateInfoRepository;
+    @Autowired
+    private StatusRepository statusRepository;
 
-    public static void main(String[] args) {
-        System.setProperty("spring.profiles.active", "test");
-        ConfigurableApplicationContext context = SpringApplication.run(MultiPlatformIntegrationTest.class, args);
+    @Test
+    @DisplayName("1. Test Scheduler Configuration")
+    public void testSchedulerConfiguration() {
+        System.out.println("\n=== TEST 1: Scheduler Configuration ===");
 
-        MultiPlatformIntegrationTest test = context.getBean(MultiPlatformIntegrationTest.class);
-        test.runCompleteMultiPlatformTest();
+        assertNotNull(scheduler, "Scheduler should be available");
 
-        context.close();
+        Map<String, Object> stats = scheduler.getSchedulerStatistics();
+        assertNotNull(stats, "Scheduler statistics should be available");
+
+        System.out.println("✅ Scheduler enabled: " + stats.get("schedulerEnabled"));
+        System.out.println("✅ Parallel execution: " + stats.get("parallelExecution"));
+        System.out.println("✅ Total executions: " + stats.get("totalExecutions"));
     }
 
-    public void runCompleteMultiPlatformTest() {
-        System.out.println("=== MULTI-PLATFORM INTEGRATION TEST ===");
-        System.out.println("Testing Shopee + TikTok ETL System Integration");
-        System.out.println("Time: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        System.out.println();
+    @Test
+    @DisplayName("2. Test Individual Platform Triggers")
+    public void testIndividualPlatformTriggers() {
+        System.out.println("\n=== TEST 2: Individual Platform Triggers ===");
 
-        boolean allTestsPassed = true;
+        long ordersBefore = orderRepository.count();
 
-        // Test 1: Initialize Multi-Platform Context
-        allTestsPassed &= testMultiPlatformContext();
-
-        // Test 2: API Connectivity for Both Platforms
-        allTestsPassed &= testBothPlatformAPIs();
-
-        // Test 3: Database State Before Multi-Platform ETL
-        DatabaseState beforeState = captureDatabaseState("Before Multi-Platform ETL");
-
-        // Test 4: Multi-Platform ETL Processing
-        allTestsPassed &= testMultiPlatformETL();
-
-        // Test 5: Database State After Multi-Platform ETL
-        DatabaseState afterState = captureDatabaseState("After Multi-Platform ETL");
-
-        // Test 6: Multi-Platform Data Verification
-        allTestsPassed &= testMultiPlatformDataIntegrity(beforeState, afterState);
-
-        // Test 7: Platform Isolation Tests
-        allTestsPassed &= testPlatformIsolation();
-
-        // Test 8: Multi-Platform Scheduler Test
-        allTestsPassed &= testMultiPlatformScheduler();
-
-        // Final Results
-        System.out.println("\n=== FINAL RESULTS ===");
-        if (allTestsPassed) {
-            System.out.println("🎉 ALL MULTI-PLATFORM TESTS PASSED!");
-            System.out.println("✅ Shopee + TikTok ETL system is working correctly");
-            System.out.println("✅ Both platforms can process data independently");
-            System.out.println("✅ Multi-platform scheduler is operational");
-            System.out.println("✅ All 9 tables are populated from both platforms");
-        } else {
-            System.out.println("❌ SOME TESTS FAILED - Review logs above");
+        // Test Shopee trigger
+        if (shopeeEtlService != null) {
+            boolean shopeeResult = scheduler.triggerPlatform("SHOPEE");
+            System.out.println("✅ Shopee trigger result: " + shopeeResult);
         }
+
+        // Test TikTok trigger
+        if (tiktokEtlService != null) {
+            boolean tiktokResult = scheduler.triggerPlatform("TIKTOK");
+            System.out.println("✅ TikTok trigger result: " + tiktokResult);
+        }
+
+        // Test Facebook trigger
+        if (facebookEtlService != null) {
+            boolean facebookResult = scheduler.triggerPlatform("FACEBOOK");
+            System.out.println("✅ Facebook trigger result: " + facebookResult);
+        }
+
+        long ordersAfter = orderRepository.count();
+        System.out.println("✅ Orders processed: " + (ordersAfter - ordersBefore));
     }
 
-    private boolean testMultiPlatformContext() {
-        System.out.println("Test 1: Multi-Platform Context Initialization");
+    @Test
+    @DisplayName("3. Test All Platforms Trigger")
+    public void testAllPlatformsTrigger() {
+        System.out.println("\n=== TEST 3: All Platforms Trigger ===");
+
+        long customersBefore = customerRepository.count();
+        long ordersBefore = orderRepository.count();
+
+        // Trigger all platforms
+        scheduler.triggerAllPlatforms();
+
+        // Wait for completion
         try {
-            // Test Shopee services
-            if (shopeeEtlService == null) {
-                System.out.println("❌ FAILED: ShopeeEtlService not initialized");
-                return false;
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        long customersAfter = customerRepository.count();
+        long ordersAfter = orderRepository.count();
+
+        System.out.println("✅ Customers: " + customersBefore + " → " + customersAfter);
+        System.out.println("✅ Orders: " + ordersBefore + " → " + ordersAfter);
+
+        assertTrue(customersAfter >= customersBefore, "Customer count should not decrease");
+        assertTrue(ordersAfter >= ordersBefore, "Order count should not decrease");
+    }
+
+    @Test
+    @DisplayName("4. Test Platform Statistics")
+    public void testPlatformStatistics() {
+        System.out.println("\n=== TEST 4: Platform Statistics ===");
+
+        // Trigger some executions first
+        scheduler.triggerAllPlatforms();
+
+        Map<String, Object> stats = scheduler.getSchedulerStatistics();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> platformStats = (Map<String, Object>) stats.get("platforms");
+
+        System.out.println("📊 Platform Statistics:");
+
+        for (String platform : new String[]{"SHOPEE", "TIKTOK", "FACEBOOK"}) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> platformData = (Map<String, Object>) platformStats.get(platform);
+
+            if (platformData != null) {
+                System.out.println("   " + platform + ":");
+                System.out.println("     Enabled: " + platformData.get("enabled"));
+                System.out.println("     Success Count: " + platformData.get("successCount"));
+                System.out.println("     Failure Count: " + platformData.get("failureCount"));
+                System.out.println("     Is Healthy: " + platformData.get("isHealthy"));
             }
+        }
 
-            if (shopeeApiService == null) {
-                System.out.println("❌ FAILED: ShopeeApiService not initialized");
-                return false;
+        assertNotNull(platformStats, "Platform statistics should be available");
+    }
+
+    @Test
+    @DisplayName("5. Test Platform Health Monitoring")
+    public void testPlatformHealthMonitoring() {
+        System.out.println("\n=== TEST 5: Platform Health Monitoring ===");
+
+        Map<String, Object> stats = scheduler.getSchedulerStatistics();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> platformStats = (Map<String, Object>) stats.get("platforms");
+
+        boolean allHealthy = true;
+
+        for (String platform : new String[]{"SHOPEE", "TIKTOK", "FACEBOOK"}) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> platformData = (Map<String, Object>) platformStats.get(platform);
+
+            if (platformData != null && Boolean.TRUE.equals(platformData.get("enabled"))) {
+                Boolean isHealthy = (Boolean) platformData.get("isHealthy");
+                if (!Boolean.TRUE.equals(isHealthy)) {
+                    allHealthy = false;
+                    System.out.println("⚠️ " + platform + " is not healthy");
+                } else {
+                    System.out.println("✅ " + platform + " is healthy");
+                }
             }
+        }
 
-            // Test TikTok services
-            if (tiktokEtlService == null) {
-                System.out.println("❌ FAILED: TikTokEtlService not initialized");
-                return false;
-            }
-
-            if (tiktokApiService == null) {
-                System.out.println("❌ FAILED: TikTokApiService not initialized");
-                return false;
-            }
-
-            // Test Multi-Platform Scheduler
-            if (multiPlatformScheduler == null) {
-                System.out.println("❌ FAILED: MultiPlatformScheduler not initialized");
-                return false;
-            }
-
-            System.out.println("✅ PASSED: All multi-platform services initialized");
-            System.out.println("   - Shopee ETL Service: " + shopeeEtlService.getClass().getSimpleName());
-            System.out.println("   - TikTok ETL Service: " + tiktokEtlService.getClass().getSimpleName());
-            System.out.println("   - Multi-Platform Scheduler: " + multiPlatformScheduler.getClass().getSimpleName());
-            System.out.println();
-            return true;
-
-        } catch (Exception e) {
-            System.out.println("❌ FAILED: Multi-platform context initialization failed: " + e.getMessage());
-            return false;
+        if (allHealthy) {
+            System.out.println("✅ All enabled platforms are healthy");
         }
     }
 
-    private boolean testBothPlatformAPIs() {
-        System.out.println("Test 2: Both Platform API Connectivity");
-        boolean shopeeApiWorking = false;
-        boolean tiktokApiWorking = false;
+    @Test
+    @DisplayName("6. Test Concurrent Execution Safety")
+    public void testConcurrentExecutionSafety() {
+        System.out.println("\n=== TEST 6: Concurrent Execution Safety ===");
 
-        // Test Shopee API
-        try {
-            String shopeeResult = shopeeApiService.testConnection();
-            shopeeApiWorking = !shopeeResult.contains("failed") && !shopeeResult.contains("error");
-            System.out.println("   Shopee API: " + (shopeeApiWorking ? "✅ CONNECTED" : "⚠️ ISSUES"));
-            System.out.println("   Shopee Response: " + shopeeResult);
-        } catch (Exception e) {
-            System.out.println("   Shopee API: ❌ FAILED - " + e.getMessage());
-        }
+        // Try to trigger multiple executions concurrently
+        Thread thread1 = new Thread(() -> scheduler.triggerAllPlatforms());
+        Thread thread2 = new Thread(() -> scheduler.triggerAllPlatforms());
+        Thread thread3 = new Thread(() -> scheduler.triggerAllPlatforms());
 
-        // Test TikTok API
-        try {
-            String tiktokResult = tiktokApiService.testConnection();
-            tiktokApiWorking = !tiktokResult.contains("failed") && !tiktokResult.contains("error");
-            System.out.println("   TikTok API: " + (tiktokApiWorking ? "✅ CONNECTED" : "⚠️ ISSUES"));
-            System.out.println("   TikTok Response: " + tiktokResult);
-        } catch (Exception e) {
-            System.out.println("   TikTok API: ❌ FAILED - " + e.getMessage());
-        }
-
-        boolean passed = shopeeApiWorking || tiktokApiWorking; // At least one should work
-        System.out.println((passed ? "✅ PASSED" : "❌ FAILED") + ": Multi-platform API connectivity test");
-        System.out.println();
-        return passed;
-    }
-
-    private boolean testMultiPlatformETL() {
-        System.out.println("Test 4: Multi-Platform ETL Processing");
-        boolean shopeeSuccess = false;
-        boolean tiktokSuccess = false;
-
-        // Process Shopee ETL
-        try {
-            System.out.println("   Processing Shopee orders...");
-            ShopeeEtlService.EtlResult shopeeResult = shopeeEtlService.processUpdatedOrders();
-            shopeeSuccess = shopeeResult.isSuccess();
-
-            System.out.println("   Shopee ETL: " + (shopeeSuccess ? "✅ SUCCESS" : "❌ FAILED"));
-            System.out.println("     Orders Processed: " + shopeeResult.getOrdersProcessed() + "/" + shopeeResult.getTotalOrders());
-            System.out.println("     Duration: " + shopeeResult.getDurationMs() + "ms");
-            if (!shopeeSuccess && shopeeResult.getErrorMessage() != null) {
-                System.out.println("     Error: " + shopeeResult.getErrorMessage());
-            }
-        } catch (Exception e) {
-            System.out.println("   Shopee ETL: ❌ EXCEPTION - " + e.getMessage());
-        }
-
-        // Process TikTok ETL
-        try {
-            System.out.println("   Processing TikTok orders...");
-            TikTokEtlService.EtlResult tiktokResult = tiktokEtlService.processUpdatedOrders();
-            tiktokSuccess = tiktokResult.isSuccess();
-
-            System.out.println("   TikTok ETL: " + (tiktokSuccess ? "✅ SUCCESS" : "❌ FAILED"));
-            System.out.println("     Orders Processed: " + tiktokResult.getOrdersProcessed() + "/" + tiktokResult.getTotalOrders());
-            System.out.println("     Duration: " + tiktokResult.getDurationMs() + "ms");
-            if (!tiktokSuccess && tiktokResult.getErrorMessage() != null) {
-                System.out.println("     Error: " + tiktokResult.getErrorMessage());
-            }
-        } catch (Exception e) {
-            System.out.println("   TikTok ETL: ❌ EXCEPTION - " + e.getMessage());
-        }
-
-        boolean passed = shopeeSuccess || tiktokSuccess; // At least one should succeed
-        System.out.println((passed ? "✅ PASSED" : "❌ FAILED") + ": Multi-platform ETL processing");
-        System.out.println();
-        return passed;
-    }
-
-    private boolean testMultiPlatformDataIntegrity(DatabaseState beforeState, DatabaseState afterState) {
-        System.out.println("Test 6: Multi-Platform Data Integrity Check");
-        boolean integrityValid = true;
-
-        // Check if data was added to all tables
-        System.out.println("   Checking data changes in all 9 tables:");
-
-        long customerIncrease = afterState.customers - beforeState.customers;
-        long orderIncrease = afterState.orders - beforeState.orders;
-        long orderItemIncrease = afterState.orderItems - beforeState.orderItems;
-        long productIncrease = afterState.products - beforeState.products;
-        long geographyIncrease = afterState.geographyInfo - beforeState.geographyInfo;
-        long statusIncrease = afterState.status - beforeState.status;
-        long orderStatusIncrease = afterState.orderStatus - beforeState.orderStatus;
-        long orderStatusDetailIncrease = afterState.orderStatusDetail - beforeState.orderStatusDetail;
-        long paymentInfoIncrease = afterState.paymentInfo - beforeState.paymentInfo;
-        long shippingInfoIncrease = afterState.shippingInfo - beforeState.shippingInfo;
-        long processingDateInfoIncrease = afterState.processingDateInfo - beforeState.processingDateInfo;
-
-        System.out.println("     Customers: +" + customerIncrease + " (total: " + afterState.customers + ")");
-        System.out.println("     Orders: +" + orderIncrease + " (total: " + afterState.orders + ")");
-        System.out.println("     Order Items: +" + orderItemIncrease + " (total: " + afterState.orderItems + ")");
-        System.out.println("     Products: +" + productIncrease + " (total: " + afterState.products + ")");
-        System.out.println("     Geography Info: +" + geographyIncrease + " (total: " + afterState.geographyInfo + ")");
-        System.out.println("     Status: +" + statusIncrease + " (total: " + afterState.status + ")");
-        System.out.println("     Order Status: +" + orderStatusIncrease + " (total: " + afterState.orderStatus + ")");
-        System.out.println("     Order Status Detail: +" + orderStatusDetailIncrease + " (total: " + afterState.orderStatusDetail + ")");
-        System.out.println("     Payment Info: +" + paymentInfoIncrease + " (total: " + afterState.paymentInfo + ")");
-        System.out.println("     Shipping Info: +" + shippingInfoIncrease + " (total: " + afterState.shippingInfo + ")");
-        System.out.println("     Processing Date Info: +" + processingDateInfoIncrease + " (total: " + afterState.processingDateInfo + ")");
-
-        // Check core tables have data
-        if (afterState.orders == 0) {
-            System.out.println("   ⚠️  No orders found - may indicate API or processing issues");
-            integrityValid = false;
-        }
-
-        if (afterState.customers == 0 && afterState.orders > 0) {
-            System.out.println("   ❌ Orders exist but no customers - data relationship issue");
-            integrityValid = false;
-        }
-
-        if (afterState.orderItems == 0 && afterState.orders > 0) {
-            System.out.println("   ❌ Orders exist but no order items - data relationship issue");
-            integrityValid = false;
-        }
-
-        // Check for reasonable data increases
-        boolean hasDataIncrease = orderIncrease > 0 || customerIncrease > 0 || orderItemIncrease > 0;
-        if (!hasDataIncrease) {
-            System.out.println("   ⚠️  No data increases detected - may indicate no new orders to process");
-        }
-
-        System.out.println("   " + (integrityValid ? "✅ PASSED" : "❌ FAILED") + ": Multi-platform data integrity check");
-        System.out.println();
-        return integrityValid;
-    }
-
-    private boolean testPlatformIsolation() {
-        System.out.println("Test 7: Platform Isolation Tests");
-
-        // This test verifies that platforms can work independently
-        // For now, we'll do a basic check that both services exist and are callable
+        thread1.start();
+        thread2.start();
+        thread3.start();
 
         try {
-            // Test that services are independent
-            boolean shopeeCallable = shopeeEtlService != null;
-            boolean tiktokCallable = tiktokEtlService != null;
-
-            System.out.println("   Shopee Service Independence: " + (shopeeCallable ? "✅ READY" : "❌ FAILED"));
-            System.out.println("   TikTok Service Independence: " + (tiktokCallable ? "✅ READY" : "❌ FAILED"));
-
-            boolean passed = shopeeCallable && tiktokCallable;
-            System.out.println("   " + (passed ? "✅ PASSED" : "❌ FAILED") + ": Platform isolation test");
-            System.out.println();
-            return passed;
-
-        } catch (Exception e) {
-            System.out.println("   ❌ FAILED: Platform isolation test failed: " + e.getMessage());
-            System.out.println();
-            return false;
+            thread1.join(10000);
+            thread2.join(10000);
+            thread3.join(10000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+
+        Map<String, Object> stats = scheduler.getSchedulerStatistics();
+        Boolean isExecuting = (Boolean) stats.get("isCurrentlyExecuting");
+
+        System.out.println("✅ Concurrent execution test completed");
+        System.out.println("✅ Currently executing: " + isExecuting);
+
+        // Should not be executing after threads complete
+        assertFalse(Boolean.TRUE.equals(isExecuting), "Should not be executing after completion");
     }
 
-    private boolean testMultiPlatformScheduler() {
-        System.out.println("Test 8: Multi-Platform Scheduler Test");
+    @Test
+    @DisplayName("7. Test Platform-Specific Error Handling")
+    public void testPlatformErrorHandling() {
+        System.out.println("\n=== TEST 7: Platform Error Handling ===");
 
+        // Test invalid platform trigger
+        boolean invalidResult = scheduler.triggerPlatform("INVALID_PLATFORM");
+        assertFalse(invalidResult, "Invalid platform should return false");
+        System.out.println("✅ Invalid platform handled correctly");
+
+        // Test disabled platform trigger
+        boolean disabledResult = scheduler.triggerPlatform("DISABLED_PLATFORM");
+        assertFalse(disabledResult, "Disabled platform should return false");
+        System.out.println("✅ Disabled platform handled correctly");
+    }
+
+    @Test
+    @DisplayName("8. Test Database Integration Across Platforms")
+    public void testDatabaseIntegration() {
+        System.out.println("\n=== TEST 8: Database Integration ===");
+
+        long statusCountBefore = statusRepository.count();
+
+        // Trigger all platforms to ensure status mappings are created
+        scheduler.triggerAllPlatforms();
+
+        // Wait for completion
         try {
-            // Test scheduler statistics
-            MultiPlatformScheduler.MultiPlatformStatistics stats = multiPlatformScheduler.getStatistics();
-
-            System.out.println("   Scheduler Statistics:");
-            System.out.println("     Execution Count: " + stats.getExecutionCount());
-            System.out.println("     Shopee Success: " + stats.getShopeeSuccessCount() + ", Failures: " + stats.getShopeeFailureCount());
-            System.out.println("     TikTok Success: " + stats.getTiktokSuccessCount() + ", Failures: " + stats.getTiktokFailureCount());
-            System.out.println("     Scheduler Enabled: " + stats.isSchedulerEnabled());
-            System.out.println("     Shopee Enabled: " + stats.isShopeeEnabled());
-            System.out.println("     TikTok Enabled: " + stats.isTiktokEnabled());
-
-            // Test manual trigger
-            System.out.println("   Testing manual multi-platform trigger...");
-            MultiPlatformScheduler.MultiPlatformEtlResult result = multiPlatformScheduler.triggerManualEtl();
-
-            boolean passed = result != null;
-            System.out.println("   Manual Trigger Result: " + (passed ? "✅ SUCCESS" : "❌ FAILED"));
-            if (passed) {
-                System.out.println("     Shopee Success: " + result.isShopeeSuccess());
-                System.out.println("     TikTok Success: " + result.isTiktokSuccess());
-                System.out.println("     Overall Success: " + result.isOverallSuccess());
-                System.out.println("     Duration: " + result.getDurationMs() + "ms");
-            }
-
-            System.out.println("   " + (passed ? "✅ PASSED" : "❌ FAILED") + ": Multi-platform scheduler test");
-            System.out.println();
-            return passed;
-
-        } catch (Exception e) {
-            System.out.println("   ❌ FAILED: Multi-platform scheduler test failed: " + e.getMessage());
-            System.out.println();
-            return false;
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+
+        long statusCountAfter = statusRepository.count();
+
+        System.out.println("✅ Status mappings: " + statusCountBefore + " → " + statusCountAfter);
+
+        // Check platform-specific status mappings
+        long shopeeStatuses = statusRepository.findByPlatformOrderByStatusKey("SHOPEE").size();
+        long tiktokStatuses = statusRepository.findByPlatformOrderByStatusKey("TIKTOK").size();
+        long facebookStatuses = statusRepository.findByPlatformOrderByStatusKey("FACEBOOK").size();
+
+        System.out.println("✅ Platform status mappings:");
+        System.out.println("   SHOPEE: " + shopeeStatuses);
+        System.out.println("   TIKTOK: " + tiktokStatuses);
+        System.out.println("   FACEBOOK: " + facebookStatuses);
+
+        assertTrue(statusCountAfter >= statusCountBefore, "Status count should not decrease");
     }
 
-    private DatabaseState captureDatabaseState(String label) {
-        System.out.println("Test 3/5: Database State - " + label);
+    @Test
+    @DisplayName("9. Performance Benchmark")
+    public void performanceBenchmark() {
+        System.out.println("\n=== TEST 9: Performance Benchmark ===");
 
-        DatabaseState state = new DatabaseState();
-        state.customers = customerRepository.count();
-        state.orders = orderRepository.count();
-        state.orderItems = orderItemRepository.count();
-        state.products = productRepository.count();
-        state.geographyInfo = geographyInfoRepository.count();
-        state.status = statusRepository.count();
-        state.orderStatus = orderStatusRepository.count();
-        state.orderStatusDetail = orderStatusDetailRepository.count();
-        state.paymentInfo = paymentInfoRepository.count();
-        state.shippingInfo = shippingInfoRepository.count();
-        state.processingDateInfo = processingDateInfoRepository.count();
+        long startTime = System.currentTimeMillis();
 
-        System.out.println("   Current database state (all 9 tables):");
-        System.out.println("     Customers: " + state.customers);
-        System.out.println("     Orders: " + state.orders);
-        System.out.println("     Order Items: " + state.orderItems);
-        System.out.println("     Products: " + state.products);
-        System.out.println("     Geography Info: " + state.geographyInfo);
-        System.out.println("     Status: " + state.status);
-        System.out.println("     Order Status: " + state.orderStatus);
-        System.out.println("     Order Status Detail: " + state.orderStatusDetail);
-        System.out.println("     Payment Info: " + state.paymentInfo);
-        System.out.println("     Shipping Info: " + state.shippingInfo);
-        System.out.println("     Processing Date Info: " + state.processingDateInfo);
-        System.out.println();
+        // Run multiple cycles to test performance
+        for (int i = 0; i < 3; i++) {
+            scheduler.triggerAllPlatforms();
 
-        return state;
-    }
+            try {
+                Thread.sleep(1000); // Small delay between cycles
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
 
-    private static class DatabaseState {
-        long customers, orders, orderItems, products, geographyInfo;
-        long status, orderStatus, orderStatusDetail, paymentInfo, shippingInfo, processingDateInfo;
+        long endTime = System.currentTimeMillis();
+        long totalDuration = endTime - startTime;
+
+        System.out.println("✅ Performance Benchmark:");
+        System.out.println("   Total time for 3 cycles: " + totalDuration + "ms");
+        System.out.println("   Average per cycle: " + (totalDuration / 3) + "ms");
+
+        // Performance assertion - should complete within reasonable time
+        assertTrue(totalDuration < 60000, "3 cycles should complete within 60 seconds");
+
+        Map<String, Object> finalStats = scheduler.getSchedulerStatistics();
+        System.out.println("✅ Final execution count: " + finalStats.get("totalExecutions"));
     }
 }

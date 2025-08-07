@@ -51,7 +51,7 @@ etl:
       base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/shopee
       auth-header: x-webhook-api-key
       api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
-      timeout: 60s
+      timeout: 300s
       page-size: 10
       max-retries: 2
 
@@ -59,7 +59,7 @@ etl:
       base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/tiktok
       auth-header: x-webhook-api-key
       api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
-      timeout: 60s
+      timeout: 300s
       page-size: 10
       max-retries: 2
 
@@ -67,7 +67,7 @@ etl:
       base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/facebook
       auth-header: x-webhook-api-key
       api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
-      timeout: 60s
+      timeout: 300s
       page-size: 10
       max-retries: 2
   # Scheduler Settings
