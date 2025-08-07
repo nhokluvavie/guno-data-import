@@ -342,160 +342,303 @@ public class FacebookEtlService {
     private void processPaymentInfoUpsert(FacebookOrderDto orderDto) {
         try {
             String orderId = orderDto.getOrderId();
+            log.debug("Processing payment info for order: {}", orderId);
 
-            // ✅ CORRECT: PaymentInfoRepository extends JpaRepository<PaymentInfo, String>
-            Optional<PaymentInfo> existing = paymentInfoRepository.findById(orderId);
+            // ✅ Check if payment info already exists for this order
+            Optional<PaymentInfo> existingPaymentInfo = paymentInfoRepository.findById(orderId);
 
-            if (existing.isPresent()) {
+            if (existingPaymentInfo.isPresent()) {
                 // UPDATE existing payment info
-                PaymentInfo paymentInfo = existing.get();
-                updatePaymentInfo(paymentInfo, orderDto);
-                paymentInfoRepository.save(paymentInfo);
-                log.debug("✅ Facebook payment info updated for order: {}", orderId);
+                PaymentInfo existing = existingPaymentInfo.get();
+                PaymentInfo newPaymentInfo = createPaymentInfoEntity(orderDto);
+
+                if (newPaymentInfo != null) {
+                    // ✅ Direct field updates - same pattern as project
+                    existing.setPaymentMethod(newPaymentInfo.getPaymentMethod());
+                    existing.setPaymentCategory(newPaymentInfo.getPaymentCategory());
+                    existing.setPaymentProvider(newPaymentInfo.getPaymentProvider());
+                    existing.setIsCod(newPaymentInfo.getIsCod());
+                    existing.setIsPrepaid(newPaymentInfo.getIsPrepaid());
+                    existing.setIsInstallment(newPaymentInfo.getIsInstallment());
+                    existing.setInstallmentMonths(newPaymentInfo.getInstallmentMonths());
+                    existing.setSupportsRefund(newPaymentInfo.getSupportsRefund());
+                    existing.setSupportsPartialRefund(newPaymentInfo.getSupportsPartialRefund());
+                    existing.setRefundProcessingDays(newPaymentInfo.getRefundProcessingDays());
+                    existing.setRiskLevel(newPaymentInfo.getRiskLevel());
+                    existing.setRequiresVerification(newPaymentInfo.getRequiresVerification());
+                    existing.setFraudScore(newPaymentInfo.getFraudScore());
+                    existing.setTransactionFeeRate(newPaymentInfo.getTransactionFeeRate());
+                    existing.setProcessingFee(newPaymentInfo.getProcessingFee());
+                    existing.setPaymentProcessingTimeMinutes(newPaymentInfo.getPaymentProcessingTimeMinutes());
+                    existing.setSettlementDays(newPaymentInfo.getSettlementDays());
+
+                    paymentInfoRepository.save(existing);
+                    log.debug("Updated payment info for order: {}", orderId);
+                } else {
+                    log.warn("Failed to create new payment info entity for order: {}", orderId);
+                }
             } else {
                 // INSERT new payment info
                 PaymentInfo newPaymentInfo = createPaymentInfoEntity(orderDto);
-                paymentInfoRepository.save(newPaymentInfo);
-                log.debug("✅ Facebook payment info created for order: {}", orderId);
+                if (newPaymentInfo != null) {
+                    paymentInfoRepository.save(newPaymentInfo);
+                    log.debug("Created new payment info for order: {}", orderId);
+                } else {
+                    log.warn("Failed to create payment info entity for order: {}", orderId);
+                }
             }
 
         } catch (Exception e) {
-            log.error("❌ Error processing Facebook payment info for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage(), e);
-            // Don't throw - continue with other tables
+            // Individual table error isolation - log error and continue
+            log.error("Failed to process payment info for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            // Don't throw exception - continue with other tables
         }
     }
 
     private void processShippingInfoUpsert(FacebookOrderDto orderDto) {
         try {
             String orderId = orderDto.getOrderId();
+            log.debug("Processing shipping info for order: {}", orderId);
 
-            // ✅ CORRECT: ShippingInfoRepository extends JpaRepository<ShippingInfo, String>
-            Optional<ShippingInfo> existing = shippingInfoRepository.findById(orderId);
+            // Check if shipping info already exists for this order
+            Optional<ShippingInfo> existingShippingInfo = shippingInfoRepository.findById(orderId);
 
-            if (existing.isPresent()) {
-                // UPDATE existing shipping info
-                ShippingInfo shippingInfo = existing.get();
-                updateShippingInfo(shippingInfo, orderDto);
-                shippingInfoRepository.save(shippingInfo);
-                log.debug("✅ Facebook shipping info updated for order: {}", orderId);
+            if (existingShippingInfo.isPresent()) {
+                // UPDATE existing shipping info - direct field updates
+                ShippingInfo existing = existingShippingInfo.get();
+                ShippingInfo newShippingInfo = createShippingInfoEntity(orderDto);
+
+                if (newShippingInfo != null) {
+                    // ✅ Direct field updates - same pattern as ShopeeEtlService
+                    existing.setProviderName(newShippingInfo.getProviderName());
+                    existing.setProviderType(newShippingInfo.getProviderType());
+                    existing.setProviderTier(newShippingInfo.getProviderTier());
+                    existing.setServiceType(newShippingInfo.getServiceType());
+                    existing.setServiceTier(newShippingInfo.getServiceTier());
+                    existing.setDeliveryCommitment(newShippingInfo.getDeliveryCommitment());
+                    existing.setShippingMethod(newShippingInfo.getShippingMethod());
+                    existing.setPickupType(newShippingInfo.getPickupType());
+                    existing.setDeliveryType(newShippingInfo.getDeliveryType());
+                    existing.setBaseFee(newShippingInfo.getBaseFee());
+                    existing.setWeightBasedFee(newShippingInfo.getWeightBasedFee());
+                    existing.setDistanceBasedFee(newShippingInfo.getDistanceBasedFee());
+                    existing.setCodFee(newShippingInfo.getCodFee());
+                    existing.setInsuranceFee(newShippingInfo.getInsuranceFee());
+                    existing.setSupportsCod(newShippingInfo.getSupportsCod());
+                    existing.setSupportsInsurance(newShippingInfo.getSupportsInsurance());
+                    existing.setSupportsFragile(newShippingInfo.getSupportsFragile());
+                    existing.setSupportsRefrigerated(newShippingInfo.getSupportsRefrigerated());
+                    existing.setProvidesTracking(newShippingInfo.getProvidesTracking());
+                    existing.setProvidesSmsUpdates(newShippingInfo.getProvidesSmsUpdates());
+                    existing.setAverageDeliveryDays(newShippingInfo.getAverageDeliveryDays());
+                    existing.setOnTimeDeliveryRate(newShippingInfo.getOnTimeDeliveryRate());
+                    existing.setSuccessDeliveryRate(newShippingInfo.getSuccessDeliveryRate());
+                    existing.setDamageRate(newShippingInfo.getDamageRate());
+                    existing.setCoverageProvinces(newShippingInfo.getCoverageProvinces());
+                    existing.setCoverageNationwide(newShippingInfo.getCoverageNationwide());
+                    existing.setCoverageInternational(newShippingInfo.getCoverageInternational());
+
+                    shippingInfoRepository.save(existing);
+                    log.debug("Updated shipping info for order: {}", orderId);
+                } else {
+                    log.warn("Failed to create new shipping info entity for order: {}", orderId);
+                }
             } else {
                 // INSERT new shipping info
                 ShippingInfo newShippingInfo = createShippingInfoEntity(orderDto);
-                shippingInfoRepository.save(newShippingInfo);
-                log.debug("✅ Facebook shipping info created for order: {}", orderId);
+                if (newShippingInfo != null) {
+                    shippingInfoRepository.save(newShippingInfo);
+                    log.debug("Created new shipping info for order: {}", orderId);
+                } else {
+                    log.warn("Failed to create shipping info entity for order: {}", orderId);
+                }
             }
 
         } catch (Exception e) {
-            log.error("❌ Error processing Facebook shipping info for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage(), e);
-            // Don't throw - continue with other tables
+            // Individual table error isolation - log error and continue
+            log.error("Failed to process shipping info for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            // Don't throw exception - continue with other tables
         }
     }
 
     private void processStatusInfoUpsert(FacebookOrderDto orderDto) {
         try {
-            Integer facebookStatus = orderDto.getStatus();
-            String platformStatusCode = facebookStatus.toString();
+            String orderId = orderDto.getOrderId();
+            log.debug("Processing status info for order: {}", orderId);
 
-            // ✅ CORRECT: Using exact repository method from StatusRepository
+            // ✅ Map Facebook integer status to standard status
+            Integer facebookStatus = orderDto.getStatus(); // Facebook uses Integer: 1, 2, 3, 9
+            String facebookStatusString = String.valueOf(facebookStatus); // Convert to string for storage
+            String standardStatus = mapFacebookStatusToStandard(facebookStatus);
+
+            // ✅ Check if status already exists for this platform + status combination
             Optional<Status> existingStatus = statusRepository.findByPlatformAndPlatformStatusCode(
-                    platformName, platformStatusCode);
+                    platformName, facebookStatusString);
 
             if (existingStatus.isPresent()) {
-                log.debug("✅ Facebook status {} already exists", platformStatusCode);
-                return; // Status mapping rarely changes
+                // UPDATE existing status if needed
+                Status existing = existingStatus.get();
+                existing.setStandardStatusName(standardStatus);
+                existing.setStatusCategory(determineStatusCategory(standardStatus));
+
+                statusRepository.save(existing);
+                log.debug("Updated status mapping for platform {} status {}", platformName, facebookStatusString);
             } else {
-                // INSERT new status mapping
+                // INSERT new status mapping - Auto-create when not found
+                log.info("Creating new Facebook status mapping for platform {} status {}", platformName, facebookStatusString);
+
                 Status newStatus = createStatusEntity(orderDto);
-                statusRepository.save(newStatus);
-                log.debug("✅ Facebook status {} created", platformStatusCode);
+                if (newStatus != null) {
+                    statusRepository.save(newStatus);
+                    log.info("✅ Created Facebook status mapping: {} -> {}", facebookStatusString, standardStatus);
+                } else {
+                    log.warn("Failed to create status entity for order: {}", orderId);
+                }
             }
 
         } catch (Exception e) {
-            log.error("❌ Error processing Facebook status info for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage(), e);
-            // Don't throw - continue with other tables
+            // Individual table error isolation - log error and continue
+            log.error("Failed to process status info for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            // Don't throw exception - continue with other tables
         }
     }
 
     private void processOrderStatusTransition(FacebookOrderDto orderDto) {
         try {
             String orderId = orderDto.getOrderId();
-            Integer facebookStatus = orderDto.getStatus();
+            log.debug("Processing order status transition for order: {}", orderId);
 
-            // Get status key
+            // ✅ Get Facebook status and find corresponding Status entity
+            Integer facebookStatus = orderDto.getStatus();
+            String facebookStatusString = String.valueOf(facebookStatus);
+
+            // Find status entity to get statusKey
             Optional<Status> statusEntity = statusRepository.findByPlatformAndPlatformStatusCode(
-                    platformName, facebookStatus.toString());
+                    platformName, facebookStatusString);
 
             if (!statusEntity.isPresent()) {
-                log.warn("⚠️ Status entity not found for Facebook status {}", facebookStatus);
+                log.warn("Status entity not found for platform {} status {}, skipping status transition",
+                        platformName, facebookStatusString);
                 return;
             }
 
             Long statusKey = statusEntity.get().getStatusKey();
 
-            // ✅ CORRECT: Using exact repository method from OrderStatusRepository
-            Optional<OrderStatus> existingTransition = orderStatusRepository.findByStatusKeyAndOrderId(
+            // ✅ Check if order status transition already exists (composite key: statusKey + orderId)
+            Optional<OrderStatus> existingOrderStatus = orderStatusRepository.findByStatusKeyAndOrderId(
                     statusKey, orderId);
 
-            if (existingTransition.isPresent()) {
-                // UPDATE existing transition
-                OrderStatus transition = existingTransition.get();
-                updateOrderStatusTransition(transition, orderDto);
-                orderStatusRepository.save(transition);
-                log.debug("✅ Facebook status transition updated for order: {}", orderId);
+            if (existingOrderStatus.isPresent()) {
+                // UPDATE existing order status transition
+                OrderStatus existing = existingOrderStatus.get();
+                OrderStatus newOrderStatus = createOrderStatusEntity(orderDto, statusKey);
+
+                if (newOrderStatus != null) {
+                    // ✅ Direct field updates - same pattern as project
+                    existing.setTransitionTimestamp(newOrderStatus.getTransitionTimestamp());
+                    existing.setDurationInPreviousStatusHours(newOrderStatus.getDurationInPreviousStatusHours());
+                    existing.setTransitionReason(newOrderStatus.getTransitionReason());
+                    existing.setTransitionTrigger(newOrderStatus.getTransitionTrigger());
+                    existing.setChangedBy(newOrderStatus.getChangedBy());
+                    existing.setIsOnTimeTransition(newOrderStatus.getIsOnTimeTransition());
+                    existing.setIsExpectedTransition(newOrderStatus.getIsExpectedTransition());
+
+                    orderStatusRepository.save(existing);
+                    log.debug("Updated status transition for order: {} to status: {}", orderId, facebookStatusString);
+                } else {
+                    log.warn("Failed to create new status transition entity for order: {}", orderId);
+                }
             } else {
-                // INSERT new transition
-                OrderStatus newTransition = createOrderStatusEntity(orderDto, statusKey);
-                orderStatusRepository.save(newTransition);
-                log.debug("✅ Facebook status transition created for order: {}", orderId);
+                // INSERT new status transition
+                OrderStatus newOrderStatus = createOrderStatusEntity(orderDto, statusKey);
+                if (newOrderStatus != null) {
+                    orderStatusRepository.save(newOrderStatus);
+                    log.debug("Created new status transition for order: {} to status: {}", orderId, facebookStatusString);
+                } else {
+                    log.warn("Failed to create status transition entity for order: {}", orderId);
+                }
             }
 
         } catch (Exception e) {
-            log.error("❌ Error processing Facebook status transition for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage(), e);
-            // Don't throw - continue with other tables
+            // Individual table error isolation - log error and continue
+            log.error("Failed to process order status transition for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            // Don't throw exception - continue with other tables
         }
     }
 
     private void processOrderStatusDetailUpsert(FacebookOrderDto orderDto) {
         try {
             String orderId = orderDto.getOrderId();
-            Integer facebookStatus = orderDto.getStatus();
+            log.debug("Processing order status detail for order: {}", orderId);
 
-            // Get status key
+            // ✅ Get Facebook status and find corresponding Status entity
+            Integer facebookStatus = orderDto.getStatus();
+            String facebookStatusString = String.valueOf(facebookStatus);
+
+            // Find status entity to get statusKey
             Optional<Status> statusEntity = statusRepository.findByPlatformAndPlatformStatusCode(
-                    platformName, facebookStatus.toString());
+                    platformName, facebookStatusString);
 
             if (!statusEntity.isPresent()) {
-                log.warn("⚠️ Status entity not found for Facebook status {}", facebookStatus);
+                log.warn("Status entity not found for platform {} status {}, skipping status detail",
+                        platformName, facebookStatusString);
                 return;
             }
 
             Long statusKey = statusEntity.get().getStatusKey();
 
-            // ✅ CORRECT: Using exact repository method from OrderStatusDetailRepository
-            Optional<OrderStatusDetail> existingDetail = orderStatusDetailRepository.findByStatusKeyAndOrderId(
+            // ✅ Check if order status detail already exists (composite key: statusKey + orderId)
+            Optional<OrderStatusDetail> existingStatusDetail = orderStatusDetailRepository.findByStatusKeyAndOrderId(
                     statusKey, orderId);
 
-            if (existingDetail.isPresent()) {
-                // UPDATE existing status detail
-                OrderStatusDetail detail = existingDetail.get();
-                updateOrderStatusDetail(detail, orderDto);
-                orderStatusDetailRepository.save(detail);
-                log.debug("✅ Facebook status detail updated for order: {}", orderId);
+            if (existingStatusDetail.isPresent()) {
+                // UPDATE existing order status detail
+                OrderStatusDetail existing = existingStatusDetail.get();
+                OrderStatusDetail newStatusDetail = createOrderStatusDetailEntity(orderDto, statusKey);
+
+                if (newStatusDetail != null) {
+                    // ✅ Direct field updates - same pattern as project
+                    existing.setIsActiveOrder(newStatusDetail.getIsActiveOrder());
+                    existing.setIsCompletedOrder(newStatusDetail.getIsCompletedOrder());
+                    existing.setIsRevenueRecognized(newStatusDetail.getIsRevenueRecognized());
+                    existing.setIsRefundable(newStatusDetail.getIsRefundable());
+                    existing.setIsCancellable(newStatusDetail.getIsCancellable());
+                    existing.setIsTrackable(newStatusDetail.getIsTrackable());
+                    existing.setNextPossibleStatuses(newStatusDetail.getNextPossibleStatuses());
+                    existing.setAutoTransitionHours(newStatusDetail.getAutoTransitionHours());
+                    existing.setRequiresManualAction(newStatusDetail.getRequiresManualAction());
+                    existing.setStatusColor(newStatusDetail.getStatusColor());
+                    existing.setStatusIcon(newStatusDetail.getStatusIcon());
+                    existing.setCustomerVisible(newStatusDetail.getCustomerVisible());
+                    existing.setCustomerDescription(newStatusDetail.getCustomerDescription());
+                    existing.setAverageDurationHours(newStatusDetail.getAverageDurationHours());
+                    existing.setSuccessRate(newStatusDetail.getSuccessRate());
+
+                    orderStatusDetailRepository.save(existing);
+                    log.debug("Updated status detail for order: {} status: {}", orderId, facebookStatusString);
+                } else {
+                    log.warn("Failed to create new status detail entity for order: {}", orderId);
+                }
             } else {
                 // INSERT new status detail
-                OrderStatusDetail newDetail = createOrderStatusDetailEntity(orderDto, statusKey);
-                orderStatusDetailRepository.save(newDetail);
-                log.debug("✅ Facebook status detail created for order: {}", orderId);
+                OrderStatusDetail newStatusDetail = createOrderStatusDetailEntity(orderDto, statusKey);
+                if (newStatusDetail != null) {
+                    orderStatusDetailRepository.save(newStatusDetail);
+                    log.debug("Created new status detail for order: {} status: {}", orderId, facebookStatusString);
+                } else {
+                    log.warn("Failed to create status detail entity for order: {}", orderId);
+                }
             }
 
         } catch (Exception e) {
-            log.error("❌ Error processing Facebook status detail for order {}: {}",
-                    orderDto.getOrderId(), e.getMessage(), e);
-            // Don't throw - continue with other tables
+            // Individual table error isolation - log error and continue
+            log.error("Failed to process order status detail for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            // Don't throw exception - continue with other tables
         }
     }
 
@@ -782,16 +925,6 @@ public class FacebookEtlService {
         }
     }
 
-    private String calculatePriceRange(FacebookItemDto itemDto) {
-        if (itemDto.getRetailPrice() == null) return "UNKNOWN";
-
-        double price = itemDto.getRetailPrice().doubleValue();
-        if (price < 100000) return "UNDER_100K";
-        else if (price < 500000) return "100K_500K";
-        else if (price < 1000000) return "500K_1M";
-        else return "OVER_1M";
-    }
-
     private GeographyInfo createNewGeographyInfo(FacebookOrderDto orderDto) {
         FacebookCustomerDto customer = orderDto.getData().getCustomer();
 
@@ -957,36 +1090,69 @@ public class FacebookEtlService {
     }
 
     private PaymentInfo createPaymentInfoEntity(FacebookOrderDto orderDto) {
-        String orderId = orderDto.getOrderId();
-        Double codAmount = orderDto.getData().getCod() != null ? orderDto.getData().getCod().doubleValue() : 0.0;
+        try {
+            String orderId = orderDto.getOrderId();
+            FacebookOrderDto.FacebookOrderData data = orderDto.getData();
 
-        // ✅ CORRECT: Using actual PaymentInfo entity fields from project
-        return PaymentInfo.builder()
-                .orderId(orderId)
-                .paymentKey(0L) // Let database generate
-                .paymentMethod("COD") // Facebook orders typically COD
-                .paymentCategory("CASH_ON_DELIVERY")
-                .paymentProvider("FACEBOOK")
-                .isCod(true)
-                .isPrepaid(false)
-                .isInstallment(false)
-                .installmentMonths(0)
-                .supportsRefund(true)
-                .supportsPartialRefund(true)
-                .refundProcessingDays(7) // Standard refund time
-                .riskLevel("LOW")
-                .requiresVerification(false)
-                .fraudScore(0.1) // Low fraud score for COD
-                .transactionFeeRate(0.0) // No fee for COD
-                .processingFee(0.0)
-                .paymentProcessingTimeMinutes(0) // Instant for COD
-                .settlementDays(1) // Next day settlement
-                .build();
-    }
+            // ✅ Direct mapping from Facebook API - no calculations
 
-    private void updatePaymentInfo(PaymentInfo paymentInfo, FacebookOrderDto orderDto) {
-        // Payment info rarely changes
-        log.debug("Payment info already exists for Facebook order: {}", orderDto.getOrderId());
+            // Payment method detection - Facebook primarily uses COD
+            Boolean isCod = data.getCod() != null && data.getCod() > 0;
+            String paymentMethod = isCod ? "COD" : "UNKNOWN"; // Direct from COD existence
+            String paymentCategory = isCod ? "CASH_ON_DELIVERY" : "OTHER"; // Simple mapping
+            String paymentProvider = "FACEBOOK_PAYMENTS"; // Default provider
+
+            // ✅ Payment characteristics - simple defaults
+            Boolean isPrepaid = !isCod; // Opposite of COD
+            Boolean isInstallment = false; // Facebook doesn't support installment typically
+            Integer installmentMonths = 0; // No installment
+
+            // ✅ Refund capabilities - Facebook COD defaults
+            Boolean supportsRefund = isCod; // COD supports refund
+            Boolean supportsPartialRefund = isCod; // COD supports partial refund
+            Integer refundProcessingDays = isCod ? 7 : 0; // 7 days for COD
+
+            // ✅ Risk assessment - simple defaults
+            String riskLevel = "LOW"; // Default low risk for Facebook
+            Boolean requiresVerification = false; // Default no verification needed
+            Double fraudScore = 0.1; // Default low fraud score
+
+            // ✅ Fee structure - direct from API or defaults
+            Double transactionFeeRate = data.getPartnerFee() != null ? 0.03 : 0.0; // 3% if partner fee exists
+            Double processingFee = data.getPartnerFee() != null ? data.getPartnerFee().doubleValue() : 0.0;
+            Integer paymentProcessingTimeMinutes = 5; // Default 5 minutes
+            Integer settlementDays = isCod ? 1 : 0; // COD settles next day
+
+            // ✅ Generate payment key - simple approach
+            Long paymentKey = Math.abs(orderId.hashCode()) % 1000000L;
+
+            return PaymentInfo.builder()
+                    .orderId(orderId)
+                    .paymentKey(paymentKey)
+                    .paymentMethod(paymentMethod)
+                    .paymentCategory(paymentCategory)
+                    .paymentProvider(paymentProvider)
+                    .isCod(isCod)
+                    .isPrepaid(isPrepaid)
+                    .isInstallment(isInstallment)
+                    .installmentMonths(installmentMonths)
+                    .supportsRefund(supportsRefund)
+                    .supportsPartialRefund(supportsPartialRefund)
+                    .refundProcessingDays(refundProcessingDays)
+                    .riskLevel(riskLevel)
+                    .requiresVerification(requiresVerification)
+                    .fraudScore(fraudScore)
+                    .transactionFeeRate(transactionFeeRate)
+                    .processingFee(processingFee)
+                    .paymentProcessingTimeMinutes(paymentProcessingTimeMinutes)
+                    .settlementDays(settlementDays)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error creating PaymentInfo entity for Facebook order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            return null;
+        }
     }
 
     private ShippingInfo createShippingInfoEntity(FacebookOrderDto orderDto) {
@@ -1081,209 +1247,115 @@ public class FacebookEtlService {
         }
     }
 
-    // updateShippingInfo method for FacebookEtlService
-// Vị trí: Trong FacebookEtlService.java, thêm method này
-
-    private void updateShippingInfo(ShippingInfo existing, ShippingInfo newShippingInfo) {
+    private OrderStatus createOrderStatusEntity(FacebookOrderDto orderDto, Long statusKey) {
         try {
-            // ✅ Update provider information - Facebook logistics có thể thay đổi
-            if (newShippingInfo.getProviderName() != null) {
-                existing.setProviderName(newShippingInfo.getProviderName());
-            }
-            if (newShippingInfo.getProviderType() != null) {
-                existing.setProviderType(newShippingInfo.getProviderType());
-            }
-            if (newShippingInfo.getProviderTier() != null) {
-                existing.setProviderTier(newShippingInfo.getProviderTier());
-            }
+            String orderId = orderDto.getOrderId();
+            Integer facebookStatus = orderDto.getStatus();
 
-            // ✅ Update service information - Service level có thể upgrade
-            if (newShippingInfo.getServiceType() != null) {
-                existing.setServiceType(newShippingInfo.getServiceType());
-            }
-            if (newShippingInfo.getServiceTier() != null) {
-                existing.setServiceTier(newShippingInfo.getServiceTier());
-            }
-            if (newShippingInfo.getDeliveryCommitment() != null) {
-                existing.setDeliveryCommitment(newShippingInfo.getDeliveryCommitment());
-            }
-            if (newShippingInfo.getShippingMethod() != null) {
-                existing.setShippingMethod(newShippingInfo.getShippingMethod());
-            }
-            if (newShippingInfo.getPickupType() != null) {
-                existing.setPickupType(newShippingInfo.getPickupType());
-            }
-            if (newShippingInfo.getDeliveryType() != null) {
-                existing.setDeliveryType(newShippingInfo.getDeliveryType());
-            }
+            // ✅ Direct mapping from Facebook API - no calculations
+            String updatedAtString = orderDto.getData().getUpdatedAt(); // "2024-01-15T10:30:00Z"
+            LocalDateTime transitionTimestamp;
 
-            // ✅ Update fee structure - Fees có thể thay đổi theo COD amount
-            if (newShippingInfo.getBaseFee() != null) {
-                existing.setBaseFee(newShippingInfo.getBaseFee());
-            }
-            if (newShippingInfo.getWeightBasedFee() != null) {
-                existing.setWeightBasedFee(newShippingInfo.getWeightBasedFee());
-            }
-            if (newShippingInfo.getDistanceBasedFee() != null) {
-                existing.setDistanceBasedFee(newShippingInfo.getDistanceBasedFee());
-            }
-            if (newShippingInfo.getCodFee() != null) {
-                existing.setCodFee(newShippingInfo.getCodFee());
-            }
-            if (newShippingInfo.getInsuranceFee() != null) {
-                existing.setInsuranceFee(newShippingInfo.getInsuranceFee());
-            }
-
-            // ✅ Update service capabilities - Capabilities ít khi thay đổi nhưng có thể cập nhật
-            if (newShippingInfo.getSupportsCod() != null) {
-                existing.setSupportsCod(newShippingInfo.getSupportsCod());
-            }
-            if (newShippingInfo.getSupportsInsurance() != null) {
-                existing.setSupportsInsurance(newShippingInfo.getSupportsInsurance());
-            }
-            if (newShippingInfo.getSupportsFragile() != null) {
-                existing.setSupportsFragile(newShippingInfo.getSupportsFragile());
-            }
-            if (newShippingInfo.getSupportsRefrigerated() != null) {
-                existing.setSupportsRefrigerated(newShippingInfo.getSupportsRefrigerated());
-            }
-            if (newShippingInfo.getProvidesTracking() != null) {
-                existing.setProvidesTracking(newShippingInfo.getProvidesTracking());
-            }
-            if (newShippingInfo.getProvidesSmsUpdates() != null) {
-                existing.setProvidesSmsUpdates(newShippingInfo.getProvidesSmsUpdates());
-            }
-
-            // ✅ Update performance metrics - Metrics cần update theo thời gian
-            if (newShippingInfo.getAverageDeliveryDays() != null) {
-                // Facebook: Update average delivery days với weighted average
-                Double currentAvg = existing.getAverageDeliveryDays();
-                Double newAvg = newShippingInfo.getAverageDeliveryDays();
-                if (currentAvg != null && newAvg != null) {
-                    // Weighted average: 70% existing + 30% new data
-                    Double updatedAvg = (currentAvg * 0.7) + (newAvg * 0.3);
-                    existing.setAverageDeliveryDays(updatedAvg);
-                } else {
-                    existing.setAverageDeliveryDays(newAvg);
+            if (updatedAtString != null && !updatedAtString.isEmpty()) {
+                try {
+                    // Parse ISO string format
+                    transitionTimestamp = LocalDateTime.parse(updatedAtString.replace("Z", ""));
+                } catch (Exception e) {
+                    log.warn("Failed to parse updated_at: {}, using current time", updatedAtString);
+                    transitionTimestamp = LocalDateTime.now();
                 }
+            } else {
+                transitionTimestamp = LocalDateTime.now(); // Fallback
             }
 
-            if (newShippingInfo.getOnTimeDeliveryRate() != null) {
-                // Update on-time rate với weighted average
-                Double currentRate = existing.getOnTimeDeliveryRate();
-                Double newRate = newShippingInfo.getOnTimeDeliveryRate();
-                if (currentRate != null && newRate != null) {
-                    Double updatedRate = (currentRate * 0.8) + (newRate * 0.2);
-                    existing.setOnTimeDeliveryRate(updatedRate);
-                } else {
-                    existing.setOnTimeDeliveryRate(newRate);
-                }
-            }
+            // ✅ Calculate duration - simple approach
+            Integer durationHours = calculateSimpleDurationHours(facebookStatus);
 
-            if (newShippingInfo.getSuccessDeliveryRate() != null) {
-                // Update success rate với weighted average
-                Double currentRate = existing.getSuccessDeliveryRate();
-                Double newRate = newShippingInfo.getSuccessDeliveryRate();
-                if (currentRate != null && newRate != null) {
-                    Double updatedRate = (currentRate * 0.8) + (newRate * 0.2);
-                    existing.setSuccessDeliveryRate(updatedRate);
-                } else {
-                    existing.setSuccessDeliveryRate(newRate);
-                }
-            }
+            // ✅ Transition details - defaults for Facebook
+            String transitionReason = "FACEBOOK_STATUS_UPDATE"; // Default reason
+            String transitionTrigger = "SYSTEM"; // Default trigger
+            String changedBy = "FACEBOOK_SYSTEM"; // Default changed by
 
-            if (newShippingInfo.getDamageRate() != null) {
-                // Update damage rate với weighted average
-                Double currentRate = existing.getDamageRate();
-                Double newRate = newShippingInfo.getDamageRate();
-                if (currentRate != null && newRate != null) {
-                    Double updatedRate = (currentRate * 0.9) + (newRate * 0.1);
-                    existing.setDamageRate(updatedRate);
-                } else {
-                    existing.setDamageRate(newRate);
-                }
-            }
+            // ✅ Business logic flags - simple defaults
+            Boolean isOnTimeTransition = true; // Default on-time
+            Boolean isExpectedTransition = true; // Default expected
 
-            // ✅ Update coverage information - Coverage có thể mở rộng
-            if (newShippingInfo.getCoverageProvinces() != null) {
-                existing.setCoverageProvinces(newShippingInfo.getCoverageProvinces());
-            }
-            if (newShippingInfo.getCoverageNationwide() != null) {
-                existing.setCoverageNationwide(newShippingInfo.getCoverageNationwide());
-            }
-            if (newShippingInfo.getCoverageInternational() != null) {
-                existing.setCoverageInternational(newShippingInfo.getCoverageInternational());
-            }
+            // ✅ Generate history key - simple approach
+            Long historyKey = Math.abs((orderId + statusKey.toString()).hashCode()) % 1000000L;
 
-            log.debug("Updated ShippingInfo for order: {}", existing.getOrderId());
+            return OrderStatus.builder()
+                    .statusKey(statusKey)
+                    .orderId(orderId)
+                    .transitionTimestamp(transitionTimestamp)
+                    .durationInPreviousStatusHours(durationHours)
+                    .transitionReason(transitionReason)
+                    .transitionTrigger(transitionTrigger)
+                    .changedBy(changedBy)
+                    .isOnTimeTransition(isOnTimeTransition)
+                    .isExpectedTransition(isExpectedTransition)
+                    .historyKey(historyKey)
+                    .build();
 
         } catch (Exception e) {
-            log.error("Error updating ShippingInfo for order {}: {}",
-                    existing.getOrderId(), e.getMessage());
-            throw e; // Re-throw để caller có thể handle
+            log.error("Error creating OrderStatus entity for Facebook order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            return null;
         }
-    }
-
-    private String calculateStatusCategory(Integer facebookStatus) {
-        if (facebookStatus == null) return "UNKNOWN";
-
-        switch (facebookStatus) {
-            case 1: return "PENDING";
-            case 3: return "IN_PROGRESS";
-            case 2: return "COMPLETED";
-            case 9: return "CANCELLED";
-            default: return "UNKNOWN";
-        }
-    }
-
-    private OrderStatus createOrderStatusEntity(FacebookOrderDto orderDto, Long statusKey) {
-        String orderId = orderDto.getOrderId();
-
-        // ✅ CORRECT: Using actual OrderStatus entity fields from project
-        return OrderStatus.builder()
-                .statusKey(statusKey)
-                .orderId(orderId)
-                .transitionDateKey(Integer.parseInt(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))))
-                .transitionTimestamp(LocalDateTime.now())
-                .durationInPreviousStatusHours(0)
-                .transitionReason("Facebook Status Update")
-                .transitionTrigger("API_UPDATE")
-                .changedBy("FACEBOOK_SYSTEM")
-                .isOnTimeTransition(true)
-                .isExpectedTransition(true)
-                .historyKey(System.currentTimeMillis() % 1000000L)
-                .build();
-    }
-
-    private void updateOrderStatusTransition(OrderStatus transition, FacebookOrderDto orderDto) {
-        // Update transition timestamp
-        transition.setTransitionTimestamp(LocalDateTime.now());
     }
 
     private OrderStatusDetail createOrderStatusDetailEntity(FacebookOrderDto orderDto, Long statusKey) {
-        String orderId = orderDto.getOrderId();
-        Integer facebookStatus = orderDto.getStatus();
+        try {
+            String orderId = orderDto.getOrderId();
+            Integer facebookStatus = orderDto.getStatus();
 
-        // ✅ CORRECT: Using actual OrderStatusDetail entity fields from project
-        return OrderStatusDetail.builder()
-                .statusKey(statusKey)
-                .orderId(orderId)
-                .isActiveOrder(calculateIsActiveOrder(facebookStatus))
-                .isCompletedOrder(calculateIsCompletedOrder(facebookStatus))
-                .isRevenueRecognized(calculateIsRevenueRecognized(facebookStatus))
-                .isRefundable(calculateIsRefundable(facebookStatus))
-                .isCancellable(calculateIsCancellable(facebookStatus))
-                .isTrackable(calculateIsTrackable(facebookStatus))
-                .nextPossibleStatuses(calculateNextPossibleStatuses(facebookStatus))
-                .autoTransitionHours(calculateAutoTransitionHours(facebookStatus))
-                .requiresManualAction(calculateRequiresManualAction(facebookStatus))
-                .statusColor(getStatusColor(facebookStatus))
-                .statusIcon(getStatusIcon(facebookStatus))
-                .customerVisible(true)
-                .customerDescription(getCustomerDescription(facebookStatus))
-                .averageDurationHours(calculateAverageDurationHours(facebookStatus))
-                .successRate(calculateSuccessRate(facebookStatus))
-                .build();
+            // ✅ Facebook status business logic - no calculations, simple mapping
+            Boolean isActiveOrder = calculateIsActiveOrder(facebookStatus);
+            Boolean isCompletedOrder = calculateIsCompletedOrder(facebookStatus);
+            Boolean isRevenueRecognized = calculateIsRevenueRecognized(facebookStatus);
+            Boolean isRefundable = calculateIsRefundable(facebookStatus);
+            Boolean isCancellable = calculateIsCancellable(facebookStatus);
+            Boolean isTrackable = calculateIsTrackable(facebookStatus);
+
+            // ✅ Flow control - simple defaults for Facebook
+            String nextPossibleStatuses = getNextPossibleStatuses(facebookStatus);
+            Integer autoTransitionHours = getAutoTransitionHours(facebookStatus);
+            Boolean requiresManualAction = getRequiresManualAction(facebookStatus);
+
+            // ✅ UI properties - Facebook specific
+            String statusColor = getStatusColor(facebookStatus);
+            String statusIcon = getStatusIcon(facebookStatus);
+            Boolean customerVisible = true; // Default visible to customer
+            String customerDescription = getCustomerDescription(facebookStatus);
+
+            // ✅ Performance metrics - simple defaults
+            Double averageDurationHours = getAverageDurationHours(facebookStatus);
+            Double successRate = getSuccessRate(facebookStatus);
+
+            return OrderStatusDetail.builder()
+                    .statusKey(statusKey)
+                    .orderId(orderId)
+                    .isActiveOrder(isActiveOrder)
+                    .isCompletedOrder(isCompletedOrder)
+                    .isRevenueRecognized(isRevenueRecognized)
+                    .isRefundable(isRefundable)
+                    .isCancellable(isCancellable)
+                    .isTrackable(isTrackable)
+                    .nextPossibleStatuses(nextPossibleStatuses)
+                    .autoTransitionHours(autoTransitionHours)
+                    .requiresManualAction(requiresManualAction)
+                    .statusColor(statusColor)
+                    .statusIcon(statusIcon)
+                    .customerVisible(customerVisible)
+                    .customerDescription(customerDescription)
+                    .averageDurationHours(averageDurationHours)
+                    .successRate(successRate)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error creating OrderStatusDetail entity for Facebook order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            return null;
+        }
     }
 
     private void updateOrderStatusDetail(OrderStatusDetail detail, FacebookOrderDto orderDto) {
@@ -1293,7 +1365,147 @@ public class FacebookEtlService {
         detail.setIsCompletedOrder(calculateIsCompletedOrder(facebookStatus));
     }
 
+    private Status createStatusEntity(FacebookOrderDto orderDto) {
+        try {
+            Integer facebookStatus = orderDto.getStatus();
+            String facebookStatusString = String.valueOf(facebookStatus);
+            String standardStatus = mapFacebookStatusToStandard(facebookStatus);
+            String statusCategory = determineStatusCategory(standardStatus);
+            String statusDescription = getFacebookStatusDescription(facebookStatus);
+
+            return Status.builder()
+                    // Don't set statusKey - let database auto-generate (BIGSERIAL)
+                    .platform(platformName) // "FACEBOOK"
+                    .platformStatusCode(facebookStatusString) // "1", "2", "3", "9"
+                    .platformStatusName(statusDescription) // "PENDING", "DELIVERED", "PROCESSING", "CANCELLED"
+                    .standardStatusCode(standardStatus) // "PENDING", "COMPLETED", "PROCESSING", "CANCELLED"
+                    .standardStatusName(standardStatus) // Same as code for Facebook
+                    .statusCategory(statusCategory) // "INITIAL", "FINAL", "PROCESSING"
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error creating Status entity for Facebook order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+            return null;
+        }
+    }
+
+
     // ===== FACEBOOK STATUS ANALYSIS HELPER METHODS =====
+    private String getNextPossibleStatuses(Integer facebookStatus) {
+        if (facebookStatus == null) return null;
+
+        switch (facebookStatus) {
+            case 1: return "3,9"; // PENDING → PROCESSING,CANCELLED
+            case 3: return "2,9"; // PROCESSING → DELIVERED,CANCELLED
+            case 2: return null;  // DELIVERED → end state
+            case 9: return null;  // CANCELLED → end state
+            default: return null;
+        }
+    }
+
+    private Integer getAutoTransitionHours(Integer facebookStatus) {
+        if (facebookStatus == null) return 0;
+
+        switch (facebookStatus) {
+            case 1: return 24;   // PENDING: auto-cancel after 24 hours
+            case 3: return 168;  // PROCESSING: auto-delivered after 7 days
+            case 2: return 0;    // DELIVERED: no auto-transition
+            case 9: return 0;    // CANCELLED: no auto-transition
+            default: return 0;
+        }
+    }
+
+    private Boolean getRequiresManualAction(Integer facebookStatus) {
+        if (facebookStatus == null) return false;
+
+        switch (facebookStatus) {
+            case 1: return true;   // PENDING: requires payment confirmation
+            case 3: return false;  // PROCESSING: automated
+            case 2: return false;  // DELIVERED: completed
+            case 9: return false;  // CANCELLED: completed
+            default: return false;
+        }
+    }
+
+    private Double getAverageDurationHours(Integer facebookStatus) {
+        if (facebookStatus == null) return 0.0;
+
+        switch (facebookStatus) {
+            case 1: return 12.0;  // PENDING: 12 hours average
+            case 3: return 48.0;  // PROCESSING: 48 hours average
+            case 2: return 72.0;  // DELIVERED: 72 hours total average
+            case 9: return 6.0;   // CANCELLED: 6 hours average
+            default: return 24.0; // Default 24 hours
+        }
+    }
+
+    private Double getSuccessRate(Integer facebookStatus) {
+        if (facebookStatus == null) return 0.0;
+
+        switch (facebookStatus) {
+            case 1: return 0.85;  // PENDING: 85% proceed to processing
+            case 3: return 0.92;  // PROCESSING: 92% successful delivery
+            case 2: return 1.0;   // DELIVERED: 100% success
+            case 9: return 0.0;   // CANCELLED: 0% success
+            default: return 0.5;  // Default 50%
+        }
+    }
+
+    private Integer calculateSimpleDurationHours(Integer facebookStatus) {
+        if (facebookStatus == null) {
+            return 0;
+        }
+
+        // Simple default durations based on Facebook status
+        switch (facebookStatus) {
+            case 1: return 24;    // PENDING: 24 hours
+            case 2: return 72;    // DELIVERED: 72 hours total
+            case 3: return 48;    // PROCESSING: 48 hours
+            case 9: return 12;    // CANCELLED: 12 hours
+            default: return 24;   // Default 24 hours
+        }
+    }
+
+    private String mapFacebookStatusToStandard(Integer facebookStatus) {
+        if (facebookStatus == null) {
+            return "UNKNOWN";
+        }
+
+        switch (facebookStatus) {
+            case 1: return "PENDING";           // Facebook pending → Standard pending
+            case 2: return "COMPLETED";         // Facebook delivered → Standard completed
+            case 3: return "PROCESSING";        // Facebook processing → Standard processing
+            case 9: return "CANCELLED";         // Facebook cancelled → Standard cancelled
+            default: return "UNKNOWN";
+        }
+    }
+
+    // Helper method để determine status category
+    private String determineStatusCategory(String standardStatus) {
+        switch (standardStatus) {
+            case "PENDING": return "INITIAL";
+            case "PROCESSING": return "PROCESSING";
+            case "COMPLETED":
+            case "CANCELLED": return "FINAL";
+            default: return "OTHER";
+        }
+    }
+
+    // Helper method để get Facebook status description
+    private String getFacebookStatusDescription(Integer facebookStatus) {
+        if (facebookStatus == null) {
+            return "UNKNOWN";
+        }
+
+        switch (facebookStatus) {
+            case 1: return "PENDING";
+            case 2: return "DELIVERED";
+            case 3: return "PROCESSING";
+            case 9: return "CANCELLED";
+            default: return "UNKNOWN";
+        }
+    }
 
     private Boolean calculateIsActiveOrder(Integer facebookStatus) {
         if (facebookStatus == null) return false;

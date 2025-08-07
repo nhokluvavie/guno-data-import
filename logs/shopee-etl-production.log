@@ -1,812 +1,671 @@
-2025-07-25 11:22:56.362 [main] INFO  [c.g.e.i.MultiPlatformIntegrationTest] - Starting MultiPlatformIntegrationTest using Java 21.0.7 with PID 57279 (/Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test/target/test-classes started by nhokluvavie in /Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test)
-2025-07-25 11:22:56.367 [main] INFO  [c.g.e.i.MultiPlatformIntegrationTest] - The following 1 profile is active: "test"
-2025-07-25 11:22:57.177 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-07-25 11:22:57.430 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 240 ms. Found 11 JPA repository interfaces.
-2025-07-25 11:22:58.339 [main] INFO  [o.h.jpa.internal.util.LogHelper] - HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-07-25 11:22:58.422 [main] INFO  [org.hibernate.Version] - HHH000412: Hibernate ORM core version 6.3.1.Final
-2025-07-25 11:22:58.474 [main] INFO  [o.h.c.i.RegionFactoryInitiator] - HHH000026: Second-level cache disabled
-2025-07-25 11:22:58.917 [main] INFO  [o.s.o.j.p.SpringPersistenceUnitInfo] - No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-07-25 11:22:58.957 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Starting...
-2025-07-25 11:22:59.553 [main] INFO  [com.zaxxer.hikari.pool.HikariPool] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3181d4de
-2025-07-25 11:22:59.555 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Start completed.
-2025-07-25 11:22:59.872 [main] WARN  [org.hibernate.orm.deprecation] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-07-25 11:23:01.413 [main] INFO  [o.h.e.t.j.p.i.JtaPlatformInitiator] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-07-25 11:23:01.600 [main] ERROR [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Failed to initialize JPA EntityManagerFactory: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.tool.schema.spi.SchemaManagementException: Schema-validation: wrong column type encountered in column [created_at] in table [tbl_order]; found [varchar (Types#VARCHAR)], but expecting [timestamp(6) (Types#TIMESTAMP)]
-2025-07-25 11:23:01.601 [main] WARN  [o.s.b.w.r.c.AnnotationConfigReactiveWebServerApplicationContext] - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.tool.schema.spi.SchemaManagementException: Schema-validation: wrong column type encountered in column [created_at] in table [tbl_order]; found [varchar (Types#VARCHAR)], but expecting [timestamp(6) (Types#TIMESTAMP)]
-2025-07-25 11:23:01.601 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown initiated...
-2025-07-25 11:23:01.605 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown completed.
-2025-07-25 11:23:01.624 [main] INFO  [o.s.b.a.l.ConditionEvaluationReportLogger] - 
-
-Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2025-07-25 11:23:01.670 [main] ERROR [o.s.boot.SpringApplication] - Application run failed
-org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.tool.schema.spi.SchemaManagementException: Schema-validation: wrong column type encountered in column [created_at] in table [tbl_order]; found [varchar (Types#VARCHAR)], but expecting [timestamp(6) (Types#TIMESTAMP)]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1775)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:601)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
-	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
-	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
-	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
-	at org.springframework.context.support.AbstractApplicationContext.getBean(AbstractApplicationContext.java:1173)
-	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:936)
-	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:616)
-	at org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext.refresh(ReactiveWebServerApplicationContext.java:66)
-	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753)
-	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:455)
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:323)
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1342)
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1331)
-	at com.guno.etl.integration.MultiPlatformIntegrationTest.main(MultiPlatformIntegrationTest.java:57)
-Caused by: jakarta.persistence.PersistenceException: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.tool.schema.spi.SchemaManagementException: Schema-validation: wrong column type encountered in column [created_at] in table [tbl_order]; found [varchar (Types#VARCHAR)], but expecting [timestamp(6) (Types#TIMESTAMP)]
-	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:421)
-	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.afterPropertiesSet(AbstractEntityManagerFactoryBean.java:396)
-	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.afterPropertiesSet(LocalContainerEntityManagerFactoryBean.java:352)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1822)
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1771)
-	... 16 common frames omitted
-Caused by: org.hibernate.tool.schema.spi.SchemaManagementException: Schema-validation: wrong column type encountered in column [created_at] in table [tbl_order]; found [varchar (Types#VARCHAR)], but expecting [timestamp(6) (Types#TIMESTAMP)]
-	at org.hibernate.tool.schema.internal.AbstractSchemaValidator.validateColumnType(AbstractSchemaValidator.java:165)
-	at org.hibernate.tool.schema.internal.AbstractSchemaValidator.validateTable(AbstractSchemaValidator.java:152)
-	at org.hibernate.tool.schema.internal.GroupedSchemaValidatorImpl.validateTables(GroupedSchemaValidatorImpl.java:46)
-	at org.hibernate.tool.schema.internal.AbstractSchemaValidator.performValidation(AbstractSchemaValidator.java:97)
-	at org.hibernate.tool.schema.internal.AbstractSchemaValidator.doValidation(AbstractSchemaValidator.java:75)
-	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.performDatabaseAction(SchemaManagementToolCoordinator.java:295)
-	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.lambda$process$5(SchemaManagementToolCoordinator.java:145)
-	at java.base/java.util.HashMap.forEach(HashMap.java:1429)
-	at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.process(SchemaManagementToolCoordinator.java:142)
-	at org.hibernate.boot.internal.SessionFactoryObserverForSchemaExport.sessionFactoryCreated(SessionFactoryObserverForSchemaExport.java:37)
-	at org.hibernate.internal.SessionFactoryObserverChain.sessionFactoryCreated(SessionFactoryObserverChain.java:35)
-	at org.hibernate.internal.SessionFactoryImpl.<init>(SessionFactoryImpl.java:295)
-	at org.hibernate.boot.internal.SessionFactoryBuilderImpl.build(SessionFactoryBuilderImpl.java:450)
-	at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.build(EntityManagerFactoryBuilderImpl.java:1507)
-	at org.springframework.orm.jpa.vendor.SpringHibernateJpaPersistenceProvider.createContainerEntityManagerFactory(SpringHibernateJpaPersistenceProvider.java:75)
-	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.createNativeEntityManagerFactory(LocalContainerEntityManagerFactoryBean.java:376)
-	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:409)
-	... 20 common frames omitted
-2025-07-25 11:23:46.001 [main] INFO  [c.g.e.i.MultiPlatformIntegrationTest] - Starting MultiPlatformIntegrationTest using Java 21.0.7 with PID 57293 (/Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test/target/test-classes started by nhokluvavie in /Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test)
-2025-07-25 11:23:46.003 [main] INFO  [c.g.e.i.MultiPlatformIntegrationTest] - The following 1 profile is active: "test"
-2025-07-25 11:23:46.797 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-07-25 11:23:47.076 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 263 ms. Found 11 JPA repository interfaces.
-2025-07-25 11:23:48.094 [main] INFO  [o.h.jpa.internal.util.LogHelper] - HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-07-25 11:23:48.190 [main] INFO  [org.hibernate.Version] - HHH000412: Hibernate ORM core version 6.3.1.Final
-2025-07-25 11:23:48.234 [main] INFO  [o.h.c.i.RegionFactoryInitiator] - HHH000026: Second-level cache disabled
-2025-07-25 11:23:48.614 [main] INFO  [o.s.o.j.p.SpringPersistenceUnitInfo] - No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-07-25 11:23:48.650 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Starting...
-2025-07-25 11:23:49.368 [main] INFO  [com.zaxxer.hikari.pool.HikariPool] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3a209918
-2025-07-25 11:23:49.370 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Start completed.
-2025-07-25 11:23:49.529 [main] WARN  [org.hibernate.orm.deprecation] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-07-25 11:23:51.078 [main] INFO  [o.h.e.t.j.p.i.JtaPlatformInitiator] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-07-25 11:23:51.081 [main] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-07-25 11:23:51.120 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Added Authorization header to API client
-2025-07-25 11:23:51.262 [main] INFO  [c.guno.etl.service.ShopeeApiService] - ShopeeApiService initialized with base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/shopee
-2025-07-25 11:23:51.263 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Default settings - Page size: 10, Timeout: PT1M, Max retries: 2
-2025-07-25 11:23:51.263 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Headers configured - Auth: ***SET***, API-Key: ***SET***
-2025-07-25 11:23:51.623 [main] INFO  [o.s.d.j.r.query.QueryEnhancerFactory] - Hibernate is in classpath; If applicable, HQL parser will be used.
-2025-07-25 11:23:53.227 [main] INFO  [c.guno.etl.service.TikTokApiService] - TikTok API Service initialized with auth header: ***CONFIGURED***
-2025-07-25 11:23:53.229 [main] INFO  [c.guno.etl.service.TikTokApiService] - TikTok API Service initialized:
-2025-07-25 11:23:53.229 [main] INFO  [c.guno.etl.service.TikTokApiService] -   Base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/tiktok
-2025-07-25 11:23:53.229 [main] INFO  [c.guno.etl.service.TikTokApiService] -   Timeout: PT1Ms
-2025-07-25 11:23:53.229 [main] INFO  [c.guno.etl.service.TikTokApiService] -   Page Size: 10
-2025-07-25 11:23:53.229 [main] INFO  [c.guno.etl.service.TikTokApiService] -   Max Retries: 2
-2025-07-25 11:23:53.256 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Database configuration initialized
-2025-07-25 11:23:53.256 [main] INFO  [com.guno.etl.config.DatabaseConfig] - JPA repositories enabled for package: com.guno.etl.repository
-2025-07-25 11:23:53.256 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Entity scan enabled for package: com.guno.etl.entity
-2025-07-25 11:23:53.280 [main] INFO  [c.guno.etl.config.SchedulingConfig] - ETL Task Scheduler configured:
-2025-07-25 11:23:53.281 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Pool Size: 2
-2025-07-25 11:23:53.281 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Name Prefix: ETL-Scheduler-
-2025-07-25 11:23:53.281 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Await Termination: 20 seconds
-2025-07-25 11:23:53.943 [main] INFO  [o.s.b.w.e.netty.NettyWebServer] - Netty started on port 8080
-2025-07-25 11:23:53.954 [main] INFO  [c.g.e.i.MultiPlatformIntegrationTest] - Started MultiPlatformIntegrationTest in 8.698 seconds (process running for 9.928)
-2025-07-25 11:23:54.042 [main] INFO  [c.g.e.c.StatusMappingInitializer] - === Initializing Status Mappings ===
-2025-07-25 11:23:54.042 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing SHOPEE status mappings...
-2025-07-25 11:23:54.833 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ SHOPEE status mappings: 0 created, 10 already existed
-2025-07-25 11:23:54.833 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing TIKTOK status mappings...
-2025-07-25 11:23:54.955 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
-2025-07-25 11:23:55.358 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ TIKTOK status mappings: 0 created, 10 already existed
-2025-07-25 11:23:55.358 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing FACEBOOK status mappings...
-2025-07-25 11:23:55.564 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ FACEBOOK status mappings: 0 created, 6 already existed
-2025-07-25 11:23:55.564 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ Status mappings initialization completed successfully
-2025-07-25 11:23:55.599 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
-2025-07-25 11:23:55.599 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🎉 SHOPEE ETL APPLICATION STARTED SUCCESSFULLY 🎉
-2025-07-25 11:23:55.599 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
-2025-07-25 11:23:55.599 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Application: shopee-etl-test
-2025-07-25 11:23:55.599 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Profile: test
-2025-07-25 11:23:55.599 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Java Version: 21.0.7
-2025-07-25 11:23:55.600 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Spring Boot Version: 3.2.0
-2025-07-25 11:23:55.600 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
-2025-07-25 11:23:55.600 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 📋 Configuration Summary:
-2025-07-25 11:23:55.600 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ----------------------------------------
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Database URL: jdbc:postgresql://103.97.125.92:5432/guno_db_test?useSSL=false
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Database User: guno_user
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API URL: Not configured
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API Timeout: Not configured
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API Page Size: Not configured
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Scheduler Enabled: false
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Scheduler Rate: 10000 ms
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Log Level: INFO
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Log File: logs/shopee-etl-production.log
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
-2025-07-25 11:23:55.601 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🌐 Access Information:
-2025-07-25 11:23:55.602 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ----------------------------------------
-2025-07-25 11:23:55.603 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Server Port: 8080
-2025-07-25 11:23:55.603 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Local Access: http://localhost:8080
-2025-07-25 11:23:55.603 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Network Access: http://127.0.0.1:8080
-2025-07-25 11:23:55.603 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
-2025-07-25 11:23:55.603 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 📚 API Documentation:
-2025-07-25 11:23:55.603 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Help: http://localhost:8080/api/etl/help
-2025-07-25 11:23:55.603 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Status: http://localhost:8080/api/etl/status
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Test API: http://localhost:8080/api/etl/api-test
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Manual ETL: POST http://localhost:8080/api/etl/trigger
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🔧 Management Endpoints:
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Health Check: http://localhost:8080/actuator/health
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Application Info: http://localhost:8080/actuator/info
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ⚡ ETL Operations:
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ⚠️ Automated ETL: DISABLED
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 💡 Use POST /api/etl/trigger for manual processing
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🚀 Ready to process Shopee orders!
-2025-07-25 11:23:55.604 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
-2025-07-25 11:23:55.606 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Fetching updated Shopee orders for current date: 2025-07-17 - page: 1, limit: 1
-2025-07-25 11:23:58.200 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Successfully fetched 1 updated orders for date 2025-07-17 on page 1
-2025-07-25 11:23:58.200 [main] DEBUG [c.guno.etl.service.ShopeeApiService] - Updated order IDs for 2025-07-17: [250717CGQNPMXR]
-2025-07-25 11:23:58.201 [main] INFO  [c.guno.etl.service.TikTokApiService] - Testing TikTok API connection...
-2025-07-25 11:23:58.201 [main] DEBUG [c.guno.etl.service.TikTokApiService] - Fetching TikTok orders for date: 2025-07-23 - page: 1, limit: 1, filter: update
-2025-07-25 11:23:58.824 [main] DEBUG [c.guno.etl.service.TikTokApiService] - TikTok API response: Status=1, Message=ok, Orders=1
-2025-07-25 11:23:58.824 [main] INFO  [c.guno.etl.service.TikTokApiService] - TikTok API connection successful
-2025-07-25 11:24:00.737 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - === Starting ETL process for updated orders ===
-2025-07-25 11:24:00.737 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Fetching updated Shopee orders for current date: 2025-07-17 - page: 20, limit: 10
-2025-07-25 11:24:01.430 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Successfully fetched 10 updated orders for date 2025-07-17 on page 20
-2025-07-25 11:24:01.430 [main] DEBUG [c.guno.etl.service.ShopeeApiService] - Updated order IDs for 2025-07-17: [250716A3EBAMS7, 2507168M7NJWWA, 2507168KDVNM3D, 250710QY96X1K3, 2507157RMQYETF, 2507131TQJHD9R, 250711U8H9H443, 2507145WKJKMT5, 2507157DCWACHX, 250715658DXGHA]
-2025-07-25 11:24:01.430 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Retrieved 10 updated orders from API
-2025-07-25 11:24:01.430 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 250716A3EBAMS7
-2025-07-25 11:24:01.430 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 250716A3EBAMS7
-2025-07-25 11:24:02.172 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:02.172 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:02.314 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 250716A3EBAMS7 updated
-2025-07-25 11:24:02.314 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 250716A3EBAMS7
-2025-07-25 11:24:02.768 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 1 existing order items for order 250716A3EBAMS7
-2025-07-25 11:24:02.923 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25AG113DOM/SHOPEE updated
-2025-07-25 11:24:03.122 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 1 new order items for order 250716A3EBAMS7
-2025-07-25 11:24:03.122 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 250716A3EBAMS7
-2025-07-25 11:24:03.400 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 250716A3EBAMS7 updated
-2025-07-25 11:24:03.400 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 250716A3EBAMS7
-2025-07-25 11:24:03.401 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 250716A3EBAMS7
-2025-07-25 11:24:03.807 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 250716A3EBAMS7
-2025-07-25 11:24:03.807 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 250716A3EBAMS7
-2025-07-25 11:24:03.808 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 250716A3EBAMS7
-2025-07-25 11:24:03.980 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 250716A3EBAMS7
-2025-07-25 11:24:03.980 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 250716A3EBAMS7
-2025-07-25 11:24:03.980 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 250716A3EBAMS7
-2025-07-25 11:24:04.271 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 250716A3EBAMS7
-2025-07-25 11:24:04.271 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 250716A3EBAMS7
-2025-07-25 11:24:04.271 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 250716A3EBAMS7
-2025-07-25 11:24:04.362 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status SHIPPED
-2025-07-25 11:24:04.363 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 250716A3EBAMS7
-2025-07-25 11:24:04.363 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 250716A3EBAMS7
-2025-07-25 11:24:04.562 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 250716A3EBAMS7 to status: SHIPPED
-2025-07-25 11:24:04.562 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 250716A3EBAMS7
-2025-07-25 11:24:04.562 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 250716A3EBAMS7
-2025-07-25 11:24:04.925 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 250716A3EBAMS7 status: SHIPPED
-2025-07-25 11:24:04.925 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 250716A3EBAMS7
-2025-07-25 11:24:04.925 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 250716A3EBAMS7 UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:04.925 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 250716A3EBAMS7 processed successfully
-2025-07-25 11:24:04.925 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 2507168M7NJWWA
-2025-07-25 11:24:04.925 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 2507168M7NJWWA
-2025-07-25 11:24:04.955 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
-2025-07-25 11:24:05.189 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:05.189 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:05.378 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507168M7NJWWA updated
-2025-07-25 11:24:05.378 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 2507168M7NJWWA
-2025-07-25 11:24:05.568 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 2 existing order items for order 2507168M7NJWWA
-2025-07-25 11:24:05.900 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25AG113TRANGM/SHOPEE updated
-2025-07-25 11:24:06.272 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25AG113DOM/SHOPEE updated
-2025-07-25 11:24:06.466 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 2 new order items for order 2507168M7NJWWA
-2025-07-25 11:24:06.466 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 2507168M7NJWWA
-2025-07-25 11:24:06.640 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 2507168M7NJWWA updated
-2025-07-25 11:24:06.640 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 2507168M7NJWWA
-2025-07-25 11:24:06.640 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 2507168M7NJWWA
-2025-07-25 11:24:07.042 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 2507168M7NJWWA
-2025-07-25 11:24:07.042 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 2507168M7NJWWA
-2025-07-25 11:24:07.042 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 2507168M7NJWWA
-2025-07-25 11:24:07.188 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 2507168M7NJWWA
-2025-07-25 11:24:07.188 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 2507168M7NJWWA
-2025-07-25 11:24:07.188 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 2507168M7NJWWA
-2025-07-25 11:24:07.474 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 2507168M7NJWWA
-2025-07-25 11:24:07.474 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 2507168M7NJWWA
-2025-07-25 11:24:07.474 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 2507168M7NJWWA
-2025-07-25 11:24:07.560 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status SHIPPED
-2025-07-25 11:24:07.560 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 2507168M7NJWWA
-2025-07-25 11:24:07.560 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 2507168M7NJWWA
-2025-07-25 11:24:07.939 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 2507168M7NJWWA to status: SHIPPED
-2025-07-25 11:24:07.939 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 2507168M7NJWWA
-2025-07-25 11:24:07.939 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 2507168M7NJWWA
-2025-07-25 11:24:08.056 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 2507168M7NJWWA status: SHIPPED
-2025-07-25 11:24:08.056 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 2507168M7NJWWA
-2025-07-25 11:24:08.056 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 2507168M7NJWWA UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:08.056 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507168M7NJWWA processed successfully
-2025-07-25 11:24:08.056 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 2507168KDVNM3D
-2025-07-25 11:24:08.056 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 2507168KDVNM3D
-2025-07-25 11:24:08.334 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:08.334 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:08.520 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507168KDVNM3D updated
-2025-07-25 11:24:08.521 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 2507168KDVNM3D
-2025-07-25 11:24:08.727 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 3 existing order items for order 2507168KDVNM3D
-2025-07-25 11:24:09.240 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25BG90DOM/SHOPEE updated
-2025-07-25 11:24:10.037 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25BG99DENS/SHOPEE updated
-2025-07-25 11:24:10.274 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product SKU_29400630270/SHOPEE updated
-2025-07-25 11:24:10.430 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 3 new order items for order 2507168KDVNM3D
-2025-07-25 11:24:10.430 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 2507168KDVNM3D
-2025-07-25 11:24:10.710 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 2507168KDVNM3D updated
-2025-07-25 11:24:10.711 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 2507168KDVNM3D
-2025-07-25 11:24:10.711 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 2507168KDVNM3D
-2025-07-25 11:24:10.856 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 2507168KDVNM3D
-2025-07-25 11:24:10.856 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 2507168KDVNM3D
-2025-07-25 11:24:10.856 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 2507168KDVNM3D
-2025-07-25 11:24:11.239 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 2507168KDVNM3D
-2025-07-25 11:24:11.239 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 2507168KDVNM3D
-2025-07-25 11:24:11.239 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 2507168KDVNM3D
-2025-07-25 11:24:11.381 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 2507168KDVNM3D
-2025-07-25 11:24:11.381 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 2507168KDVNM3D
-2025-07-25 11:24:11.381 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 2507168KDVNM3D
-2025-07-25 11:24:11.740 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status COMPLETED
-2025-07-25 11:24:11.740 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 2507168KDVNM3D
-2025-07-25 11:24:11.740 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 2507168KDVNM3D
-2025-07-25 11:24:12.376 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 2507168KDVNM3D to status: COMPLETED
-2025-07-25 11:24:12.376 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 2507168KDVNM3D
-2025-07-25 11:24:12.376 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 2507168KDVNM3D
-2025-07-25 11:24:12.719 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 2507168KDVNM3D status: COMPLETED
-2025-07-25 11:24:12.720 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 2507168KDVNM3D
-2025-07-25 11:24:12.720 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 2507168KDVNM3D UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:12.720 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507168KDVNM3D processed successfully
-2025-07-25 11:24:12.720 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 250710QY96X1K3
-2025-07-25 11:24:12.720 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 250710QY96X1K3
-2025-07-25 11:24:13.224 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:13.225 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:13.386 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 250710QY96X1K3 updated
-2025-07-25 11:24:13.386 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 250710QY96X1K3
-2025-07-25 11:24:13.805 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 2 existing order items for order 250710QY96X1K3
-2025-07-25 11:24:13.941 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 24PK96DEN/SHOPEE updated
-2025-07-25 11:24:14.348 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 24PK96CHI/SHOPEE updated
-2025-07-25 11:24:14.444 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 2 new order items for order 250710QY96X1K3
-2025-07-25 11:24:14.444 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 250710QY96X1K3
-2025-07-25 11:24:14.783 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 250710QY96X1K3 updated
-2025-07-25 11:24:14.784 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 250710QY96X1K3
-2025-07-25 11:24:14.784 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 250710QY96X1K3
-2025-07-25 11:24:14.953 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
-2025-07-25 11:24:14.980 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 250710QY96X1K3
-2025-07-25 11:24:14.980 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 250710QY96X1K3
-2025-07-25 11:24:14.980 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 250710QY96X1K3
-2025-07-25 11:24:15.351 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 250710QY96X1K3
-2025-07-25 11:24:15.351 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 250710QY96X1K3
-2025-07-25 11:24:15.351 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 250710QY96X1K3
-2025-07-25 11:24:15.497 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 250710QY96X1K3
-2025-07-25 11:24:15.498 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 250710QY96X1K3
-2025-07-25 11:24:15.498 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 250710QY96X1K3
-2025-07-25 11:24:15.675 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status COMPLETED
-2025-07-25 11:24:15.675 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 250710QY96X1K3
-2025-07-25 11:24:15.675 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 250710QY96X1K3
-2025-07-25 11:24:15.918 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 250710QY96X1K3 to status: COMPLETED
-2025-07-25 11:24:15.918 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 250710QY96X1K3
-2025-07-25 11:24:15.918 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 250710QY96X1K3
-2025-07-25 11:24:16.036 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 250710QY96X1K3 status: COMPLETED
-2025-07-25 11:24:16.037 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 250710QY96X1K3
-2025-07-25 11:24:16.037 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 250710QY96X1K3 UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:16.037 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 250710QY96X1K3 processed successfully
-2025-07-25 11:24:16.037 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 2507157RMQYETF
-2025-07-25 11:24:16.037 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 2507157RMQYETF
-2025-07-25 11:24:16.397 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:16.398 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:16.564 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507157RMQYETF updated
-2025-07-25 11:24:16.564 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 2507157RMQYETF
-2025-07-25 11:24:16.852 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 1 existing order items for order 2507157RMQYETF
-2025-07-25 11:24:16.970 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25AG113TRANGM/SHOPEE updated
-2025-07-25 11:24:17.101 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 1 new order items for order 2507157RMQYETF
-2025-07-25 11:24:17.101 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 2507157RMQYETF
-2025-07-25 11:24:17.549 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 2507157RMQYETF updated
-2025-07-25 11:24:17.549 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 2507157RMQYETF
-2025-07-25 11:24:17.549 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 2507157RMQYETF
-2025-07-25 11:24:18.099 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 2507157RMQYETF
-2025-07-25 11:24:18.099 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 2507157RMQYETF
-2025-07-25 11:24:18.099 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 2507157RMQYETF
-2025-07-25 11:24:18.650 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 2507157RMQYETF
-2025-07-25 11:24:18.650 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 2507157RMQYETF
-2025-07-25 11:24:18.651 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 2507157RMQYETF
-2025-07-25 11:24:18.979 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 2507157RMQYETF
-2025-07-25 11:24:18.979 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 2507157RMQYETF
-2025-07-25 11:24:18.979 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 2507157RMQYETF
-2025-07-25 11:24:19.080 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status SHIPPED
-2025-07-25 11:24:19.080 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 2507157RMQYETF
-2025-07-25 11:24:19.080 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 2507157RMQYETF
-2025-07-25 11:24:19.475 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 2507157RMQYETF to status: SHIPPED
-2025-07-25 11:24:19.475 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 2507157RMQYETF
-2025-07-25 11:24:19.475 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 2507157RMQYETF
-2025-07-25 11:24:19.637 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 2507157RMQYETF status: SHIPPED
-2025-07-25 11:24:19.637 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 2507157RMQYETF
-2025-07-25 11:24:19.638 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 2507157RMQYETF UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:19.638 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507157RMQYETF processed successfully
-2025-07-25 11:24:19.638 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 2507131TQJHD9R
-2025-07-25 11:24:19.638 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 2507131TQJHD9R
-2025-07-25 11:24:19.868 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:19.868 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:20.060 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507131TQJHD9R updated
-2025-07-25 11:24:20.061 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 2507131TQJHD9R
-2025-07-25 11:24:20.186 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 1 existing order items for order 2507131TQJHD9R
-2025-07-25 11:24:20.524 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25BG109THANL/SHOPEE updated
-2025-07-25 11:24:20.620 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 1 new order items for order 2507131TQJHD9R
-2025-07-25 11:24:20.620 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 2507131TQJHD9R
-2025-07-25 11:24:20.812 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 2507131TQJHD9R updated
-2025-07-25 11:24:20.812 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 2507131TQJHD9R
-2025-07-25 11:24:20.812 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 2507131TQJHD9R
-2025-07-25 11:24:21.109 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 2507131TQJHD9R
-2025-07-25 11:24:21.109 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 2507131TQJHD9R
-2025-07-25 11:24:21.109 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 2507131TQJHD9R
-2025-07-25 11:24:21.270 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 2507131TQJHD9R
-2025-07-25 11:24:21.270 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 2507131TQJHD9R
-2025-07-25 11:24:21.270 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 2507131TQJHD9R
-2025-07-25 11:24:21.627 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 2507131TQJHD9R
-2025-07-25 11:24:21.627 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 2507131TQJHD9R
-2025-07-25 11:24:21.627 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 2507131TQJHD9R
-2025-07-25 11:24:21.722 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status TO_RETURN
-2025-07-25 11:24:21.722 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 2507131TQJHD9R
-2025-07-25 11:24:21.722 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 2507131TQJHD9R
-2025-07-25 11:24:21.966 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 2507131TQJHD9R to status: TO_RETURN
-2025-07-25 11:24:21.966 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 2507131TQJHD9R
-2025-07-25 11:24:21.966 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 2507131TQJHD9R
-2025-07-25 11:24:22.176 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 2507131TQJHD9R status: TO_RETURN
-2025-07-25 11:24:22.176 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 2507131TQJHD9R
-2025-07-25 11:24:22.176 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 2507131TQJHD9R UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:22.176 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507131TQJHD9R processed successfully
-2025-07-25 11:24:22.176 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 250711U8H9H443
-2025-07-25 11:24:22.176 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 250711U8H9H443
-2025-07-25 11:24:22.340 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:22.340 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:22.684 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 250711U8H9H443 updated
-2025-07-25 11:24:22.685 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 250711U8H9H443
-2025-07-25 11:24:22.844 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 1 existing order items for order 250711U8H9H443
-2025-07-25 11:24:23.146 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25AG50THANM/SHOPEE updated
-2025-07-25 11:24:23.245 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 1 new order items for order 250711U8H9H443
-2025-07-25 11:24:23.245 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 250711U8H9H443
-2025-07-25 11:24:23.413 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 250711U8H9H443 updated
-2025-07-25 11:24:23.414 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 250711U8H9H443
-2025-07-25 11:24:23.414 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 250711U8H9H443
-2025-07-25 11:24:23.793 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 250711U8H9H443
-2025-07-25 11:24:23.794 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 250711U8H9H443
-2025-07-25 11:24:23.794 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 250711U8H9H443
-2025-07-25 11:24:23.943 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 250711U8H9H443
-2025-07-25 11:24:23.944 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 250711U8H9H443
-2025-07-25 11:24:23.944 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 250711U8H9H443
-2025-07-25 11:24:24.247 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 250711U8H9H443
-2025-07-25 11:24:24.247 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 250711U8H9H443
-2025-07-25 11:24:24.247 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 250711U8H9H443
-2025-07-25 11:24:24.331 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status COMPLETED
-2025-07-25 11:24:24.331 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 250711U8H9H443
-2025-07-25 11:24:24.331 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 250711U8H9H443
-2025-07-25 11:24:24.742 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 250711U8H9H443 to status: COMPLETED
-2025-07-25 11:24:24.742 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 250711U8H9H443
-2025-07-25 11:24:24.742 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 250711U8H9H443
-2025-07-25 11:24:24.848 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 250711U8H9H443 status: COMPLETED
-2025-07-25 11:24:24.848 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 250711U8H9H443
-2025-07-25 11:24:24.848 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 250711U8H9H443 UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:24.848 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 250711U8H9H443 processed successfully
-2025-07-25 11:24:24.848 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 2507145WKJKMT5
-2025-07-25 11:24:24.848 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 2507145WKJKMT5
-2025-07-25 11:24:24.955 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
-2025-07-25 11:24:25.110 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:25.110 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:25.298 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507145WKJKMT5 updated
-2025-07-25 11:24:25.298 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 2507145WKJKMT5
-2025-07-25 11:24:25.446 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 1 existing order items for order 2507145WKJKMT5
-2025-07-25 11:24:25.766 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25AG69VANGM/SHOPEE updated
-2025-07-25 11:24:25.863 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 1 new order items for order 2507145WKJKMT5
-2025-07-25 11:24:25.863 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 2507145WKJKMT5
-2025-07-25 11:24:26.033 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 2507145WKJKMT5 updated
-2025-07-25 11:24:26.034 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 2507145WKJKMT5
-2025-07-25 11:24:26.034 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 2507145WKJKMT5
-2025-07-25 11:24:26.347 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 2507145WKJKMT5
-2025-07-25 11:24:26.347 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 2507145WKJKMT5
-2025-07-25 11:24:26.347 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 2507145WKJKMT5
-2025-07-25 11:24:26.486 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 2507145WKJKMT5
-2025-07-25 11:24:26.486 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 2507145WKJKMT5
-2025-07-25 11:24:26.486 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 2507145WKJKMT5
-2025-07-25 11:24:27.039 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 2507145WKJKMT5
-2025-07-25 11:24:27.039 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 2507145WKJKMT5
-2025-07-25 11:24:27.039 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 2507145WKJKMT5
-2025-07-25 11:24:27.535 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status TO_CONFIRM_RECEIVE
-2025-07-25 11:24:27.536 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 2507145WKJKMT5
-2025-07-25 11:24:27.536 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 2507145WKJKMT5
-2025-07-25 11:24:28.016 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 2507145WKJKMT5 to status: TO_CONFIRM_RECEIVE
-2025-07-25 11:24:28.016 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 2507145WKJKMT5
-2025-07-25 11:24:28.016 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 2507145WKJKMT5
-2025-07-25 11:24:28.132 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 2507145WKJKMT5 status: TO_CONFIRM_RECEIVE
-2025-07-25 11:24:28.132 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 2507145WKJKMT5
-2025-07-25 11:24:28.132 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 2507145WKJKMT5 UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:28.132 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507145WKJKMT5 processed successfully
-2025-07-25 11:24:28.132 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 2507157DCWACHX
-2025-07-25 11:24:28.132 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 2507157DCWACHX
-2025-07-25 11:24:28.428 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:28.428 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:28.541 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507157DCWACHX updated
-2025-07-25 11:24:28.541 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 2507157DCWACHX
-2025-07-25 11:24:28.692 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 1 existing order items for order 2507157DCWACHX
-2025-07-25 11:24:28.993 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25AG69DODOL/SHOPEE updated
-2025-07-25 11:24:29.084 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 1 new order items for order 2507157DCWACHX
-2025-07-25 11:24:29.084 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 2507157DCWACHX
-2025-07-25 11:24:29.471 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 2507157DCWACHX updated
-2025-07-25 11:24:29.471 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 2507157DCWACHX
-2025-07-25 11:24:29.471 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 2507157DCWACHX
-2025-07-25 11:24:29.642 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 2507157DCWACHX
-2025-07-25 11:24:29.644 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 2507157DCWACHX
-2025-07-25 11:24:29.644 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 2507157DCWACHX
-2025-07-25 11:24:29.988 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 2507157DCWACHX
-2025-07-25 11:24:29.988 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 2507157DCWACHX
-2025-07-25 11:24:29.988 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 2507157DCWACHX
-2025-07-25 11:24:30.147 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 2507157DCWACHX
-2025-07-25 11:24:30.147 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 2507157DCWACHX
-2025-07-25 11:24:30.147 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 2507157DCWACHX
-2025-07-25 11:24:30.247 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status TO_CONFIRM_RECEIVE
-2025-07-25 11:24:30.247 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 2507157DCWACHX
-2025-07-25 11:24:30.247 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 2507157DCWACHX
-2025-07-25 11:24:30.576 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 2507157DCWACHX to status: TO_CONFIRM_RECEIVE
-2025-07-25 11:24:30.576 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 2507157DCWACHX
-2025-07-25 11:24:30.576 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 2507157DCWACHX
-2025-07-25 11:24:30.729 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 2507157DCWACHX status: TO_CONFIRM_RECEIVE
-2025-07-25 11:24:30.729 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 2507157DCWACHX
-2025-07-25 11:24:30.729 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 2507157DCWACHX UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:30.729 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 2507157DCWACHX processed successfully
-2025-07-25 11:24:30.729 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order: 250715658DXGHA
-2025-07-25 11:24:30.729 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Starting UPSERT for order: 250715658DXGHA
-2025-07-25 11:24:31.106 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer SHOPEE_d7e6d66627b9 updated
-2025-07-25 11:24:31.106 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Customer processed: SHOPEE_d7e6d66627b9
-2025-07-25 11:24:31.236 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 250715658DXGHA updated
-2025-07-25 11:24:31.236 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order entity processed: 250715658DXGHA
-2025-07-25 11:24:31.568 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Deleted 3 existing order items for order 250715658DXGHA
-2025-07-25 11:24:31.710 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25AG113DENL/SHOPEE updated
-2025-07-25 11:24:32.172 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product 25BB32THANM/SHOPEE updated
-2025-07-25 11:24:32.451 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Product SKU_29400630270/SHOPEE updated
-2025-07-25 11:24:32.614 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Inserted 3 new order items for order 250715658DXGHA
-2025-07-25 11:24:32.614 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order items processed for order: 250715658DXGHA
-2025-07-25 11:24:32.783 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info 250715658DXGHA updated
-2025-07-25 11:24:32.783 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Geography info processed for order: 250715658DXGHA
-2025-07-25 11:24:32.783 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing date info for order: 250715658DXGHA
-2025-07-25 11:24:33.133 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated date info for order: 250715658DXGHA
-2025-07-25 11:24:33.133 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Date info processed for order: 250715658DXGHA
-2025-07-25 11:24:33.133 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing payment info for order: 250715658DXGHA
-2025-07-25 11:24:33.265 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated payment info for order: 250715658DXGHA
-2025-07-25 11:24:33.265 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Payment info processed for order: 250715658DXGHA
-2025-07-25 11:24:33.265 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing shipping info for order: 250715658DXGHA
-2025-07-25 11:24:33.500 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated shipping info for order: 250715658DXGHA
-2025-07-25 11:24:33.500 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Shipping info processed for order: 250715658DXGHA
-2025-07-25 11:24:33.500 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing status info for order: 250715658DXGHA
-2025-07-25 11:24:33.657 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status mapping for platform SHOPEE status SHIPPED
-2025-07-25 11:24:33.658 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Status info processed for order: 250715658DXGHA
-2025-07-25 11:24:33.658 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status transition for order: 250715658DXGHA
-2025-07-25 11:24:33.855 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status transition for order: 250715658DXGHA to status: SHIPPED
-2025-07-25 11:24:33.856 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status transition processed for order: 250715658DXGHA
-2025-07-25 11:24:33.856 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Processing order status detail for order: 250715658DXGHA
-2025-07-25 11:24:34.181 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Updated status detail for order: 250715658DXGHA status: SHIPPED
-2025-07-25 11:24:34.181 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order status detail processed for order: 250715658DXGHA
-2025-07-25 11:24:34.181 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Order 250715658DXGHA UPSERT completed successfully - ALL 10 TABLES
-2025-07-25 11:24:34.181 [main] DEBUG [c.guno.etl.service.ShopeeEtlService] - Order 250715658DXGHA processed successfully
-2025-07-25 11:24:34.182 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - === ETL process completed ===
-2025-07-25 11:24:34.182 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Total orders processed: 10/10
-2025-07-25 11:24:34.182 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Success rate: 100.0%
-2025-07-25 11:24:34.182 [main] INFO  [c.guno.etl.service.ShopeeEtlService] - Duration: 0 ms
-2025-07-25 11:24:34.183 [main] INFO  [c.guno.etl.service.TikTokEtlService] - === Starting TikTok ETL process ===
-2025-07-25 11:24:34.183 [main] DEBUG [c.guno.etl.service.TikTokApiService] - Fetching TikTok orders for date: 2025-07-23 - page: 1, limit: 10, filter: update
-2025-07-25 11:24:34.955 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
-2025-07-25 11:24:35.236 [main] DEBUG [c.guno.etl.service.TikTokApiService] - TikTok API response: Status=1, Message=ok, Orders=10
-2025-07-25 11:24:35.236 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579729570285978725
-2025-07-25 11:24:35.268 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_b61ae00df03e
-2025-07-25 11:24:35.297 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579729570285978725
-2025-07-25 11:24:35.326 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG113DOM
-2025-07-25 11:24:35.326 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579729570285978725
-2025-07-25 11:24:35.376 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579729570285978725
-2025-07-25 11:24:35.439 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579729570285978725 - SKU: 1731906000044394492
-2025-07-25 11:24:35.440 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579729570285978725
-2025-07-25 11:24:35.489 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579729570285978725
-2025-07-25 11:24:35.924 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579729570285978725 with status: AWAITING_SHIPMENT
-2025-07-25 11:24:35.954 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status AWAITING_SHIPMENT
-2025-07-25 11:24:35.955 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579729570285978725
-2025-07-25 11:24:36.014 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579729570285978725 to status: AWAITING_SHIPMENT
-2025-07-25 11:24:36.014 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579729570285978725
-2025-07-25 11:24:36.478 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579729570285978725 status: AWAITING_SHIPMENT
-2025-07-25 11:24:36.478 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579729514519954890
-2025-07-25 11:24:36.509 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_b86f7f9acaba
-2025-07-25 11:24:36.539 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579729514519954890
-2025-07-25 11:24:36.799 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG113DENL
-2025-07-25 11:24:36.799 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579729514519954890
-2025-07-25 11:24:36.919 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579729514519954890
-2025-07-25 11:24:36.976 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579729514519954890 - SKU: 1731906118248335356
-2025-07-25 11:24:36.976 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579729514519954890
-2025-07-25 11:24:37.005 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579729514519954890
-2025-07-25 11:24:37.330 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579729514519954890 with status: AWAITING_SHIPMENT
-2025-07-25 11:24:37.359 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status AWAITING_SHIPMENT
-2025-07-25 11:24:37.359 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579729514519954890
-2025-07-25 11:24:37.428 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579729514519954890 to status: AWAITING_SHIPMENT
-2025-07-25 11:24:37.429 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579729514519954890
-2025-07-25 11:24:37.489 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579729514519954890 status: AWAITING_SHIPMENT
-2025-07-25 11:24:37.489 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579713111286777603
-2025-07-25 11:24:37.517 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_9e50914f27d4
-2025-07-25 11:24:37.547 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579713111286777603
-2025-07-25 11:24:37.575 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG69DENL
-2025-07-25 11:24:37.575 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579713111286777603
-2025-07-25 11:24:37.909 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579713111286777603
-2025-07-25 11:24:37.939 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579713111286777603 - SKU: 1731155127904471036
-2025-07-25 11:24:37.939 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579713111286777603
-2025-07-25 11:24:37.970 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579713111286777603
-2025-07-25 11:24:38.056 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579713111286777603 with status: CANCELLED
-2025-07-25 11:24:38.087 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status CANCELLED
-2025-07-25 11:24:38.087 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579713111286777603
-2025-07-25 11:24:38.350 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579713111286777603 to status: CANCELLED
-2025-07-25 11:24:38.350 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579713111286777603
-2025-07-25 11:24:38.407 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579713111286777603 status: CANCELLED
-2025-07-25 11:24:38.407 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579729462419620959
-2025-07-25 11:24:38.436 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_a0f220341335
-2025-07-25 11:24:38.463 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579729462419620959
-2025-07-25 11:24:38.491 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25BG49DENL
-2025-07-25 11:24:38.491 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579729462419620959
-2025-07-25 11:24:38.611 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579729462419620959
-2025-07-25 11:24:38.742 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579729462419620959 - SKU: 1732161445907631100
-2025-07-25 11:24:38.742 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579729462419620959
-2025-07-25 11:24:38.771 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579729462419620959
-2025-07-25 11:24:38.932 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579729462419620959 with status: AWAITING_SHIPMENT
-2025-07-25 11:24:38.986 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status AWAITING_SHIPMENT
-2025-07-25 11:24:38.986 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579729462419620959
-2025-07-25 11:24:39.050 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579729462419620959 to status: AWAITING_SHIPMENT
-2025-07-25 11:24:39.050 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579729462419620959
-2025-07-25 11:24:39.125 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579729462419620959 status: AWAITING_SHIPMENT
-2025-07-25 11:24:39.125 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579710491221591794
-2025-07-25 11:24:39.153 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_4d3cff3c0249
-2025-07-25 11:24:39.398 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579710491221591794
-2025-07-25 11:24:39.432 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25BG115THANM
-2025-07-25 11:24:39.432 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579710491221591794
-2025-07-25 11:24:39.551 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579710491221591794
-2025-07-25 11:24:39.578 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579710491221591794 - SKU: 1731996030197925884
-2025-07-25 11:24:39.578 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579710491221591794
-2025-07-25 11:24:39.608 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579710491221591794
-2025-07-25 11:24:39.695 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579710491221591794 with status: CANCELLED
-2025-07-25 11:24:39.816 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status CANCELLED
-2025-07-25 11:24:39.816 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579710491221591794
-2025-07-25 11:24:39.952 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579710491221591794 to status: CANCELLED
-2025-07-25 11:24:39.952 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579710491221591794
-2025-07-25 11:24:40.017 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579710491221591794 status: CANCELLED
-2025-07-25 11:24:40.017 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579703626452338291
-2025-07-25 11:24:40.046 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_70dba1db853a
-2025-07-25 11:24:40.076 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579703626452338291
-2025-07-25 11:24:40.106 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 
-2025-07-25 11:24:40.107 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579703626452338291
-2025-07-25 11:24:40.446 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579703626452338291
-2025-07-25 11:24:40.475 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579703626452338291 - SKU: 1731846622333929468
-2025-07-25 11:24:40.475 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579703626452338291
-2025-07-25 11:24:40.503 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579703626452338291
-2025-07-25 11:24:40.589 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579703626452338291 with status: DELIVERED
-2025-07-25 11:24:40.620 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status DELIVERED
-2025-07-25 11:24:40.621 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579703626452338291
-2025-07-25 11:24:40.715 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579703626452338291 to status: DELIVERED
-2025-07-25 11:24:40.715 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579703626452338291
-2025-07-25 11:24:40.999 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579703626452338291 status: DELIVERED
-2025-07-25 11:24:40.999 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579721022288528516
-2025-07-25 11:24:41.029 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_1f1b3e14ed90
-2025-07-25 11:24:41.059 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579721022288528516
-2025-07-25 11:24:41.090 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25BG108THANS
-2025-07-25 11:24:41.091 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579721022288528516
-2025-07-25 11:24:41.225 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579721022288528516
-2025-07-25 11:24:41.256 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579721022288528516 - SKU: 1731870619421804540
-2025-07-25 11:24:41.256 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579721022288528516
-2025-07-25 11:24:41.495 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579721022288528516
-2025-07-25 11:24:41.588 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579721022288528516 with status: CANCELLED
-2025-07-25 11:24:41.616 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status CANCELLED
-2025-07-25 11:24:41.616 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579721022288528516
-2025-07-25 11:24:41.676 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579721022288528516 to status: CANCELLED
-2025-07-25 11:24:41.676 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579721022288528516
-2025-07-25 11:24:41.736 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579721022288528516 status: CANCELLED
-2025-07-25 11:24:41.736 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579720599633822807
-2025-07-25 11:24:41.765 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_f84341fb821a
-2025-07-25 11:24:41.794 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579720599633822807
-2025-07-25 11:24:41.925 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 24HANU99HONGL
-2025-07-25 11:24:41.925 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579720599633822807
-2025-07-25 11:24:42.153 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579720599633822807
-2025-07-25 11:24:42.192 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579720599633822807 - SKU: 1731178544832874492
-2025-07-25 11:24:42.192 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579720599633822807
-2025-07-25 11:24:42.222 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579720599633822807
-2025-07-25 11:24:42.544 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579720599633822807 with status: IN_TRANSIT
-2025-07-25 11:24:42.574 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status IN_TRANSIT
-2025-07-25 11:24:42.575 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579720599633822807
-2025-07-25 11:24:42.635 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579720599633822807 to status: IN_TRANSIT
-2025-07-25 11:24:42.635 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579720599633822807
-2025-07-25 11:24:42.716 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579720599633822807 status: IN_TRANSIT
-2025-07-25 11:24:42.716 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579723300887234277
-2025-07-25 11:24:42.747 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_69c24d70c4a1
-2025-07-25 11:24:42.774 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579723300887234277
-2025-07-25 11:24:42.838 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG50THANM
-2025-07-25 11:24:42.838 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579723300887234277
-2025-07-25 11:24:43.096 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579723300887234277
-2025-07-25 11:24:43.126 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579723300887234277 - SKU: 1731198252444387324
-2025-07-25 11:24:43.126 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579723300887234277
-2025-07-25 11:24:43.173 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579723300887234277
-2025-07-25 11:24:43.263 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579723300887234277 with status: IN_TRANSIT
-2025-07-25 11:24:43.294 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status IN_TRANSIT
-2025-07-25 11:24:43.294 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579723300887234277
-2025-07-25 11:24:43.355 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579723300887234277 to status: IN_TRANSIT
-2025-07-25 11:24:43.355 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579723300887234277
-2025-07-25 11:24:43.649 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579723300887234277 status: IN_TRANSIT
-2025-07-25 11:24:43.649 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579715326115874367
-2025-07-25 11:24:43.677 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_694a7ca43ef8
-2025-07-25 11:24:43.708 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579715326115874367
-2025-07-25 11:24:43.737 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG50CAMXL
-2025-07-25 11:24:43.737 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579715326115874367
-2025-07-25 11:24:43.857 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579715326115874367
-2025-07-25 11:24:43.886 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579715326115874367 - SKU: 1731198252445566972
-2025-07-25 11:24:43.886 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579715326115874367
-2025-07-25 11:24:43.985 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579715326115874367
-2025-07-25 11:24:44.144 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579715326115874367 with status: IN_TRANSIT
-2025-07-25 11:24:44.175 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status IN_TRANSIT
-2025-07-25 11:24:44.175 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579715326115874367
-2025-07-25 11:24:44.239 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579715326115874367 to status: IN_TRANSIT
-2025-07-25 11:24:44.239 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579715326115874367
-2025-07-25 11:24:44.302 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579715326115874367 status: IN_TRANSIT
-2025-07-25 11:24:44.302 [main] INFO  [c.guno.etl.service.TikTokEtlService] - TikTok ETL completed: 10/10 orders processed
-2025-07-25 11:24:44.955 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
-2025-07-25 11:24:46.246 [main] INFO  [c.g.e.service.MultiPlatformScheduler] - Manual ETL trigger initiated
-2025-07-25 11:24:46.246 [main] INFO  [c.guno.etl.service.TikTokEtlService] - === Starting TikTok ETL process ===
-2025-07-25 11:24:46.246 [main] DEBUG [c.guno.etl.service.TikTokApiService] - Fetching TikTok orders for date: 2025-07-23 - page: 1, limit: 10, filter: update
-2025-07-25 11:24:46.743 [main] DEBUG [c.guno.etl.service.TikTokApiService] - TikTok API response: Status=1, Message=ok, Orders=10
-2025-07-25 11:24:46.743 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579729570285978725
-2025-07-25 11:24:46.772 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_b61ae00df03e
-2025-07-25 11:24:46.801 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579729570285978725
-2025-07-25 11:24:46.829 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG113DOM
-2025-07-25 11:24:46.829 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579729570285978725
-2025-07-25 11:24:46.859 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579729570285978725
-2025-07-25 11:24:46.941 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579729570285978725 - SKU: 1731906000044394492
-2025-07-25 11:24:46.941 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579729570285978725
-2025-07-25 11:24:46.971 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579729570285978725
-2025-07-25 11:24:47.158 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579729570285978725 with status: AWAITING_SHIPMENT
-2025-07-25 11:24:47.262 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status AWAITING_SHIPMENT
-2025-07-25 11:24:47.262 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579729570285978725
-2025-07-25 11:24:47.323 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579729570285978725 to status: AWAITING_SHIPMENT
-2025-07-25 11:24:47.323 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579729570285978725
-2025-07-25 11:24:47.395 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579729570285978725 status: AWAITING_SHIPMENT
-2025-07-25 11:24:47.395 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579729514519954890
-2025-07-25 11:24:47.426 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_b86f7f9acaba
-2025-07-25 11:24:47.454 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579729514519954890
-2025-07-25 11:24:47.486 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG113DENL
-2025-07-25 11:24:47.486 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579729514519954890
-2025-07-25 11:24:47.847 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579729514519954890
-2025-07-25 11:24:47.878 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579729514519954890 - SKU: 1731906118248335356
-2025-07-25 11:24:47.878 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579729514519954890
-2025-07-25 11:24:47.907 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579729514519954890
-2025-07-25 11:24:47.994 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579729514519954890 with status: AWAITING_SHIPMENT
-2025-07-25 11:24:48.026 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status AWAITING_SHIPMENT
-2025-07-25 11:24:48.027 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579729514519954890
-2025-07-25 11:24:48.181 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579729514519954890 to status: AWAITING_SHIPMENT
-2025-07-25 11:24:48.181 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579729514519954890
-2025-07-25 11:24:48.310 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579729514519954890 status: AWAITING_SHIPMENT
-2025-07-25 11:24:48.310 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579713111286777603
-2025-07-25 11:24:48.344 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_9e50914f27d4
-2025-07-25 11:24:48.373 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579713111286777603
-2025-07-25 11:24:48.404 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG69DENL
-2025-07-25 11:24:48.404 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579713111286777603
-2025-07-25 11:24:48.522 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579713111286777603
-2025-07-25 11:24:48.550 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579713111286777603 - SKU: 1731155127904471036
-2025-07-25 11:24:48.551 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579713111286777603
-2025-07-25 11:24:48.578 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579713111286777603
-2025-07-25 11:24:48.898 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579713111286777603 with status: CANCELLED
-2025-07-25 11:24:48.927 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status CANCELLED
-2025-07-25 11:24:48.927 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579713111286777603
-2025-07-25 11:24:48.986 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579713111286777603 to status: CANCELLED
-2025-07-25 11:24:48.986 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579713111286777603
-2025-07-25 11:24:49.068 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579713111286777603 status: CANCELLED
-2025-07-25 11:24:49.068 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579729462419620959
-2025-07-25 11:24:49.098 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_a0f220341335
-2025-07-25 11:24:49.127 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579729462419620959
-2025-07-25 11:24:49.228 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25BG49DENL
-2025-07-25 11:24:49.228 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579729462419620959
-2025-07-25 11:24:49.414 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579729462419620959
-2025-07-25 11:24:49.442 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579729462419620959 - SKU: 1732161445907631100
-2025-07-25 11:24:49.442 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579729462419620959
-2025-07-25 11:24:49.471 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579729462419620959
-2025-07-25 11:24:49.584 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579729462419620959 with status: AWAITING_SHIPMENT
-2025-07-25 11:24:49.614 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status AWAITING_SHIPMENT
-2025-07-25 11:24:49.615 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579729462419620959
-2025-07-25 11:24:49.883 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579729462419620959 to status: AWAITING_SHIPMENT
-2025-07-25 11:24:49.883 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579729462419620959
-2025-07-25 11:24:49.946 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579729462419620959 status: AWAITING_SHIPMENT
-2025-07-25 11:24:49.946 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579710491221591794
-2025-07-25 11:24:50.003 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_4d3cff3c0249
-2025-07-25 11:24:50.031 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579710491221591794
-2025-07-25 11:24:50.058 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25BG115THANM
-2025-07-25 11:24:50.058 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579710491221591794
-2025-07-25 11:24:50.183 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579710491221591794
-2025-07-25 11:24:50.314 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579710491221591794 - SKU: 1731996030197925884
-2025-07-25 11:24:50.314 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579710491221591794
-2025-07-25 11:24:50.409 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579710491221591794
-2025-07-25 11:24:50.500 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579710491221591794 with status: CANCELLED
-2025-07-25 11:24:50.528 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status CANCELLED
-2025-07-25 11:24:50.528 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579710491221591794
-2025-07-25 11:24:50.589 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579710491221591794 to status: CANCELLED
-2025-07-25 11:24:50.589 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579710491221591794
-2025-07-25 11:24:50.678 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579710491221591794 status: CANCELLED
-2025-07-25 11:24:50.678 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579703626452338291
-2025-07-25 11:24:50.706 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_70dba1db853a
-2025-07-25 11:24:50.933 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579703626452338291
-2025-07-25 11:24:50.963 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 
-2025-07-25 11:24:50.963 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579703626452338291
-2025-07-25 11:24:51.103 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579703626452338291
-2025-07-25 11:24:51.134 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579703626452338291 - SKU: 1731846622333929468
-2025-07-25 11:24:51.134 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579703626452338291
-2025-07-25 11:24:51.161 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579703626452338291
-2025-07-25 11:24:51.359 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579703626452338291 with status: DELIVERED
-2025-07-25 11:24:51.479 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status DELIVERED
-2025-07-25 11:24:51.479 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579703626452338291
-2025-07-25 11:24:51.570 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579703626452338291 to status: DELIVERED
-2025-07-25 11:24:51.570 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579703626452338291
-2025-07-25 11:24:51.642 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579703626452338291 status: DELIVERED
-2025-07-25 11:24:51.642 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579721022288528516
-2025-07-25 11:24:51.671 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_1f1b3e14ed90
-2025-07-25 11:24:51.698 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579721022288528516
-2025-07-25 11:24:51.726 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25BG108THANS
-2025-07-25 11:24:51.726 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579721022288528516
-2025-07-25 11:24:52.067 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579721022288528516
-2025-07-25 11:24:52.098 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579721022288528516 - SKU: 1731870619421804540
-2025-07-25 11:24:52.098 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579721022288528516
-2025-07-25 11:24:52.125 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579721022288528516
-2025-07-25 11:24:52.211 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579721022288528516 with status: CANCELLED
-2025-07-25 11:24:52.243 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status CANCELLED
-2025-07-25 11:24:52.243 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579721022288528516
-2025-07-25 11:24:52.374 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579721022288528516 to status: CANCELLED
-2025-07-25 11:24:52.374 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579721022288528516
-2025-07-25 11:24:52.505 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579721022288528516 status: CANCELLED
-2025-07-25 11:24:52.505 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579720599633822807
-2025-07-25 11:24:52.534 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_f84341fb821a
-2025-07-25 11:24:52.562 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579720599633822807
-2025-07-25 11:24:52.590 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 24HANU99HONGL
-2025-07-25 11:24:52.590 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579720599633822807
-2025-07-25 11:24:52.712 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579720599633822807
-2025-07-25 11:24:52.742 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579720599633822807 - SKU: 1731178544832874492
-2025-07-25 11:24:52.742 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579720599633822807
-2025-07-25 11:24:52.771 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579720599633822807
-2025-07-25 11:24:53.085 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579720599633822807 with status: IN_TRANSIT
-2025-07-25 11:24:53.116 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status IN_TRANSIT
-2025-07-25 11:24:53.116 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579720599633822807
-2025-07-25 11:24:53.174 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579720599633822807 to status: IN_TRANSIT
-2025-07-25 11:24:53.174 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579720599633822807
-2025-07-25 11:24:53.261 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579720599633822807 status: IN_TRANSIT
-2025-07-25 11:24:53.261 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579723300887234277
-2025-07-25 11:24:53.292 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_69c24d70c4a1
-2025-07-25 11:24:53.327 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579723300887234277
-2025-07-25 11:24:53.423 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG50THANM
-2025-07-25 11:24:53.423 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579723300887234277
-2025-07-25 11:24:53.607 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579723300887234277
-2025-07-25 11:24:53.636 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579723300887234277 - SKU: 1731198252444387324
-2025-07-25 11:24:53.637 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579723300887234277
-2025-07-25 11:24:53.664 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579723300887234277
-2025-07-25 11:24:53.803 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579723300887234277 with status: IN_TRANSIT
-2025-07-25 11:24:53.832 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status IN_TRANSIT
-2025-07-25 11:24:53.832 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579723300887234277
-2025-07-25 11:24:54.304 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579723300887234277 to status: IN_TRANSIT
-2025-07-25 11:24:54.305 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579723300887234277
-2025-07-25 11:24:54.364 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579723300887234277 status: IN_TRANSIT
-2025-07-25 11:24:54.364 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing TikTok order: 579715326115874367
-2025-07-25 11:24:54.733 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok customer: TIKTOK_694a7ca43ef8
-2025-07-25 11:24:54.781 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok order: 579715326115874367
-2025-07-25 11:24:54.808 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok product: 25AG50CAMXL
-2025-07-25 11:24:54.809 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order items for order: 579715326115874367
-2025-07-25 11:24:54.955 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
-2025-07-25 11:24:55.127 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Deleted 1 existing items for order: 579715326115874367
-2025-07-25 11:24:55.157 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Created order item for order: 579715326115874367 - SKU: 1731198252445566972
-2025-07-25 11:24:55.157 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Order items processing completed for order: 579715326115874367
-2025-07-25 11:24:55.186 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok geography: 579715326115874367
-2025-07-25 11:24:55.269 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing status info for order: 579715326115874367 with status: IN_TRANSIT
-2025-07-25 11:24:55.327 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated TikTok status mapping for platform TIKTOK status IN_TRANSIT
-2025-07-25 11:24:55.327 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status transition for order: 579715326115874367
-2025-07-25 11:24:55.415 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status transition for order: 579715326115874367 to status: IN_TRANSIT
-2025-07-25 11:24:55.415 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Processing order status detail for order: 579715326115874367
-2025-07-25 11:24:55.550 [main] DEBUG [c.guno.etl.service.TikTokEtlService] - Updated status detail for order: 579715326115874367 status: IN_TRANSIT
-2025-07-25 11:24:55.550 [main] INFO  [c.guno.etl.service.TikTokEtlService] - TikTok ETL completed: 10/10 orders processed
-2025-07-25 11:24:55.718 [main] INFO  [c.g.e.service.MultiPlatformScheduler] - Manual ETL completed: Shopee=false, TikTok=true, Duration=9471ms
-2025-07-25 11:24:57.797 [main] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-07-25 11:24:57.806 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown initiated...
-2025-07-25 11:24:57.808 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown completed.
+2025-08-07 10:50:26.545 [main] INFO  [com.guno.etl.FacebookEtlServiceTest] - Starting FacebookEtlServiceTest using Java 21.0.7 with PID 92825 (started by nhokluvavie in /Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test)
+2025-08-07 10:50:26.550 [main] INFO  [com.guno.etl.FacebookEtlServiceTest] - The following 1 profile is active: "test"
+2025-08-07 10:50:27.432 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-07 10:50:27.769 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 318 ms. Found 11 JPA repository interfaces.
+2025-08-07 10:50:28.827 [main] INFO  [o.h.jpa.internal.util.LogHelper] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-07 10:50:28.959 [main] INFO  [org.hibernate.Version] - HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-08-07 10:50:29.040 [main] INFO  [o.h.c.i.RegionFactoryInitiator] - HHH000026: Second-level cache disabled
+2025-08-07 10:50:29.589 [main] INFO  [o.s.o.j.p.SpringPersistenceUnitInfo] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-07 10:50:29.638 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Starting...
+2025-08-07 10:50:30.269 [main] INFO  [com.zaxxer.hikari.pool.HikariPool] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1d944fc0
+2025-08-07 10:50:30.272 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Start completed.
+2025-08-07 10:50:30.386 [main] WARN  [org.hibernate.orm.deprecation] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-07 10:50:33.183 [main] INFO  [o.h.e.t.j.p.i.JtaPlatformInitiator] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-07 10:50:33.192 [main] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-07 10:50:33.243 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Added Authorization header to API client
+2025-08-07 10:50:33.605 [main] INFO  [c.guno.etl.service.ShopeeApiService] - ShopeeApiService initialized with base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/shopee
+2025-08-07 10:50:33.605 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Default settings - Page size: 10, Timeout: PT1M, Max retries: 2
+2025-08-07 10:50:33.606 [main] INFO  [c.guno.etl.service.ShopeeApiService] - Headers configured - Auth: ***SET***, API-Key: ***SET***
+2025-08-07 10:50:34.013 [main] INFO  [o.s.d.j.r.query.QueryEnhancerFactory] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-07 10:50:35.979 [main] INFO  [c.guno.etl.service.TikTokApiService] - TikTok API Service initialized with auth header: ***CONFIGURED***
+2025-08-07 10:50:35.981 [main] INFO  [c.guno.etl.service.TikTokApiService] - TikTok API Service initialized:
+2025-08-07 10:50:35.981 [main] INFO  [c.guno.etl.service.TikTokApiService] -   Base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/tiktok
+2025-08-07 10:50:35.981 [main] INFO  [c.guno.etl.service.TikTokApiService] -   Timeout: PT1Ms
+2025-08-07 10:50:35.981 [main] INFO  [c.guno.etl.service.TikTokApiService] -   Page Size: 10
+2025-08-07 10:50:35.981 [main] INFO  [c.guno.etl.service.TikTokApiService] -   Max Retries: 2
+2025-08-07 10:50:36.009 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Database configuration initialized
+2025-08-07 10:50:36.009 [main] INFO  [com.guno.etl.config.DatabaseConfig] - JPA repositories enabled for package: com.guno.etl.repository
+2025-08-07 10:50:36.009 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Entity scan enabled for package: com.guno.etl.entity
+2025-08-07 10:50:36.057 [main] INFO  [c.guno.etl.config.SchedulingConfig] - ETL Task Scheduler configured:
+2025-08-07 10:50:36.058 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Pool Size: 2
+2025-08-07 10:50:36.058 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Name Prefix: ETL-Scheduler-
+2025-08-07 10:50:36.058 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Await Termination: 20 seconds
+2025-08-07 10:50:36.675 [main] INFO  [com.guno.etl.FacebookEtlServiceTest] - Started FacebookEtlServiceTest in 10.767 seconds (process running for 12.958)
+2025-08-07 10:50:36.785 [main] INFO  [c.g.e.c.StatusMappingInitializer] - === Initializing Status Mappings ===
+2025-08-07 10:50:36.785 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing SHOPEE status mappings...
+2025-08-07 10:50:37.672 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
+2025-08-07 10:50:37.802 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ SHOPEE status mappings: 0 created, 10 already existed
+2025-08-07 10:50:37.802 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing TIKTOK status mappings...
+2025-08-07 10:50:38.102 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ TIKTOK status mappings: 0 created, 10 already existed
+2025-08-07 10:50:38.102 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing FACEBOOK status mappings...
+2025-08-07 10:50:38.323 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ FACEBOOK status mappings: 0 created, 6 already existed
+2025-08-07 10:50:38.323 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ Status mappings initialization completed successfully
+2025-08-07 10:50:38.356 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-07 10:50:38.356 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🎉 SHOPEE ETL APPLICATION STARTED SUCCESSFULLY 🎉
+2025-08-07 10:50:38.356 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-07 10:50:38.356 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Application: shopee-etl-test
+2025-08-07 10:50:38.357 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Profile: test
+2025-08-07 10:50:38.357 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Java Version: 21.0.7
+2025-08-07 10:50:38.358 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Spring Boot Version: 3.2.0
+2025-08-07 10:50:38.358 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-07 10:50:38.358 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 📋 Configuration Summary:
+2025-08-07 10:50:38.358 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ----------------------------------------
+2025-08-07 10:50:38.358 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Database URL: jdbc:postgresql://103.97.125.92:5432/guno_db_test?useSSL=false
+2025-08-07 10:50:38.359 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Database User: guno_user
+2025-08-07 10:50:38.359 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API URL: Not configured
+2025-08-07 10:50:38.359 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API Timeout: Not configured
+2025-08-07 10:50:38.359 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API Page Size: Not configured
+2025-08-07 10:50:38.359 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Scheduler Enabled: false
+2025-08-07 10:50:38.359 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Scheduler Rate: 10000 ms
+2025-08-07 10:50:38.359 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Log Level: INFO
+2025-08-07 10:50:38.359 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Log File: logs/shopee-etl-production.log
+2025-08-07 10:50:38.360 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-07 10:50:38.360 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🌐 Access Information:
+2025-08-07 10:50:38.360 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ----------------------------------------
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Server Port: 8080
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Local Access: http://localhost:8080
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Network Access: http://127.0.0.1:8080
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 📚 API Documentation:
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Help: http://localhost:8080/api/etl/help
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Status: http://localhost:8080/api/etl/status
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Test API: http://localhost:8080/api/etl/api-test
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Manual ETL: POST http://localhost:8080/api/etl/trigger
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-07 10:50:38.362 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🔧 Management Endpoints:
+2025-08-07 10:50:38.363 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Health Check: http://localhost:8080/actuator/health
+2025-08-07 10:50:38.363 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Application Info: http://localhost:8080/actuator/info
+2025-08-07 10:50:38.363 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-07 10:50:38.363 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ⚡ ETL Operations:
+2025-08-07 10:50:38.363 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ⚠️ Automated ETL: DISABLED
+2025-08-07 10:50:38.363 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 💡 Use POST /api/etl/trigger for manual processing
+2025-08-07 10:50:38.363 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-07 10:50:38.363 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-07 10:50:38.363 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🚀 Ready to process Shopee orders!
+2025-08-07 10:50:38.364 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-07 10:50:39.078 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-07, page: 1, limit: 10
+2025-08-07 10:50:47.672 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
+2025-08-07 10:50:51.127 [main] ERROR [c.g.etl.service.FacebookApiService] - Error fetching Facebook orders for date 2025-08-07 (page 1, limit 10): JSON decoding error: Cannot deserialize value of type `java.lang.Integer` from String "579930878511320022": Overflow: numeric value (579930878511320022) out of range of `java.lang.Integer` (-2147483648 -2147483647)
+2025-08-07 10:50:51.607 [main] INFO  [c.g.etl.service.FacebookEtlService] - 🚀 Starting Facebook ETL process...
+2025-08-07 10:50:51.607 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-07, page: 1, limit: 10
+2025-08-07 10:50:57.675 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
+2025-08-07 10:51:07.674 [ETL-Scheduler-2] DEBUG [c.g.e.service.MultiPlatformScheduler] - Multi-platform scheduler is disabled
+2025-08-07 10:51:13.888 [reactor-http-nio-2] WARN  [r.n.http.client.HttpClientConnect] - [b715256e-2, L:/192.168.64.184:55228 ! R:n8n.guno.club/104.21.51.207:443] The connection observed an error
+reactor.netty.http.client.PrematureCloseException: Connection prematurely closed BEFORE response
+2025-08-07 10:51:13.894 [main] ERROR [c.g.etl.service.FacebookApiService] - Error fetching Facebook orders for date 2025-08-07 (page 1, limit 10): Connection prematurely closed BEFORE response
+2025-08-07 10:51:13.895 [main] ERROR [c.g.etl.service.FacebookEtlService] - 💥 Facebook ETL process failed: Facebook API call failed
+java.lang.RuntimeException: Facebook API call failed
+	at com.guno.etl.service.FacebookApiService.fetchOrdersForDate(FacebookApiService.java:122)
+	at com.guno.etl.service.FacebookApiService.fetchUpdatedOrders(FacebookApiService.java:66)
+	at com.guno.etl.service.FacebookApiService.fetchUpdatedOrders(FacebookApiService.java:58)
+	at com.guno.etl.service.FacebookEtlService.processUpdatedOrders(FacebookEtlService.java:65)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:717)
+	at com.guno.etl.service.FacebookEtlService$$SpringCGLIB$$0.processUpdatedOrders(<generated>)
+	at com.guno.etl.FacebookEtlServiceTest.testFacebookEtlProcessing(FacebookEtlServiceTest.java:114)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.SessionPerRequestLauncher.execute(SessionPerRequestLauncher.java:63)
+	at com.intellij.junit5.JUnit5IdeaTestRunner.startRunnerWithArgs(JUnit5IdeaTestRunner.java:57)
+	at com.intellij.rt.junit.IdeaTestRunner$Repeater$1.execute(IdeaTestRunner.java:38)
+	at com.intellij.rt.execution.junit.TestsRepeater.repeat(TestsRepeater.java:11)
+	at com.intellij.rt.junit.IdeaTestRunner$Repeater.startRunnerWithArgs(IdeaTestRunner.java:35)
+	at com.intellij.rt.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:231)
+	at com.intellij.rt.junit.JUnitStarter.main(JUnitStarter.java:55)
+Caused by: org.springframework.web.reactive.function.client.WebClientRequestException: Connection prematurely closed BEFORE response
+	at org.springframework.web.reactive.function.client.ExchangeFunctions$DefaultExchangeFunction.lambda$wrapException$9(ExchangeFunctions.java:136)
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ Request to GET https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/facebook?date=2025-08-07&page=1&limit=10&filter-date=update [DefaultWebClient]
+Original Stack Trace:
+		at org.springframework.web.reactive.function.client.ExchangeFunctions$DefaultExchangeFunction.lambda$wrapException$9(ExchangeFunctions.java:136)
+		at reactor.core.publisher.MonoErrorSupplied.subscribe(MonoErrorSupplied.java:55)
+		at reactor.core.publisher.Mono.subscribe(Mono.java:4512)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onError(FluxOnErrorResume.java:103)
+		at reactor.core.publisher.FluxPeek$PeekSubscriber.onError(FluxPeek.java:222)
+		at reactor.core.publisher.FluxPeek$PeekSubscriber.onError(FluxPeek.java:222)
+		at reactor.core.publisher.FluxPeek$PeekSubscriber.onError(FluxPeek.java:222)
+		at reactor.core.publisher.MonoNext$NextSubscriber.onError(MonoNext.java:93)
+		at reactor.core.publisher.MonoFlatMapMany$FlatMapManyMain.onError(MonoFlatMapMany.java:204)
+		at reactor.core.publisher.SerializedSubscriber.onError(SerializedSubscriber.java:124)
+		at reactor.core.publisher.FluxRetryWhen$RetryWhenMainSubscriber.whenError(FluxRetryWhen.java:228)
+		at reactor.core.publisher.FluxRetryWhen$RetryWhenOtherSubscriber.onError(FluxRetryWhen.java:278)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onError(FluxContextWrite.java:121)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.maybeOnError(FluxConcatMapNoPrefetch.java:326)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.onNext(FluxConcatMapNoPrefetch.java:211)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+		at reactor.core.publisher.SinkManyEmitterProcessor.drain(SinkManyEmitterProcessor.java:476)
+		at reactor.core.publisher.SinkManyEmitterProcessor$EmitterInner.drainParent(SinkManyEmitterProcessor.java:620)
+		at reactor.core.publisher.FluxPublish$PubSubInner.request(FluxPublish.java:874)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.request(FluxConcatMapNoPrefetch.java:336)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.request(FluxContextWrite.java:136)
+		at reactor.core.publisher.Operators$DeferredSubscription.request(Operators.java:1743)
+		at reactor.core.publisher.FluxRetryWhen$RetryWhenMainSubscriber.onError(FluxRetryWhen.java:195)
+		at reactor.core.publisher.MonoCreate$DefaultMonoSink.error(MonoCreate.java:205)
+		at reactor.netty.http.client.HttpClientConnect$HttpObserver.onUncaughtException(HttpClientConnect.java:403)
+		at reactor.netty.ReactorNetty$CompositeConnectionObserver.onUncaughtException(ReactorNetty.java:703)
+		at reactor.netty.resources.DefaultPooledConnectionProvider$DisposableAcquire.onUncaughtException(DefaultPooledConnectionProvider.java:213)
+		at reactor.netty.resources.DefaultPooledConnectionProvider$PooledConnection.onUncaughtException(DefaultPooledConnectionProvider.java:466)
+		at reactor.netty.http.client.HttpClientOperations.onInboundClose(HttpClientOperations.java:317)
+		at reactor.netty.channel.ChannelOperationsHandler.channelInactive(ChannelOperationsHandler.java:73)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+		at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81)
+		at io.netty.handler.codec.http.HttpContentDecoder.channelInactive(HttpContentDecoder.java:235)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+		at io.netty.channel.CombinedChannelDuplexHandler$DelegatingChannelHandlerContext.fireChannelInactive(CombinedChannelDuplexHandler.java:418)
+		at io.netty.handler.codec.ByteToMessageDecoder.channelInputClosed(ByteToMessageDecoder.java:411)
+		at io.netty.handler.codec.ByteToMessageDecoder.channelInactive(ByteToMessageDecoder.java:376)
+		at io.netty.handler.codec.http.HttpClientCodec$Decoder.channelInactive(HttpClientCodec.java:328)
+		at io.netty.channel.CombinedChannelDuplexHandler.channelInactive(CombinedChannelDuplexHandler.java:221)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+		at io.netty.handler.codec.ByteToMessageDecoder.channelInputClosed(ByteToMessageDecoder.java:411)
+		at io.netty.handler.codec.ByteToMessageDecoder.channelInactive(ByteToMessageDecoder.java:376)
+		at io.netty.handler.ssl.SslHandler.channelInactive(SslHandler.java:1174)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274)
+		at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281)
+		at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901)
+		at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813)
+		at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173)
+		at io.netty.util.concurrent.AbstractEventExecutor.safeExecute$$$capture(AbstractEventExecutor.java:166)
+		at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java)
+		at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasksFrom(SingleThreadEventExecutor.java:426)
+		at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:375)
+		at io.netty.util.concurrent.SingleThreadEventExecutor.confirmShutdown(SingleThreadEventExecutor.java:763)
+		at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:596)
+		at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+		at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+		at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+		at java.base/java.lang.Thread.run(Thread.java:1583)
+	Suppressed: java.lang.Exception: #block terminated with an error
+		at reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:103)
+		at reactor.core.publisher.Mono.block(Mono.java:1728)
+		at com.guno.etl.service.FacebookApiService.fetchOrdersForDate(FacebookApiService.java:106)
+		at com.guno.etl.service.FacebookApiService.fetchUpdatedOrders(FacebookApiService.java:66)
+		at com.guno.etl.service.FacebookApiService.fetchUpdatedOrders(FacebookApiService.java:58)
+		at com.guno.etl.service.FacebookEtlService.processUpdatedOrders(FacebookEtlService.java:65)
+		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352)
+		at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+		at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+		at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+		at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
+		at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
+		at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+		at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+		at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+		at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:717)
+		at com.guno.etl.service.FacebookEtlService$$SpringCGLIB$$0.processUpdatedOrders(<generated>)
+		at com.guno.etl.FacebookEtlServiceTest.testFacebookEtlProcessing(FacebookEtlServiceTest.java:114)
+		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+		at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+		at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+		at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+		at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+		at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+		at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+		at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+		at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+		at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+		at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+		at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+		at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+		at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+		at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+		at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+		at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+		at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+		at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+		at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+		at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+		at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+		at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+		at org.junit.platform.launcher.core.SessionPerRequestLauncher.execute(SessionPerRequestLauncher.java:63)
+		at com.intellij.junit5.JUnit5IdeaTestRunner.startRunnerWithArgs(JUnit5IdeaTestRunner.java:57)
+		at com.intellij.rt.junit.IdeaTestRunner$Repeater$1.execute(IdeaTestRunner.java:38)
+		at com.intellij.rt.execution.junit.TestsRepeater.repeat(TestsRepeater.java:11)
+		at com.intellij.rt.junit.IdeaTestRunner$Repeater.startRunnerWithArgs(IdeaTestRunner.java:35)
+		at com.intellij.rt.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:231)
+		at com.intellij.rt.junit.JUnitStarter.main(JUnitStarter.java:55)
+Caused by: reactor.netty.http.client.PrematureCloseException: Connection prematurely closed BEFORE response
+2025-08-07 10:51:13.922 [main] INFO  [c.g.etl.service.FacebookEtlService] - 🚀 Starting Facebook ETL process...
+2025-08-07 10:51:13.923 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-07, page: 1, limit: 10
+2025-08-07 10:51:15.566 [main] ERROR [c.g.etl.service.FacebookApiService] - Error fetching Facebook orders for date 2025-08-07 (page 1, limit 10): JSON decoding error: Cannot deserialize value of type `java.lang.Integer` from String "579930878511320022": Overflow: numeric value (579930878511320022) out of range of `java.lang.Integer` (-2147483648 -2147483647)
+2025-08-07 10:51:15.566 [main] ERROR [c.g.etl.service.FacebookEtlService] - 💥 Facebook ETL process failed: Facebook API call failed
+java.lang.RuntimeException: Facebook API call failed
+	at com.guno.etl.service.FacebookApiService.fetchOrdersForDate(FacebookApiService.java:122)
+	at com.guno.etl.service.FacebookApiService.fetchUpdatedOrders(FacebookApiService.java:66)
+	at com.guno.etl.service.FacebookApiService.fetchUpdatedOrders(FacebookApiService.java:58)
+	at com.guno.etl.service.FacebookEtlService.processUpdatedOrders(FacebookEtlService.java:65)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:717)
+	at com.guno.etl.service.FacebookEtlService$$SpringCGLIB$$0.processUpdatedOrders(<generated>)
+	at com.guno.etl.FacebookEtlServiceTest.testAllTablesPopulation(FacebookEtlServiceTest.java:152)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.SessionPerRequestLauncher.execute(SessionPerRequestLauncher.java:63)
+	at com.intellij.junit5.JUnit5IdeaTestRunner.startRunnerWithArgs(JUnit5IdeaTestRunner.java:57)
+	at com.intellij.rt.junit.IdeaTestRunner$Repeater$1.execute(IdeaTestRunner.java:38)
+	at com.intellij.rt.execution.junit.TestsRepeater.repeat(TestsRepeater.java:11)
+	at com.intellij.rt.junit.IdeaTestRunner$Repeater.startRunnerWithArgs(IdeaTestRunner.java:35)
+	at com.intellij.rt.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:231)
+	at com.intellij.rt.junit.JUnitStarter.main(JUnitStarter.java:55)
+Caused by: org.springframework.core.codec.DecodingException: JSON decoding error: Cannot deserialize value of type `java.lang.Integer` from String "579930878511320022": Overflow: numeric value (579930878511320022) out of range of `java.lang.Integer` (-2147483648 -2147483647)
+	at org.springframework.http.codec.json.AbstractJackson2Decoder.processException(AbstractJackson2Decoder.java:275)
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ Body from GET https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/facebook?date=2025-08-07&page=1&limit=10&filter-date=update [DefaultClientResponse]
+Original Stack Trace:
+		at org.springframework.http.codec.json.AbstractJackson2Decoder.processException(AbstractJackson2Decoder.java:275)
+		at org.springframework.http.codec.json.AbstractJackson2Decoder.decode(AbstractJackson2Decoder.java:211)
+		at org.springframework.http.codec.json.AbstractJackson2Decoder.lambda$decodeToMono$2(AbstractJackson2Decoder.java:191)
+		at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:132)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onNext(FluxMapFuseable.java:299)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onNext(FluxFilterFuseable.java:337)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.completePossiblyEmpty(Operators.java:2097)
+		at reactor.core.publisher.MonoCollect$CollectSubscriber.onComplete(MonoCollect.java:145)
+		at reactor.core.publisher.FluxMap$MapSubscriber.onComplete(FluxMap.java:144)
+		at reactor.core.publisher.FluxPeek$PeekSubscriber.onComplete(FluxPeek.java:260)
+		at reactor.core.publisher.FluxMap$MapSubscriber.onComplete(FluxMap.java:144)
+		at reactor.netty.channel.FluxReceive.onInboundComplete(FluxReceive.java:415)
+		at reactor.netty.channel.ChannelOperations.onInboundComplete(ChannelOperations.java:446)
+		at reactor.netty.channel.ChannelOperations.terminate(ChannelOperations.java:500)
+		at reactor.netty.http.client.HttpClientOperations.onInboundNext(HttpClientOperations.java:768)
+		at reactor.netty.channel.ChannelOperationsHandler.channelRead(ChannelOperationsHandler.java:114)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at io.netty.handler.codec.MessageToMessageDecoder.channelRead(MessageToMessageDecoder.java:103)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at io.netty.channel.CombinedChannelDuplexHandler$DelegatingChannelHandlerContext.fireChannelRead(CombinedChannelDuplexHandler.java:436)
+		at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:346)
+		at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:318)
+		at io.netty.channel.CombinedChannelDuplexHandler.channelRead(CombinedChannelDuplexHandler.java:251)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at io.netty.handler.ssl.SslHandler.unwrap(SslHandler.java:1475)
+		at io.netty.handler.ssl.SslHandler.decodeJdkCompatible(SslHandler.java:1338)
+		at io.netty.handler.ssl.SslHandler.decode(SslHandler.java:1387)
+		at io.netty.handler.codec.ByteToMessageDecoder.decodeRemovalReentryProtection(ByteToMessageDecoder.java:529)
+		at io.netty.handler.codec.ByteToMessageDecoder.callDecode(ByteToMessageDecoder.java:468)
+		at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:290)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1410)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:919)
+		at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+		at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+		at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+		at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+		at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+		at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+		at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+		at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+		at java.base/java.lang.Thread.run(Thread.java:1583)
+	Suppressed: java.lang.Exception: #block terminated with an error
+		at reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:103)
+		at reactor.core.publisher.Mono.block(Mono.java:1728)
+		at com.guno.etl.service.FacebookApiService.fetchOrdersForDate(FacebookApiService.java:106)
+		at com.guno.etl.service.FacebookApiService.fetchUpdatedOrders(FacebookApiService.java:66)
+		at com.guno.etl.service.FacebookApiService.fetchUpdatedOrders(FacebookApiService.java:58)
+		at com.guno.etl.service.FacebookEtlService.processUpdatedOrders(FacebookEtlService.java:65)
+		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352)
+		at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+		at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+		at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+		at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
+		at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
+		at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+		at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+		at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+		at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:717)
+		at com.guno.etl.service.FacebookEtlService$$SpringCGLIB$$0.processUpdatedOrders(<generated>)
+		at com.guno.etl.FacebookEtlServiceTest.testAllTablesPopulation(FacebookEtlServiceTest.java:152)
+		at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+		at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+		at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+		at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+		at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+		at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+		at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+		at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+		at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+		at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+		at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+		at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+		at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+		at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+		at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+		at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+		at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+		at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+		at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+		at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+		at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+		at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+		at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+		at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+		at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+		at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+		at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+		at org.junit.platform.launcher.core.SessionPerRequestLauncher.execute(SessionPerRequestLauncher.java:63)
+		at com.intellij.junit5.JUnit5IdeaTestRunner.startRunnerWithArgs(JUnit5IdeaTestRunner.java:57)
+		at com.intellij.rt.junit.IdeaTestRunner$Repeater$1.execute(IdeaTestRunner.java:38)
+		at com.intellij.rt.execution.junit.TestsRepeater.repeat(TestsRepeater.java:11)
+		at com.intellij.rt.junit.IdeaTestRunner$Repeater.startRunnerWithArgs(IdeaTestRunner.java:35)
+		at com.intellij.rt.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:231)
+		at com.intellij.rt.junit.JUnitStarter.main(JUnitStarter.java:55)
+Caused by: com.fasterxml.jackson.databind.exc.InvalidFormatException: Cannot deserialize value of type `java.lang.Integer` from String "579930878511320022": Overflow: numeric value (579930878511320022) out of range of `java.lang.Integer` (-2147483648 -2147483647)
+ at [Source: (org.springframework.core.io.buffer.DataBufferInputStream); line: 1, column: 197] (through reference chain: com.guno.etl.dto.FacebookApiResponse["data"]->com.guno.etl.dto.FacebookApiResponse$FacebookDataWrapper["orders"]->java.util.ArrayList[0]->com.guno.etl.dto.FacebookOrderDto["data"]->com.guno.etl.dto.FacebookOrderDto$FacebookOrderData["id"])
+	at com.fasterxml.jackson.databind.exc.InvalidFormatException.from(InvalidFormatException.java:67)
+	at com.fasterxml.jackson.databind.DeserializationContext.weirdStringException(DeserializationContext.java:2002)
+	at com.fasterxml.jackson.databind.DeserializationContext.handleWeirdStringValue(DeserializationContext.java:1230)
+	at com.fasterxml.jackson.databind.deser.std.StdDeserializer._parseInteger(StdDeserializer.java:836)
+	at com.fasterxml.jackson.databind.deser.std.StdDeserializer._parseInteger(StdDeserializer.java:824)
+	at com.fasterxml.jackson.databind.deser.std.NumberDeserializers$IntegerDeserializer.deserialize(NumberDeserializers.java:531)
+	at com.fasterxml.jackson.databind.deser.std.NumberDeserializers$IntegerDeserializer.deserialize(NumberDeserializers.java:506)
+	at com.fasterxml.jackson.databind.deser.impl.MethodProperty.deserializeAndSet(MethodProperty.java:129)
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserializeFromObject(BeanDeserializer.java:392)
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:185)
+	at com.fasterxml.jackson.databind.deser.impl.MethodProperty.deserializeAndSet(MethodProperty.java:129)
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserializeFromObject(BeanDeserializer.java:392)
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:185)
+	at com.fasterxml.jackson.databind.deser.std.CollectionDeserializer._deserializeFromArray(CollectionDeserializer.java:359)
+	at com.fasterxml.jackson.databind.deser.std.CollectionDeserializer.deserialize(CollectionDeserializer.java:244)
+	at com.fasterxml.jackson.databind.deser.std.CollectionDeserializer.deserialize(CollectionDeserializer.java:28)
+	at com.fasterxml.jackson.databind.deser.impl.MethodProperty.deserializeAndSet(MethodProperty.java:129)
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserializeFromObject(BeanDeserializer.java:392)
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:185)
+	at com.fasterxml.jackson.databind.deser.impl.MethodProperty.deserializeAndSet(MethodProperty.java:129)
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserializeFromObject(BeanDeserializer.java:392)
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:185)
+	at com.fasterxml.jackson.databind.deser.DefaultDeserializationContext.readRootValue(DefaultDeserializationContext.java:323)
+	at com.fasterxml.jackson.databind.ObjectReader._bindAndClose(ObjectReader.java:2105)
+	at com.fasterxml.jackson.databind.ObjectReader.readValue(ObjectReader.java:1481)
+	at org.springframework.http.codec.json.AbstractJackson2Decoder.decode(AbstractJackson2Decoder.java:206)
+	at org.springframework.http.codec.json.AbstractJackson2Decoder.lambda$decodeToMono$2(AbstractJackson2Decoder.java:191)
+	at reactor.core.publisher.MonoFlatMap$FlatMapMain.onNext(MonoFlatMap.java:132)
+	at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+	at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onNext(FluxMapFuseable.java:299)
+	at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onNext(FluxFilterFuseable.java:337)
+	at reactor.core.publisher.Operators$BaseFluxToMonoOperator.completePossiblyEmpty(Operators.java:2097)
+	at reactor.core.publisher.MonoCollect$CollectSubscriber.onComplete(MonoCollect.java:145)
+	at reactor.core.publisher.FluxMap$MapSubscriber.onComplete(FluxMap.java:144)
+	at reactor.core.publisher.FluxPeek$PeekSubscriber.onComplete(FluxPeek.java:260)
+	at reactor.core.publisher.FluxMap$MapSubscriber.onComplete(FluxMap.java:144)
+	at reactor.netty.channel.FluxReceive.onInboundComplete(FluxReceive.java:415)
+	at reactor.netty.channel.ChannelOperations.onInboundComplete(ChannelOperations.java:446)
+	at reactor.netty.channel.ChannelOperations.terminate(ChannelOperations.java:500)
+	at reactor.netty.http.client.HttpClientOperations.onInboundNext(HttpClientOperations.java:768)
+	at reactor.netty.channel.ChannelOperationsHandler.channelRead(ChannelOperationsHandler.java:114)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.codec.MessageToMessageDecoder.channelRead(MessageToMessageDecoder.java:103)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.CombinedChannelDuplexHandler$DelegatingChannelHandlerContext.fireChannelRead(CombinedChannelDuplexHandler.java:436)
+	at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:346)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:318)
+	at io.netty.channel.CombinedChannelDuplexHandler.channelRead(CombinedChannelDuplexHandler.java:251)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.ssl.SslHandler.unwrap(SslHandler.java:1475)
+	at io.netty.handler.ssl.SslHandler.decodeJdkCompatible(SslHandler.java:1338)
+	at io.netty.handler.ssl.SslHandler.decode(SslHandler.java:1387)
+	at io.netty.handler.codec.ByteToMessageDecoder.decodeRemovalReentryProtection(ByteToMessageDecoder.java:529)
+	at io.netty.handler.codec.ByteToMessageDecoder.callDecode(ByteToMessageDecoder.java:468)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:290)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1410)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:919)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2025-08-07 10:51:15.584 [main] INFO  [c.g.etl.service.FacebookEtlService] - 🚀 Starting Facebook ETL process...
+2025-08-07 10:51:15.585 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-07, page: 1, limit: 10
+2025-08-07 10:51:15.966 [SpringApplicationShutdownHook] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-08-07 10:51:15.975 [SpringApplicationShutdownHook] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown initiated...
+2025-08-07 10:51:15.978 [SpringApplicationShutdownHook] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown completed.
