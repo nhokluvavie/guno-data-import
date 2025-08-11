@@ -2,10 +2,7 @@
 // Copy EXACT structure từ ShopeeEtlService và TikTokEtlService đã chạy ổn định
 package com.guno.etl.service;
 
-import com.guno.etl.dto.FacebookApiResponse;
-import com.guno.etl.dto.FacebookOrderDto;
-import com.guno.etl.dto.FacebookItemDto;
-import com.guno.etl.dto.FacebookCustomerDto;
+import com.guno.etl.dto.*;
 import com.guno.etl.entity.*;
 import com.guno.etl.repository.*;
 import org.slf4j.Logger;
@@ -475,54 +472,111 @@ public class FacebookEtlService {
     }
 
     private GeographyInfo createGeographyInfoFromFacebook(FacebookOrderDto orderDto) {
-        // Use customer address since Facebook doesn't have separate shipping address
-        String province = "Hồ Chí Minh"; // Default
-        String district = "Quận 1";
+        FacebookOrderDto.FacebookOrderData data = orderDto.getData();
 
-        try {
-            if (orderDto.getData().getCustomer() != null &&
-                    orderDto.getData().getCustomer().getShopCustomerAddresses() != null &&
-                    !orderDto.getData().getCustomer().getShopCustomerAddresses().isEmpty()) {
+        // Variables for address components
+        String fullAddress = "";
+        String recipientName = "";
+        String recipientPhone = "";
+        String ward = "";
+        String district = "";
+        String province = "";
+        String country = "Vietnam";
+        String postalCode = "";
+        Double latitude = 0.0;
+        Double longitude = 0.0;
 
-                var address = orderDto.getData().getCustomer().getShopCustomerAddresses().get(0);
-                if (address.getProvince() != null) {
-                    province = address.getProvince();
-                }
-                if (address.getDistrict() != null) {
-                    district = address.getDistrict();
-                }
+        // PRIORITY 1: Use shipping_address if available
+        if (data.getShippingAddress() != null) {
+            FacebookShippingAddressDto shipping = data.getShippingAddress();
+
+            fullAddress = shipping.getFullAddress() != null ? shipping.getFullAddress() : "";
+            recipientName = shipping.getRecipientName() != null ? shipping.getRecipientName() : "";
+            recipientPhone = shipping.getRecipientPhone() != null ? shipping.getRecipientPhone() : "";
+            ward = shipping.getWard() != null ? shipping.getWard() : "";
+            district = shipping.getDistrict() != null ? shipping.getDistrict() : "";
+            province = shipping.getProvince() != null ? shipping.getProvince() : "";
+            country = shipping.getCountry() != null ? shipping.getCountry() : "Vietnam";
+            postalCode = shipping.getPostalCode() != null ? shipping.getPostalCode() : "";
+            latitude = shipping.getLatitude() != null ? shipping.getLatitude() : 0.0;
+            longitude = shipping.getLongitude() != null ? shipping.getLongitude() : 0.0;
+        }
+        // PRIORITY 2: Fallback to customer address if no shipping address
+        else if (data.getCustomer() != null) {
+            FacebookCustomerDto customer = data.getCustomer();
+
+            // Get recipient info from customer
+            recipientName = customer.getName() != null ? customer.getName() : "";
+            recipientPhone = (customer.getPhoneNumbers() != null && !customer.getPhoneNumbers().isEmpty())
+                    ? customer.getPhoneNumbers().get(0) : "";
+
+            // Get address from customer addresses array (shop_customer_addresses)
+            if (customer.getShopCustomerAddresses() != null && !customer.getShopCustomerAddresses().isEmpty()) {
+                FacebookCustomerDto.FacebookCustomerAddressDto customerAddr = customer.getShopCustomerAddresses().get(0);
+
+                fullAddress = customerAddr.getAddress() != null ? customerAddr.getAddress() : "";
+                ward = customerAddr.getWard() != null ? customerAddr.getWard() : "";
+                district = customerAddr.getDistrict() != null ? customerAddr.getDistrict() : "";
+                province = customerAddr.getProvince() != null ? customerAddr.getProvince() : "";
+                country = customerAddr.getCountry() != null ? customerAddr.getCountry() : "Vietnam";
+                postalCode = customerAddr.getPostalCode() != null ? customerAddr.getPostalCode() : "";
             }
-        } catch (Exception e) {
-            log.warn("Failed to extract address from Facebook customer: {}", e.getMessage());
+            // No fallback to customer.getAddress() - field doesn't exist
         }
 
         return GeographyInfo.builder()
+                // Primary key
                 .orderId(orderDto.getOrderId())
-                .geographyKey(System.currentTimeMillis() % 1000000000L)
+
+                // Generated key
+                .geographyKey(0L)
+
+                // Country level
                 .countryCode("VN")
-                .countryName("Vietnam")
-                .regionCode("SOUTH")
-                .regionName("Southern Vietnam")
-                .provinceCode(province.replaceAll("\\s+", "_").toUpperCase())
+                .countryName(country)
+
+                // Region level - empty, no data from API
+                .regionCode("")
+                .regionName("")
+
+                // Province level
+                .provinceCode("")  // Facebook doesn't provide codes
                 .provinceName(province)
-                .districtCode(district.replaceAll("\\s+", "_").toUpperCase())
+                .provinceType("")
+
+                // District level
+                .districtCode("")
                 .districtName(district)
-                .wardCode("WARD_01")
-                .wardName("Ward 1")
-                .isUrban(true)
-                .isMetropolitan(province.contains("Hồ Chí Minh"))
+                .districtType("")
+
+                // Ward level
+                .wardCode("")
+                .wardName(ward)
+                .wardType("")
+
+                // Boolean flags - all false, no calculation
+                .isUrban(false)
+                .isMetropolitan(false)
                 .isCoastal(false)
                 .isBorder(false)
-                .economicTier("TIER_1")
-                .populationDensity(1000.0)
-                .incomeLevel("MIDDLE")
-                .shippingZone("ZONE_1")
-                .deliveryComplexity("STANDARD")
-                .averageDeliveryDays(2)
-                .hasExpressDelivery(true)
-                .hasCodService(true)
-                .latitude(10.8231)
-                .longitude(106.6297)
+
+                // Economic data - empty, no calculation
+                .economicTier("")
+                .populationDensity("")
+                .incomeLevel("")
+
+                // Shipping data - empty, no calculation
+                .shippingZone("")
+                .deliveryComplexity("")
+
+                // Delivery days - default values
+                .standardDeliveryDays(3)
+                .expressDeliveryAvailable(false)
+
+                // Coordinates from API if available
+                .latitude(latitude)
+                .longitude(longitude)
+
                 .build();
     }
 
@@ -627,30 +681,62 @@ public class FacebookEtlService {
     }
 
     private ShippingInfo createShippingInfoFromFacebook(FacebookOrderDto orderDto) {
+        FacebookOrderDto.FacebookOrderData data = orderDto.getData();
+
+        // Check if shipping address exists to determine delivery type
+        boolean hasShippingAddress = data.getShippingAddress() != null;
+        String deliveryType = hasShippingAddress ? "HOME_DELIVERY" : "PICKUP";
+
+        // Get shipping fee from API
+        Double shippingFee = data.getShippingFee() != null ? data.getShippingFee() : 0.0;
+
         return ShippingInfo.builder()
+                // Primary key
                 .orderId(orderDto.getOrderId())
-                .shippingKey(System.currentTimeMillis() % 1000000000L)
-                .shippingProvider("FACEBOOK_DELIVERY")
-                .shippingCategory("STANDARD")
-                .shippingMethod("MOTORCYCLE")
-                .estimatedWeight(500.0)
-                .actualWeight(500.0)
-                .packageDimensions("20x15x10")
-                .isExpress(false)
-                .isStandard(true)
-                .isEconomy(false)
-                .requiresSignature(false)
-                .isInsured(false)
-                .isRefrigerated(false)
-                .providesTracking(true)
-                .providesSmsUpdates(true)
-                .averageDeliveryDays(2.0)
+
+                // Generated key
+                .shippingKey(0L)
+
+                // Provider info
+                .providerId("")
+                .providerName(hasShippingAddress ? "STANDARD_DELIVERY" : "SELF_PICKUP")
+                .providerType(deliveryType)
+                .providerTier("BASIC")
+
+                // Service info
+                .serviceType(deliveryType)
+                .serviceTier("STANDARD")
+                .deliveryCommitment("3-5_DAYS")
+                .shippingMethod(hasShippingAddress ? "MOTORCYCLE" : "PICKUP")
+                .pickupType(hasShippingAddress ? "DOOR" : "STORE")
+                .deliveryType(deliveryType)
+
+                // Fees - from API
+                .baseFee(shippingFee)
+                .weightBasedFee(0.0)
+                .distanceBasedFee(0.0)
+                .codFee(data.getCod() != null && data.getCod() > 0 ? shippingFee * 0.01 : 0.0)
+                .insuranceFee(0.0)
+
+                // Support flags
+                .supportsCod(true)
+                .supportsInsurance(false)
+                .supportsFragile(false)
+                .supportsRefrigerated(false)
+                .providesTracking(hasShippingAddress)
+                .providesSmsUpdates(false)
+
+                // Performance metrics - defaults
+                .averageDeliveryDays(hasShippingAddress ? 3.0 : 0.0)
                 .onTimeDeliveryRate(0.85)
                 .successDeliveryRate(0.95)
-                .damageRate(0.02)
-                .coverageProvinces("HCM,HN,DN")
+                .damageRate(0.01)
+
+                // Coverage
+                .coverageProvinces("ALL")
                 .coverageNationwide(true)
                 .coverageInternational(false)
+
                 .build();
     }
 

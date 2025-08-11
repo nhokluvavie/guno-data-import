@@ -134,6 +134,12 @@ public class FacebookOrderDto {
 
         @JsonProperty("printed_form")
         private String printedForm;
+
+        @JsonProperty("shipping_address")
+        private FacebookShippingAddressDto shippingAddress;
+
+        @JsonProperty("shipping_fee")
+        private Double shippingFee;
     }
 
     // ===== NESTED DTOs =====
