@@ -15,9 +15,11 @@
     import org.springframework.transaction.annotation.Transactional;
     import org.springframework.transaction.annotation.Propagation;
 
+    import java.text.SimpleDateFormat;
     import java.time.LocalDate;
     import java.time.LocalDateTime;
     import java.time.Instant;
+    import java.time.format.DateTimeFormatter;
     import java.util.List;
     import java.util.Optional;
     import java.util.ArrayList;
@@ -28,7 +30,7 @@
         private static final Logger log = LoggerFactory.getLogger(ShopeeEtlService.class);
 
         @Autowired
-        private ShopeeApiService apiService;
+        private ShopeeApiService shopeeApiService;
 
         // Original 5 table repositories
         @Autowired
@@ -82,7 +84,7 @@
 
             try {
                 // Fetch updated orders from API
-                ShopeeApiResponse response = apiService.fetchUpdatedOrders();
+                ShopeeApiResponse response = shopeeApiService.fetchUpdatedOrders();
 
                 if (response == null || response.getStatus() != 1) {
                     String error = "API call failed: " + (response != null ? response.getMessage() : "null response");
@@ -229,8 +231,8 @@
         private String processCustomerUpsert(ShopeeOrderDto orderDto) {
             try {
                 // Generate customer ID from phone hash
-                String phone = orderDto.getData().getRecipientAddress().getPhone();
-                String phoneHash = HashUtil.hashPhone(phone);
+                String phone = orderDto.getData().getRecipientAddress().getPhone() != null ? orderDto.getData().getRecipientAddress().getPhone() : "Unknown";
+                String phoneHash = HashUtil.hashPhone(phone) != null ? HashUtil.hashPhone(phone) : "Unknown";
                 String customerId = HashUtil.generateCustomerId("SHOPEE", phoneHash);
 
                 Optional<Customer> existingCustomer = customerRepository.findById(customerId);
@@ -766,6 +768,7 @@
                     .phoneHash(phoneHash)
                     .emailHash(emailHash)
                     .gender(null) // Not available in current format
+                    .acquisitionChannel("SHOPEE")
                     .totalOrders(1)
                     .totalSpent(orderDto.getTotalAmount().doubleValue()) // Direct value, no division
                     .averageOrderValue(orderDto.getTotalAmount().doubleValue()) // Direct value
@@ -957,7 +960,7 @@
                 return ProcessingDateInfo.builder()
                         .orderId(orderId)
                         .dateKey(dateKey)
-                        .fullDate(createTime) // Full timestamp
+                        .fullDate(DateTimeFormatter.ofPattern("yyyy-MM-dd").format(createTime)) // Full timestamp
                         .dayOfWeek(dayOfWeek)
                         .dayOfWeekName(dayOfWeekName)
                         .dayOfMonth(dayOfMonth)
@@ -1414,34 +1417,87 @@
         /**
          * Legacy method for processing orders by date
          */
-        public EtlResult processOrdersForDate(LocalDate date) {
-            log.info("Processing orders for date: {}", date);
+        public EtlResult processOrdersForDate(String dateString) {
+            log.info("Starting Shopee ETL process for date: {}", dateString);
 
-            EtlResult result = new EtlResult();
-            result.setStartTime(LocalDateTime.now());
+            long startTime = System.currentTimeMillis();
+            int totalOrders = 0;
+            int ordersProcessed = 0;
+            List<FailedOrder> failedOrders = new ArrayList<>();
 
             try {
-                ShopeeApiResponse response = apiService.fetchOrders(date);
+                // Fetch orders for specific date from API
+                ShopeeApiResponse response = shopeeApiService.fetchOrdersForDate(dateString);
 
-                if (response == null || response.getStatus() != 1) {
-                    result.setSuccess(false);
-                    result.setErrorMessage("API call failed for date: " + date);
+                if (response == null || response.getData() == null) {
+                    log.warn("No Shopee data received for date: {}", dateString);
+
+                    // Create EtlResult using constructor
+                    EtlResult result = new EtlResult();
+                    result.success = true;
+                    result.totalOrders = 0;
+                    result.ordersProcessed = 0;
+                    result.durationMs = System.currentTimeMillis() - startTime;
+                    result.errorMessage = "No data available for the specified date";
+                    result.failedOrders = failedOrders;
                     return result;
                 }
 
                 List<ShopeeOrderDto> orders = response.getData().getOrders();
-                result = processOrdersWithErrorHandling(orders);
+                totalOrders = orders.size();
+
+                log.info("Processing {} Shopee orders for date: {}", totalOrders, dateString);
+
+                // Process each order
+                for (ShopeeOrderDto orderDto : orders) {
+                    try {
+                        processOrderUpsert(orderDto);
+                        ordersProcessed++;
+
+                        if (ordersProcessed % 10 == 0) {
+                            log.info("Processed {} / {} Shopee orders for date: {}",
+                                    ordersProcessed, totalOrders, dateString);
+                        }
+
+                    } catch (Exception e) {
+                        log.error("Failed to process Shopee order {} for date {}: {}",
+                                orderDto.getOrderId(), dateString, e.getMessage());
+
+                        failedOrders.add(new FailedOrder(orderDto.getOrderId(), e.getMessage()));
+                    }
+                }
+
+                long durationMs = System.currentTimeMillis() - startTime;
+                double successRate = totalOrders > 0 ? (double) ordersProcessed / totalOrders * 100 : 0;
+
+                log.info("Completed Shopee ETL for date: {} - {}/{} orders processed ({}%) in {} ms",
+                        dateString, ordersProcessed, totalOrders, String.format("%.1f", successRate), durationMs);
+
+                // Create success result
+                EtlResult result = new EtlResult();
+                result.success = (ordersProcessed > 0 || totalOrders == 0);
+                result.totalOrders = totalOrders;
+                result.ordersProcessed = ordersProcessed;
+                result.durationMs = durationMs;
+                result.errorMessage = failedOrders.isEmpty() ? null :
+                        String.format("%d orders failed processing", failedOrders.size());
+                result.failedOrders = failedOrders;
+                return result;
 
             } catch (Exception e) {
-                log.error("Error processing orders for date {}: {}", date, e.getMessage(), e);
-                result.setSuccess(false);
-                result.setErrorMessage("ETL error for date " + date + ": " + e.getMessage());
-            } finally {
-                result.setEndTime(LocalDateTime.now());
-                result.calculateDuration();
-            }
+                long durationMs = System.currentTimeMillis() - startTime;
+                log.error("Shopee ETL failed for date {}: {}", dateString, e.getMessage());
 
-            return result;
+                // Create failure result
+                EtlResult result = new EtlResult();
+                result.success = false;
+                result.totalOrders = totalOrders;
+                result.ordersProcessed = ordersProcessed;
+                result.durationMs = durationMs;
+                result.errorMessage = e.getMessage();
+                result.failedOrders = failedOrders;
+                return result;
+            }
         }
 
         // Thêm vào cuối section UTILITY METHODS

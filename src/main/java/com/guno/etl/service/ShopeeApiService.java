@@ -1,18 +1,15 @@
-// ShopeeApiService.java - Updated for date=update mode with Headers Support
 package com.guno.etl.service;
 
 import com.guno.etl.dto.ShopeeApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientException;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -20,461 +17,254 @@ import java.time.format.DateTimeFormatter;
 public class ShopeeApiService {
 
     private static final Logger log = LoggerFactory.getLogger(ShopeeApiService.class);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    private final WebClient webClient;
+    private final RestTemplate restTemplate;
     private final String baseUrl;
-    private final int defaultPageSize;
+    private final String authHeader;
+    private final String apiKey;
+    private final String contentType;
+    private final int timeout;
+    private final int pageSize;
     private final int maxRetries;
-    private final Duration timeout;
 
     public ShopeeApiService(
+            RestTemplate restTemplate,
             @Value("${etl.api.shopee.base-url}") String baseUrl,
-            @Value("${etl.api.shopee.timeout:60s}") Duration timeout,
-            @Value("${etl.api.shopee.page-size:20}") int defaultPageSize,
-            @Value("${etl.api.shopee.max-retries:3}") int maxRetries,
-            @Value("${etl.api.shopee.auth-header}") String authHeader,
-            @Value("${etl.api.shopee.api-key}") String apiKey) {
+            @Value("${etl.api.shopee.auth-header:}") String authHeader,
+            @Value("${etl.api.shopee.api-key:}") String apiKey,
+            @Value("${etl.api.shopee.content-type:application/json}") String contentType,
+            @Value("${etl.api.shopee.timeout:60}") int timeout,
+            @Value("${etl.api.shopee.page-size:50}") int pageSize,
+            @Value("${etl.api.shopee.max-retries:3}") int maxRetries) {
 
+        this.restTemplate = restTemplate;
         this.baseUrl = baseUrl;
-        this.defaultPageSize = defaultPageSize;
-        this.maxRetries = maxRetries;
+        this.authHeader = authHeader;
+        this.apiKey = apiKey;
+        this.contentType = contentType;
         this.timeout = timeout;
-
-        // Build WebClient with headers
-        WebClient.Builder builder = WebClient.builder()
-                .baseUrl(baseUrl)
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024)); // 10MB
-
-        // Add default headers
-        builder.defaultHeader("Content-Type", "application/json");
-        builder.defaultHeader("Accept", "application/json");
-        builder.defaultHeader("User-Agent", "Shopee-ETL/1.0");
-
-        // Add authentication headers if provided
-        if (authHeader != null && !authHeader.trim().isEmpty()) {
-            builder.defaultHeader(authHeader, apiKey);
-            log.info("Added Authorization header to API client");
-        }
-
-
-        this.webClient = builder.build();
+        this.pageSize = pageSize;
+        this.maxRetries = maxRetries;
 
         log.info("ShopeeApiService initialized with base URL: {}", baseUrl);
-        log.info("Default settings - Page size: {}, Timeout: {}, Max retries: {}",
-                defaultPageSize, timeout, maxRetries);
-        log.info("Headers configured - Auth: {}, API-Key: {}",
-                authHeader != null && !authHeader.isEmpty() ? "***SET***" : "NOT_SET",
-                apiKey != null && !apiKey.isEmpty() ? "***SET***" : "NOT_SET");
-    }
-
-    // ===== EXISTING METHODS (Date-based) =====
-
-    /**
-     * Fetch orders for specific date with pagination
-     */
-    public ShopeeApiResponse fetchOrders(LocalDate date, int page, int limit) {
-//        String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String dateStr = "2025-07-17";
-        log.info("Fetching Shopee orders for date: {}, page: {}, limit: {}", dateStr, page, limit);
-
-        try {
-            ShopeeApiResponse response = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .queryParam("date", dateStr)
-                            .queryParam("page", page)
-                            .queryParam("limit", limit)
-                            .queryParam("filter-date", "update")
-                            .build())
-                    .retrieve()
-                    .bodyToMono(ShopeeApiResponse.class)
-                    .timeout(timeout)
-                    .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(1))
-                            .filter(this::isRetryableException))
-                    .block();
-
-            if (response != null && response.getStatus() == 1) {
-                log.info("Successfully fetched {} orders for date {}",
-                        response.getData().getOrders().size(), dateStr);
-                return response;
-            } else {
-                log.warn("API returned non-success status for date {}: {}", dateStr,
-                        response != null ? response.getMessage() : "null response");
-                return response;
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to fetch orders for date {} after {} retries: {}",
-                    dateStr, maxRetries, e.getMessage());
-            throw new RuntimeException("API call failed for date: " + dateStr, e);
-        }
     }
 
     /**
-     * Fetch orders for specific date with default pagination
-     */
-    public ShopeeApiResponse fetchOrders(LocalDate date, int page) {
-        return fetchOrders(date, page, defaultPageSize);
-    }
-
-    /**
-     * Fetch first page of orders for specific date
-     */
-    public ShopeeApiResponse fetchOrders(LocalDate date) {
-        return fetchOrders(date, 1, defaultPageSize);
-    }
-
-    // ===== NEW METHODS (Updated orders for current date) =====
-
-    /**
-     * Fetch updated orders for current date with pagination
-     * This is the main method for scheduled ETL process
-     */
-    public ShopeeApiResponse fetchUpdatedOrders(int page, int limit) {
-        LocalDate currentDate = LocalDate.now();
-//        String dateStr = currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String dateStr = "2025-07-17";
-
-        log.info("Fetching updated Shopee orders for current date: {} - page: {}, limit: {}", dateStr, page, limit);
-
-        try {
-            ShopeeApiResponse response = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .queryParam("date", dateStr)  // Current date in yyyy-MM-dd format
-                            .queryParam("page", page)
-                            .queryParam("limit", limit)
-                            .queryParam("filter-date", "update")
-                            .build())
-                    .retrieve()
-                    .bodyToMono(ShopeeApiResponse.class)
-                    .timeout(timeout)
-                    .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(1))
-                            .filter(this::isRetryableException))
-                    .block();
-
-            if (response != null && response.getStatus() == 1) {
-                int orderCount = response.getData().getOrders().size();
-                log.info("Successfully fetched {} updated orders for date {} on page {}", orderCount, dateStr, page);
-
-                if (orderCount > 0) {
-                    log.debug("Updated order IDs for {}: {}", dateStr,
-                            response.getData().getOrders().stream()
-                                    .map(order -> order.getOrderId())
-                                    .toList());
-                }
-
-                return response;
-            } else {
-                log.warn("API returned non-success status for updated orders on date {}: {}", dateStr,
-                        response != null ? response.getMessage() : "null response");
-                return response;
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to fetch updated orders for date {} on page {} after {} retries: {}",
-                    dateStr, page, maxRetries, e.getMessage());
-            throw new RuntimeException("API call failed for updated orders on date " + dateStr + ", page: " + page, e);
-        }
-    }
-
-    /**
-     * Fetch updated orders for specific date with pagination
-     */
-    public ShopeeApiResponse fetchUpdatedOrdersForDate(LocalDate date, int page, int limit) {
-//        String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String dateStr = "2025-07-17";
-
-        log.info("Fetching updated Shopee orders for date: {} - page: {}, limit: {}", dateStr, page, limit);
-
-        try {
-            ShopeeApiResponse response = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .queryParam("date", dateStr)  // Specific date in yyyy-MM-dd format
-                            .queryParam("page", page)
-                            .queryParam("limit", limit)
-                            .queryParam("filter-date", "update")
-                            .build())
-                    .retrieve()
-                    .bodyToMono(ShopeeApiResponse.class)
-                    .timeout(timeout)
-                    .retryWhen(Retry.backoff(maxRetries, Duration.ofSeconds(1))
-                            .filter(this::isRetryableException))
-                    .block();
-
-            if (response != null && response.getStatus() == 1) {
-                int orderCount = response.getData().getOrders().size();
-                log.info("Successfully fetched {} updated orders for date {} on page {}", orderCount, dateStr, page);
-
-                return response;
-            } else {
-                log.warn("API returned non-success status for date {}: {}", dateStr,
-                        response != null ? response.getMessage() : "null response");
-                return response;
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to fetch updated orders for date {} on page {} after {} retries: {}",
-                    dateStr, page, maxRetries, e.getMessage());
-            throw new RuntimeException("API call failed for date " + dateStr + ", page: " + page, e);
-        }
-    }
-
-    /**
-     * Fetch updated orders with default pagination (current date)
-     * Used by scheduler for simple calls
-     */
-    public ShopeeApiResponse fetchUpdatedOrders(int page) {
-        return fetchUpdatedOrders(page, defaultPageSize);
-    }
-
-    /**
-     * Fetch first page of updated orders (current date)
-     * Most common use case for scheduler
+     * Fetch Shopee orders for updated data (default: today)
+     * @return API response with orders
      */
     public ShopeeApiResponse fetchUpdatedOrders() {
-        return fetchUpdatedOrders(20, defaultPageSize);
+        return fetchOrdersForDate(LocalDate.now().format(DATE_FORMATTER));
     }
 
     /**
-     * Fetch updated orders for specific date with default pagination
+     * Fetch Shopee orders for a specific date
+     * @param dateString Date in YYYY-MM-DD format
+     * @return API response with orders
      */
-    public ShopeeApiResponse fetchUpdatedOrdersForDate(LocalDate date, int page) {
-        return fetchUpdatedOrdersForDate(date, page, defaultPageSize);
+    public ShopeeApiResponse fetchOrdersForDate(String dateString) {
+        return fetchOrders(dateString, 1, pageSize);
     }
 
     /**
-     * Fetch updated orders for specific date (first page only)
+     * Fetch Shopee orders with pagination
+     * @param dateString Date in YYYY-MM-DD format
+     * @param page Page number (1-based)
+     * @param limit Orders per page
+     * @return API response with orders
      */
-    public ShopeeApiResponse fetchUpdatedOrdersForDate(LocalDate date) {
-        return fetchUpdatedOrdersForDate(date, 1, defaultPageSize);
-    }
-
-    /**
-     * Fetch all updated orders across multiple pages (current date)
-     * Use with caution - could be many pages
-     */
-    public ShopeeApiResponse fetchAllUpdatedOrders() {
-        LocalDate currentDate = LocalDate.now();
-        log.info("Fetching all updated orders for current date: {} across multiple pages", currentDate);
-
-        ShopeeApiResponse firstPage = fetchUpdatedOrders(1);
-        if (firstPage == null || firstPage.getStatus() != 1) {
-            log.warn("Failed to fetch first page of updated orders for date: {}", currentDate);
-            return firstPage;
-        }
-
-        int totalCount = firstPage.getData().getCount();
-        int totalPages = calculateTotalPages(totalCount, defaultPageSize);
-
-        log.info("Total updated orders for {}: {}, Total pages: {}", currentDate, totalCount, totalPages);
-
-        if (totalPages <= 1) {
-            return firstPage; // Only one page
-        }
-
-        // For now, return first page only
-        // TODO: Implement multi-page aggregation if needed
-        log.info("Returning first page only. Total pages available: {}", totalPages);
-        return firstPage;
-    }
-
-    // ===== UTILITY METHODS =====
-
-    /**
-     * Get total count of updated orders (current date)
-     */
-    public int getTotalUpdatedOrderCount() {
-        LocalDate currentDate = LocalDate.now();
+    public ShopeeApiResponse fetchOrders(String dateString, int page, int limit) {
         try {
-            ShopeeApiResponse response = fetchUpdatedOrders(1, 1); // Fetch only 1 item to get count
-            if (response != null && response.getStatus() == 1) {
-                int totalCount = response.getData().getCount();
-                log.info("Total updated orders available for {}: {}", currentDate, totalCount);
-                return totalCount;
+            log.info("Fetching Shopee orders for date: {}, page: {}, limit: {}", dateString, page, limit);
+
+            // Build URL with parameters
+            String url = String.format("%s?date=%s&page=%d&limit=%d&filter-date=update",
+                    baseUrl, dateString, page, limit);
+
+
+            // Create request with headers
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            // Make API call with retry logic
+            ResponseEntity<ShopeeApiResponse> response = makeApiCallWithRetry(url, entity);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                ShopeeApiResponse apiResponse = response.getBody();
+                int orderCount = (apiResponse.getData() != null && apiResponse.getData().getOrders() != null)
+                        ? apiResponse.getData().getOrders().size() : 0;
+
+                log.info("Successfully fetched {} Shopee orders for date: {}", orderCount, dateString);
+                return apiResponse;
             } else {
-                log.warn("Failed to get updated order count for {}: {}", currentDate,
-                        response != null ? response.getMessage() : "null response");
-                return 0;
+                log.warn("Shopee API returned no data for date: {}", dateString);
+                return null;
             }
+
         } catch (Exception e) {
-            log.error("Error getting updated order count for {}: {}", currentDate, e.getMessage());
-            return 0;
+            log.error("Failed to fetch Shopee orders for date {}: {}", dateString, e.getMessage());
+            throw new RuntimeException("Shopee API call failed for date: " + dateString, e);
         }
     }
 
     /**
-     * Get total count of updated orders for specific date
-     */
-    public int getTotalUpdatedOrderCountForDate(LocalDate date) {
-        try {
-            ShopeeApiResponse response = fetchUpdatedOrdersForDate(date, 1, 1); // Fetch only 1 item to get count
-            if (response != null && response.getStatus() == 1) {
-                int totalCount = response.getData().getCount();
-                log.info("Total updated orders available for {}: {}", date, totalCount);
-                return totalCount;
-            } else {
-                log.warn("Failed to get updated order count for {}: {}", date,
-                        response != null ? response.getMessage() : "null response");
-                return 0;
-            }
-        } catch (Exception e) {
-            log.error("Error getting updated order count for {}: {}", date, e.getMessage());
-            return 0;
-        }
-    }
-
-    /**
-     * Calculate total pages for updated orders (current date)
-     */
-    public int calculateTotalPagesForUpdatedOrders() {
-        int totalCount = getTotalUpdatedOrderCount();
-        return calculateTotalPages(totalCount, defaultPageSize);
-    }
-
-    /**
-     * Calculate total pages for updated orders for specific date
-     */
-    public int calculateTotalPagesForUpdatedOrdersForDate(LocalDate date) {
-        int totalCount = getTotalUpdatedOrderCountForDate(date);
-        return calculateTotalPages(totalCount, defaultPageSize);
-    }
-
-    /**
-     * Get total count of orders for specific date
-     */
-    public int getTotalOrderCount(LocalDate date) {
-        try {
-            ShopeeApiResponse response = fetchOrders(date, 1, 1); // Fetch only 1 item to get count
-            if (response != null && response.getStatus() == 1) {
-                int totalCount = response.getData().getCount();
-                log.info("Total orders for date {}: {}", date, totalCount);
-                return totalCount;
-            } else {
-                log.warn("Failed to get order count for date {}: {}", date,
-                        response != null ? response.getMessage() : "null response");
-                return 0;
-            }
-        } catch (Exception e) {
-            log.error("Error getting order count for date {}: {}", date, e.getMessage());
-            return 0;
-        }
-    }
-
-    /**
-     * Calculate total pages for specific date
-     */
-    public int calculateTotalPages(LocalDate date) {
-        int totalCount = getTotalOrderCount(date);
-        return calculateTotalPages(totalCount, defaultPageSize);
-    }
-
-    /**
-     * Calculate total pages from count and page size
-     */
-    private int calculateTotalPages(int totalCount, int pageSize) {
-        if (totalCount <= 0) return 0;
-        return (int) Math.ceil((double) totalCount / pageSize);
-    }
-
-    // ===== HEALTH CHECK AND TEST METHODS =====
-
-    /**
-     * Test API connectivity (current date)
+     * Test Shopee API connection
+     * @return Connection test result
      */
     public String testConnection() {
         try {
-            ShopeeApiResponse response = fetchUpdatedOrders(1, 1);
-            if (response != null && response.getStatus() == 1) {
-                return "✅ API connection successful - Status: " + response.getStatus() +
-                        ", Message: " + response.getMessage() +
-                        ", Date: " + LocalDate.now();
+            log.info("Testing Shopee API connection...");
+
+            String testDate = LocalDate.now().minusDays(1).format(DATE_FORMATTER);
+            String url = String.format("%s?date=%s&page=1&limit=1&filter-date=update", baseUrl, testDate);
+
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ShopeeApiResponse> response = restTemplate.exchange(
+                    url, HttpMethod.GET, entity, ShopeeApiResponse.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Shopee API connection test successful");
+                return "Shopee API connection successful";
             } else {
-                return "⚠️ API connection issues - Status: " +
-                        (response != null ? response.getStatus() : "null") +
-                        ", Message: " + (response != null ? response.getMessage() : "null response") +
-                        ", Date: " + LocalDate.now();
+                log.warn("Shopee API connection test failed with status: {}", response.getStatusCode());
+                return "Shopee API connection failed: " + response.getStatusCode();
             }
+
         } catch (Exception e) {
-            return "❌ API connection failed - Error: " + e.getMessage() +
-                    ", Date: " + LocalDate.now();
+            log.error("Shopee API connection test failed: {}", e.getMessage());
+            return "Shopee API connection failed: " + e.getMessage();
         }
     }
 
     /**
-     * Check if API is healthy for updated orders (current date)
+     * Check if Shopee API is healthy
+     * @return true if API is accessible
      */
     public boolean isApiHealthy() {
         try {
-            ShopeeApiResponse response = fetchUpdatedOrders(1, 1);
-            boolean healthy = response != null && response.getStatus() == 1;
-            log.info("API health check for {} - Healthy: {}", LocalDate.now(), healthy);
-            return healthy;
+            String result = testConnection();
+            return result.contains("successful");
         } catch (Exception e) {
-            log.warn("API health check failed for {}: {}", LocalDate.now(), e.getMessage());
+            log.error("Shopee API health check failed: {}", e.getMessage());
             return false;
         }
     }
 
     /**
-     * Test API with specific date (for backward compatibility)
+     * Get total order count for a specific date
+     * @param date Target date
+     * @return Total number of orders
      */
-    public String testConnectionWithDate(LocalDate date) {
+    public long getTotalOrderCount(LocalDate date) {
         try {
-            ShopeeApiResponse response = fetchOrders(date, 1, 1);
-            if (response != null && response.getStatus() == 1) {
-                return "✅ API connection successful for date " + date +
-                        " - Status: " + response.getStatus() +
-                        ", Orders: " + response.getData().getOrders().size();
-            } else {
-                return "⚠️ API connection issues for date " + date +
-                        " - Status: " + (response != null ? response.getStatus() : "null");
+            String dateString = date.format(DATE_FORMATTER);
+            ShopeeApiResponse response = fetchOrders(dateString, 1, 1);
+
+            if (response != null && response.getData() != null) {
+                // Assuming API returns total count in response metadata
+                // This might need adjustment based on actual Shopee API response structure
+                return response.getData().getCount() != null ? response.getData().getCount() : 0;
             }
+
+            return 0;
         } catch (Exception e) {
-            return "❌ API connection failed for date " + date + " - Error: " + e.getMessage();
+            log.error("Failed to get Shopee order count for date {}: {}", date, e.getMessage());
+            return 0;
         }
     }
-
-    // ===== PRIVATE HELPER METHODS =====
 
     /**
-     * Determine if exception is retryable
+     * Calculate total pages for pagination
+     * @param date Target date
+     * @return Total number of pages
      */
-    private boolean isRetryableException(Throwable throwable) {
-        if (throwable instanceof WebClientResponseException) {
-            WebClientResponseException wcre = (WebClientResponseException) throwable;
-            int statusCode = wcre.getStatusCode().value();
+    public int calculateTotalPages(LocalDate date) {
+        try {
+            long totalOrders = getTotalOrderCount(date);
+            return (int) Math.ceil((double) totalOrders / pageSize);
+        } catch (Exception e) {
+            log.error("Failed to calculate total pages for date {}: {}", date, e.getMessage());
+            return 1;
+        }
+    }
 
-            // Retry on server errors (5xx) and some client errors
-            boolean retryable = statusCode >= 500 || statusCode == 429 || statusCode == 408;
-            log.debug("HTTP {} - Retryable: {}", statusCode, retryable);
-            return retryable;
+    // Private helper methods
+
+    private HttpHeaders createHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        if (authHeader != null && !authHeader.isEmpty() && apiKey != null && !apiKey.isEmpty()) {
+            headers.set(authHeader, apiKey);
         }
 
-        if (throwable instanceof WebClientException) {
-            // Retry on network issues, timeouts, etc.
-            log.debug("WebClientException - Retryable: true - {}", throwable.getMessage());
-            return true;
+        return headers;
+    }
+
+    private ResponseEntity<ShopeeApiResponse> makeApiCallWithRetry(String url, HttpEntity<String> entity) {
+        int attempts = 0;
+        Exception lastException = null;
+
+        while (attempts < maxRetries) {
+            try {
+                attempts++;
+                log.debug("Shopee API call attempt {} of {}", attempts, maxRetries);
+
+                ResponseEntity<ShopeeApiResponse> response = restTemplate.exchange(
+                        url, HttpMethod.GET, entity, ShopeeApiResponse.class);
+
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    return response;
+                }
+
+                log.warn("Shopee API returned non-success status: {} on attempt {}",
+                        response.getStatusCode(), attempts);
+
+            } catch (HttpClientErrorException e) {
+                lastException = e;
+                if (e.getStatusCode().value() >= 400 && e.getStatusCode().value() < 500) {
+                    // Client errors (4xx) - don't retry
+                    log.error("Shopee API client error (4xx): {}", e.getMessage());
+                    break;
+                }
+                log.warn("Shopee API server error on attempt {}: {}", attempts, e.getMessage());
+
+            } catch (ResourceAccessException e) {
+                lastException = e;
+                log.warn("Shopee API timeout/connection error on attempt {}: {}", attempts, e.getMessage());
+
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("Shopee API unexpected error on attempt {}: {}", attempts, e.getMessage());
+            }
+
+            // Wait before retry (except for last attempt)
+            if (attempts < maxRetries) {
+                try {
+                    Thread.sleep(1000L * attempts); // Exponential backoff
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
 
-        log.debug("Non-retryable exception: {} - {}",
-                throwable.getClass().getSimpleName(), throwable.getMessage());
-        return false;
+        // All retries failed
+        String errorMessage = String.format("Shopee API failed after %d attempts", maxRetries);
+        if (lastException != null) {
+            errorMessage += ": " + lastException.getMessage();
+        }
+
+        log.error(errorMessage);
+        throw new RuntimeException(errorMessage, lastException);
     }
 
-    // ===== GETTERS FOR CONFIGURATION =====
-
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public int getDefaultPageSize() {
-        return defaultPageSize;
-    }
-
-    public int getMaxRetries() {
-        return maxRetries;
-    }
-
-    public Duration getTimeout() {
-        return timeout;
-    }
+    // Getter methods for configuration inspection
+    public String getBaseUrl() { return baseUrl; }
+    public int getPageSize() { return pageSize; }
+    public int getTimeout() { return timeout; }
+    public int getMaxRetries() { return maxRetries; }
 }

@@ -173,7 +173,7 @@ public class EtlController {
 
         try {
             LocalDate today = LocalDate.now();
-            int orderCount = shopeeApiService.getTotalOrderCount(today);
+            long orderCount = shopeeApiService.getTotalOrderCount(today);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -262,7 +262,7 @@ public class EtlController {
 
         try {
             LocalDate today = LocalDate.now();
-            int orderCount = tiktokApiService.getTotalUpdatedOrderCountForDate(today);
+            long orderCount = tiktokApiService.getTotalOrderCount(today);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

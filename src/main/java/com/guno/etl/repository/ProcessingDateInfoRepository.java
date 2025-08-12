@@ -1,4 +1,3 @@
-// ProcessingDateInfoRepository.java - Processing Date Info Repository
 package com.guno.etl.repository;
 
 import com.guno.etl.entity.ProcessingDateInfo;
@@ -9,16 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ProcessingDateInfoRepository extends JpaRepository<ProcessingDateInfo, String> {
 
-    /**
-     * Find orders processed on specific date
-     */
-    @Query("SELECT pdi FROM ProcessingDateInfo pdi WHERE DATE(pdi.fullDate) = DATE(:date)")
-    List<ProcessingDateInfo> findByDate(@Param("date") LocalDateTime date);
+    // ===== FIXED: Remove problematic methods that cause type mismatch =====
 
     /**
      * Find orders processed in specific year
@@ -81,11 +75,6 @@ public interface ProcessingDateInfoRepository extends JpaRepository<ProcessingDa
     List<ProcessingDateInfo> findBySeasonName(String seasonName);
 
     /**
-     * Find orders processed in date range
-     */
-    List<ProcessingDateInfo> findByFullDateBetween(LocalDateTime startDate, LocalDateTime endDate);
-
-    /**
      * Get next date key for auto-generation
      */
     @Query("SELECT COALESCE(MAX(pdi.dateKey), 0) + 1 FROM ProcessingDateInfo pdi")
@@ -100,36 +89,29 @@ public interface ProcessingDateInfoRepository extends JpaRepository<ProcessingDa
     /**
      * Count orders by month
      */
-    @Query("SELECT pdi.monthName, COUNT(pdi) FROM ProcessingDateInfo pdi GROUP BY pdi.monthName, pdi.monthOfYear ORDER BY pdi.monthOfYear")
-    List<Object[]> countOrdersByMonth();
+    @Query("SELECT pdi.monthName, COUNT(pdi) FROM ProcessingDateInfo pdi WHERE pdi.year = :year GROUP BY pdi.monthName, pdi.monthOfYear ORDER BY pdi.monthOfYear")
+    List<Object[]> countOrdersByMonth(@Param("year") Integer year);
 
     /**
      * Count orders by quarter
      */
-    @Query("SELECT pdi.quarterName, COUNT(pdi) FROM ProcessingDateInfo pdi GROUP BY pdi.quarterName, pdi.quarterOfYear ORDER BY pdi.quarterOfYear")
-    List<Object[]> countOrdersByQuarter();
+    @Query("SELECT pdi.quarterName, COUNT(pdi) FROM ProcessingDateInfo pdi WHERE pdi.year = :year GROUP BY pdi.quarterName, pdi.quarterOfYear ORDER BY pdi.quarterOfYear")
+    List<Object[]> countOrdersByQuarter(@Param("year") Integer year);
 
     /**
      * Count business day vs weekend orders
      */
-    @Query("SELECT pdi.isBusinessDay, COUNT(pdi) FROM ProcessingDateInfo pdi GROUP BY pdi.isBusinessDay")
-    List<Object[]> countOrdersByBusinessDay();
+    @Query("SELECT pdi.isWeekend, COUNT(pdi) FROM ProcessingDateInfo pdi GROUP BY pdi.isWeekend")
+    List<Object[]> countOrdersByWeekendStatus();
 
     /**
      * Count holiday vs non-holiday orders
      */
     @Query("SELECT pdi.isHoliday, COUNT(pdi) FROM ProcessingDateInfo pdi GROUP BY pdi.isHoliday")
-    List<Object[]> countOrdersByHoliday();
+    List<Object[]> countOrdersByHolidayStatus();
 
     /**
-     * Find peak processing days
+     * Check if order exists
      */
-    @Query("SELECT DATE(pdi.fullDate), COUNT(pdi) as orderCount FROM ProcessingDateInfo pdi " +
-            "GROUP BY DATE(pdi.fullDate) ORDER BY orderCount DESC LIMIT 10")
-    List<Object[]> findPeakProcessingDays();
-
-    /**
-     * Find orders in specific fiscal year and quarter
-     */
-    List<ProcessingDateInfo> findByFiscalYearAndFiscalQuarter(Integer fiscalYear, Integer fiscalQuarter);
+    boolean existsByOrderId(String orderId);
 }

@@ -25,7 +25,7 @@ public class ProcessingDateInfo {
     private Long dateKey;
 
     @Column(name = "full_date")
-    private LocalDateTime fullDate;
+    private String fullDate;
 
     @Column(name = "day_of_week")
     private Integer dayOfWeek;

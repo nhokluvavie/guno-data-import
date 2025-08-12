@@ -15,10 +15,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +31,7 @@ public class TikTokEtlService {
     private static final Logger log = LoggerFactory.getLogger(TikTokEtlService.class);
 
     @Autowired
-    private TikTokApiService apiService;
+    private TikTokApiService tikTokApiService;
 
     // All repositories
     @Autowired private CustomerRepository customerRepository;
@@ -47,6 +50,85 @@ public class TikTokEtlService {
     private String platformName;
 
     // ===== MAIN ETL METHOD =====
+    public EtlResult processOrdersForDate(String dateString) {
+        log.info("Starting TikTok ETL process for date: {}", dateString);
+
+        long startTime = System.currentTimeMillis();
+        int totalOrders = 0;
+        int ordersProcessed = 0;
+        List<FailedOrder> failedOrders = new ArrayList<>();
+
+        try {
+            // Fetch orders for specific date from API
+            TikTokApiResponse response = tikTokApiService.fetchAllOrdersForDate(dateString);
+
+            if (response == null || response.getData() == null) {
+                log.warn("No TikTok data received for date: {}", dateString);
+
+                // Create EtlResult using constructor
+                EtlResult result = new EtlResult();
+                result.success = true;
+                result.totalOrders = 0;
+                result.ordersProcessed = 0;
+                result.errorMessage = "No data available for the specified date";
+                result.failedOrders = failedOrders;
+                return result;
+            }
+
+            List<TikTokOrderDto> orders = response.getData().getOrders();
+            totalOrders = orders.size();
+
+            log.info("Processing {} TikTok orders for date: {}", totalOrders, dateString);
+
+            // Process each order
+            for (TikTokOrderDto orderDto : orders) {
+                try {
+                    processOrderUpsert(orderDto);
+                    ordersProcessed++;
+
+                    if (ordersProcessed % 10 == 0) {
+                        log.info("Processed {} / {} TikTok orders for date: {}",
+                                ordersProcessed, totalOrders, dateString);
+                    }
+
+                } catch (Exception e) {
+                    log.error("Failed to process TikTok order {} for date {}: {}",
+                            orderDto.getOrderId(), dateString, e.getMessage());
+
+                    failedOrders.add(new FailedOrder(orderDto.getOrderId(), e.getMessage()));
+                }
+            }
+
+            long durationMs = System.currentTimeMillis() - startTime;
+            double successRate = totalOrders > 0 ? (double) ordersProcessed / totalOrders * 100 : 0;
+
+            log.info("Completed TikTok ETL for date: {} - {}/{} orders processed ({}%) in {} ms",
+                    dateString, ordersProcessed, totalOrders, String.format("%.1f", successRate), durationMs);
+
+            // Create success result
+            EtlResult result = new EtlResult();
+            result.success = (ordersProcessed > 0 || totalOrders == 0);
+            result.totalOrders = totalOrders;
+            result.ordersProcessed = ordersProcessed;
+            result.errorMessage = failedOrders.isEmpty() ? null :
+                    String.format("%d orders failed processing", failedOrders.size());
+            result.failedOrders = failedOrders;
+            return result;
+
+        } catch (Exception e) {
+            long durationMs = System.currentTimeMillis() - startTime;
+            log.error("TikTok ETL failed for date {}: {}", dateString, e.getMessage());
+
+            // Create failure result
+            EtlResult result = new EtlResult();
+            result.success = false;
+            result.totalOrders = totalOrders;
+            result.ordersProcessed = ordersProcessed;
+            result.errorMessage = e.getMessage();
+            result.failedOrders = failedOrders;
+            return result;
+        }
+    }
 
     @Transactional
     public EtlResult processUpdatedOrders() {
@@ -57,7 +139,7 @@ public class TikTokEtlService {
 
         try {
             // Fetch data from TikTok API
-            TikTokApiResponse response = apiService.fetchUpdatedOrders();
+            TikTokApiResponse response = tikTokApiService.fetchUpdatedOrders();
 
             if (response == null || response.getStatus() != 1) {
                 result.setSuccess(false);
@@ -114,9 +196,10 @@ public class TikTokEtlService {
         try { processProductsUpsert(orderDto); } catch (Exception e) { log.error("Products upsert failed for order {}", orderId, e); }
         try { processOrderItemsUpsert(orderDto); } catch (Exception e) { log.error("Order items upsert failed for order {}", orderId, e); }
         try { processGeographyUpsert(orderDto); } catch (Exception e) { log.error("Geography upsert failed for order {}", orderId, e); }
+
+        try { processDateInfoUpsert(orderDto); } catch (Exception e) { log.error("Date info upsert failed for order {}", orderId, e); }
         try { processPaymentInfoUpsert(orderDto); } catch (Exception e) { log.error("Payment info upsert failed for order {}", orderId, e); }
         try { processShippingInfoUpsert(orderDto); } catch (Exception e) { log.error("Shipping info upsert failed for order {}", orderId, e); }
-        try { processDateInfoUpsert(orderDto); } catch (Exception e) { log.error("Date info upsert failed for order {}", orderId, e); }
         try { processStatusInfoUpsert(orderDto); } catch (Exception e) { log.error("Status info upsert failed for order {}", orderId, e); }
         try { processOrderStatusTransition(orderDto); } catch (Exception e) { log.error("Order Status info transit failed for order {}", orderId, e); }
         try { processOrderStatusDetailUpsert(orderDto); } catch (Exception e) { log.error("Order Status Detail info upsert failed for order {}", orderId, e); }
@@ -125,15 +208,15 @@ public class TikTokEtlService {
     // ===== CUSTOMER PROCESSING =====
 
     private void processCustomerUpsert(TikTokOrderDto orderDto) {
-        if (orderDto.getData() == null || orderDto.getData().getRecipientAddress() == null) {
+        if (orderDto.getData() == null) {
             return;
         }
 
-        String phone = orderDto.getData().getRecipientAddress().getPhoneNumber();
+        String phone = orderDto.getData().getRecipientAddress().getPhoneNumber().isEmpty() ? "Unknown" : orderDto.getData().getRecipientAddress().getPhoneNumber();
         if (phone == null) return;
 
         String phoneHash = HashUtil.hashPhone(phone);
-        String customerId = HashUtil.generateCustomerId(platformName, phoneHash);
+        String customerId = orderDto.getData().getUserId() != null ? orderDto.getData().getUserId() : HashUtil.generateCustomerId(platformName, phoneHash);
 
         Optional<Customer> existing = customerRepository.findById(customerId);
 
@@ -221,8 +304,8 @@ public class TikTokEtlService {
     }
 
     private Order createOrderFromTikTok(TikTokOrderDto orderDto) {
-        String phoneHash = HashUtil.hashPhone(orderDto.getData().getRecipientAddress().getPhoneNumber());
-        String customerId = HashUtil.generateCustomerId(platformName, phoneHash);
+        String phoneHash = HashUtil.hashPhone(orderDto.getData().getRecipientAddress().getPhoneNumber().isEmpty() ? "Unknown" : orderDto.getData().getRecipientAddress().getPhoneNumber());
+        String customerId = orderDto.getData().getUserId() != null ? orderDto.getData().getUserId() : HashUtil.generateCustomerId(platformName, phoneHash);
         Double totalAmount = parseAmount(orderDto.getData().getPayment().getTotalAmount());
         Double shippingFee = parseAmount(orderDto.getData().getPayment().getShippingFee());
 
@@ -583,8 +666,61 @@ public class TikTokEtlService {
                 .build();
     }
 
-    private void updateShippingFromTikTok(ShippingInfo shipping, TikTokOrderDto orderDto) {
-        // Update if needed
+    // Vị trí: Sau method createShippingInfoEntity() trong TikTokEtlService
+    private void updateShippingFromTikTok(ShippingInfo existing, TikTokOrderDto orderDto) {
+        try {
+            // Create new shipping info để get updated values
+            ShippingInfo newShippingInfo = createShippingFromTikTok(orderDto);
+
+            if (newShippingInfo != null) {
+                // Update fields theo đúng ShippingInfo entity
+                existing.setShippingKey(newShippingInfo.getShippingKey());
+                existing.setProviderId(newShippingInfo.getProviderId());
+                existing.setProviderName(newShippingInfo.getProviderName());
+                existing.setProviderType(newShippingInfo.getProviderType());
+                existing.setProviderTier(newShippingInfo.getProviderTier());
+                existing.setServiceType(newShippingInfo.getServiceType());
+                existing.setServiceTier(newShippingInfo.getServiceTier());
+                existing.setDeliveryCommitment(newShippingInfo.getDeliveryCommitment());
+                existing.setShippingMethod(newShippingInfo.getShippingMethod());
+                existing.setPickupType(newShippingInfo.getPickupType());
+                existing.setDeliveryType(newShippingInfo.getDeliveryType());
+
+                // Fee fields
+                existing.setBaseFee(newShippingInfo.getBaseFee());
+                existing.setWeightBasedFee(newShippingInfo.getWeightBasedFee());
+                existing.setDistanceBasedFee(newShippingInfo.getDistanceBasedFee());
+                existing.setCodFee(newShippingInfo.getCodFee());
+                existing.setInsuranceFee(newShippingInfo.getInsuranceFee());
+
+                // Support capabilities
+                existing.setSupportsCod(newShippingInfo.getSupportsCod());
+                existing.setSupportsInsurance(newShippingInfo.getSupportsInsurance());
+                existing.setSupportsFragile(newShippingInfo.getSupportsFragile());
+                existing.setSupportsRefrigerated(newShippingInfo.getSupportsRefrigerated());
+                existing.setProvidesTracking(newShippingInfo.getProvidesTracking());
+                existing.setProvidesSmsUpdates(newShippingInfo.getProvidesSmsUpdates());
+
+                // Performance metrics
+                existing.setAverageDeliveryDays(newShippingInfo.getAverageDeliveryDays());
+                existing.setOnTimeDeliveryRate(newShippingInfo.getOnTimeDeliveryRate());
+                existing.setSuccessDeliveryRate(newShippingInfo.getSuccessDeliveryRate());
+                existing.setDamageRate(newShippingInfo.getDamageRate());
+
+                // Coverage info
+                existing.setCoverageProvinces(newShippingInfo.getCoverageProvinces());
+                existing.setCoverageNationwide(newShippingInfo.getCoverageNationwide());
+                existing.setCoverageInternational(newShippingInfo.getCoverageInternational());
+
+                log.debug("Updated shipping info for order: {}", orderDto.getOrderId());
+            } else {
+                log.warn("Failed to create new shipping info for update, order: {}", orderDto.getOrderId());
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to update shipping info for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+        }
     }
 
     // ===== DATE INFO PROCESSING =====
@@ -605,12 +741,12 @@ public class TikTokEtlService {
     }
 
     private ProcessingDateInfo createDateInfoFromTikTok(TikTokOrderDto orderDto) {
-        LocalDateTime orderDate = convertTimestamp(orderDto.getCreateTime());
+        LocalDateTime orderDate = convertTimestamp(orderDto.getData().getUpdateTime());
 
         return ProcessingDateInfo.builder()
                 .orderId(orderDto.getOrderId())
                 .dateKey(System.currentTimeMillis() % 1000000L)
-                .fullDate(orderDate)
+                .fullDate(DateTimeFormatter.ofPattern("yyyy-MM-dd").format(orderDate))
                 .dayOfWeek(orderDate.getDayOfWeek().getValue())
                 .dayOfWeekName(orderDate.getDayOfWeek().name())
                 .dayOfMonth(orderDate.getDayOfMonth())
@@ -633,8 +769,44 @@ public class TikTokEtlService {
                 .build();
     }
 
-    private void updateDateInfoFromTikTok(ProcessingDateInfo dateInfo, TikTokOrderDto orderDto) {
-        // Update if needed
+    // Vị trí: Sau method createProcessingDateInfoEntity() trong TikTokEtlService
+    private void updateDateInfoFromTikTok(ProcessingDateInfo existing, TikTokOrderDto orderDto) {
+        try {
+            // Create new date info để get updated values
+            ProcessingDateInfo newDateInfo = createDateInfoFromTikTok(orderDto);
+
+            if (newDateInfo != null) {
+                // Update all fields with new values
+                existing.setFullDate(newDateInfo.getFullDate());
+                existing.setDayOfWeek(newDateInfo.getDayOfWeek());
+                existing.setDayOfWeekName(newDateInfo.getDayOfWeekName());
+                existing.setDayOfMonth(newDateInfo.getDayOfMonth());
+                existing.setDayOfYear(newDateInfo.getDayOfYear());
+                existing.setWeekOfYear(newDateInfo.getWeekOfYear());
+                existing.setMonthOfYear(newDateInfo.getMonthOfYear());
+                existing.setMonthName(newDateInfo.getMonthName());
+                existing.setQuarterOfYear(newDateInfo.getQuarterOfYear());
+                existing.setQuarterName(newDateInfo.getQuarterName());
+                existing.setYear(newDateInfo.getYear());
+                existing.setIsWeekend(newDateInfo.getIsWeekend());
+                existing.setIsHoliday(newDateInfo.getIsHoliday());
+                existing.setHolidayName(newDateInfo.getHolidayName());
+                existing.setIsBusinessDay(newDateInfo.getIsBusinessDay());
+                existing.setFiscalYear(newDateInfo.getFiscalYear());
+                existing.setFiscalQuarter(newDateInfo.getFiscalQuarter());
+                existing.setIsShoppingSeason(newDateInfo.getIsShoppingSeason());
+                existing.setSeasonName(newDateInfo.getSeasonName());
+                existing.setIsPeakHour(newDateInfo.getIsPeakHour());
+
+                log.debug("Updated processing date info for order: {}", orderDto.getOrderId());
+            } else {
+                log.warn("Failed to create new date info for update, order: {}", orderDto.getOrderId());
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to update processing date info for order {}: {}",
+                    orderDto.getOrderId(), e.getMessage());
+        }
     }
 
     // ===== STATUS PROCESSING =====

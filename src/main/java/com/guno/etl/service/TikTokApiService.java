@@ -1,355 +1,315 @@
-// TikTokApiService.java - TikTok API Service
 package com.guno.etl.service;
 
+import com.guno.etl.dto.ShopeeApiResponse;
 import com.guno.etl.dto.TikTokApiResponse;
+import com.guno.etl.dto.TikTokOrderDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientException;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.util.retry.Retry;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class TikTokApiService {
 
     private static final Logger log = LoggerFactory.getLogger(TikTokApiService.class);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    private final WebClient webClient;
+    private final RestTemplate restTemplate;
     private final String baseUrl;
+    private final String authHeader;
+    private final String apiKey;
+    private final String contentType;
+    private final int timeout;
     private final int pageSize;
     private final int maxRetries;
-    private final Duration timeout;
 
     public TikTokApiService(
+            RestTemplate restTemplate,
             @Value("${etl.api.tiktok.base-url}") String baseUrl,
             @Value("${etl.api.tiktok.auth-header:}") String authHeader,
             @Value("${etl.api.tiktok.api-key:}") String apiKey,
-            @Value("${etl.api.tiktok.timeout:30}") Duration timeout,
-            @Value("${etl.api.tiktok.page-size:20}") int pageSize,
+            @Value("${etl.api.tiktok.content-type:application/json}") String contentType,
+            @Value("${etl.api.tiktok.timeout:60}") int timeout,
+            @Value("${etl.api.tiktok.page-size:50}") int pageSize,
             @Value("${etl.api.tiktok.max-retries:3}") int maxRetries) {
 
+        this.restTemplate = restTemplate;
         this.baseUrl = baseUrl;
+        this.authHeader = authHeader;
+        this.apiKey = apiKey;
+        this.contentType = contentType;
+        this.timeout = timeout;
         this.pageSize = pageSize;
         this.maxRetries = maxRetries;
-        this.timeout = timeout;
 
-        // Build WebClient with TikTok-specific headers
-        WebClient.Builder builder = WebClient.builder()
-                .baseUrl(baseUrl)
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024));
-
-        // Add default headers
-        builder.defaultHeader("Content-Type", "application/json");
-        builder.defaultHeader("Accept", "application/json");
-        builder.defaultHeader("User-Agent", "Tiktok-ETL/1.0");
-
-        // Add headers if provided
-        if (authHeader != null && !authHeader.trim().isEmpty()) {
-            builder.defaultHeader(authHeader, apiKey);
-            log.info("TikTok API Service initialized with auth header: ***CONFIGURED***");
-        }
-
-
-        this.webClient = builder.build();
-
-        log.info("TikTok API Service initialized:");
-        log.info("  Base URL: {}", baseUrl);
-        log.info("  Timeout: {}s", timeout);
-        log.info("  Page Size: {}", pageSize);
-        log.info("  Max Retries: {}", maxRetries);
+        log.info("TikTokApiService initialized with base URL: {}", baseUrl);
     }
 
-    // ===== MAIN API METHODS FOR CURRENT DATE (SCHEDULER USAGE) =====
-
     /**
-     * Fetch updated TikTok orders for current date (most common usage)
+     * Fetch TikTok orders for updated data (default: today)
+     * @return API response with orders
      */
     public TikTokApiResponse fetchUpdatedOrders() {
-        return fetchUpdatedOrders(1);
+        return fetchOrdersForDate(LocalDate.now().format(DATE_FORMATTER));
     }
 
     /**
-     * Fetch updated TikTok orders for current date with specific page
+     * Fetch TikTok orders for a specific date
+     * @param dateString Date in YYYY-MM-DD format
+     * @return API response with orders
      */
-    public TikTokApiResponse fetchUpdatedOrders(int page) {
-        LocalDate currentDate = LocalDate.now();
-        return fetchUpdatedOrdersForDate(currentDate, page, pageSize);
+    public TikTokApiResponse fetchOrdersForDate(String dateString) {
+        return fetchOrders(dateString, 1, pageSize);
     }
 
     /**
-     * Fetch updated TikTok orders for current date with page and limit
+     * Fetch TikTok orders with pagination
+     * @param dateString Date in YYYY-MM-DD format
+     * @param page Page number (1-based)
+     * @param limit Orders per page
+     * @return API response with orders
      */
-    public TikTokApiResponse fetchUpdatedOrders(int page, int limit) {
-        LocalDate currentDate = LocalDate.now();
-        return fetchUpdatedOrdersForDate(currentDate, page, limit);
-    }
-
-    // ===== API METHODS FOR SPECIFIC DATE =====
-
-    /**
-     * Fetch updated TikTok orders for specific date (first page)
-     */
-    public TikTokApiResponse fetchUpdatedOrdersForDate(LocalDate date) {
-        return fetchUpdatedOrdersForDate(date, 1, pageSize);
-    }
-
-    /**
-     * Fetch updated TikTok orders for specific date and page
-     */
-    public TikTokApiResponse fetchUpdatedOrdersForDate(LocalDate date, int page) {
-        return fetchUpdatedOrdersForDate(date, page, pageSize);
-    }
-
-    /**
-     * Fetch updated TikTok orders for specific date, page, and limit
-     */
-    public TikTokApiResponse fetchUpdatedOrdersForDate(LocalDate date, int page, int limit) {
-        return fetchOrdersWithFilter(date, page, limit, "update");
-    }
-
-    // ===== UTILITY API METHODS =====
-
-    /**
-     * Get total count of updated orders for current date
-     */
-    public int getTotalUpdatedOrderCount() {
-        LocalDate currentDate = LocalDate.now();
-        return getTotalUpdatedOrderCountForDate(currentDate);
-    }
-
-    /**
-     * Get total count of updated orders for specific date
-     */
-    public int getTotalUpdatedOrderCountForDate(LocalDate date) {
+    public TikTokApiResponse fetchOrders(String dateString, int page, int limit) {
         try {
-            TikTokApiResponse response = fetchUpdatedOrdersForDate(date, 1, 1);
-            return response != null && response.getData() != null ?
-                    response.getData().getCount() : 0;
-        } catch (Exception e) {
-            log.error("Error getting total updated order count for date {}: {}", date, e.getMessage());
-            return 0;
-        }
-    }
+            log.info("Fetching TikTok orders for date: {}, page: {}, limit: {}", dateString, page, limit);
 
-    /**
-     * Calculate total pages for updated orders
-     */
-    public int calculateTotalPagesForUpdatedOrders() {
-        int totalOrders = getTotalUpdatedOrderCount();
-        return (int) Math.ceil((double) totalOrders / pageSize);
-    }
+            // Build URL with parameters
+            String url = String.format("%s?date=%s&page=%d&limit=%d&filter-date=update",
+                    baseUrl, dateString, page, limit);
 
-    /**
-     * Calculate total pages for specific date
-     */
-    public int calculateTotalPagesForDate(LocalDate date) {
-        int totalOrders = getTotalUpdatedOrderCountForDate(date);
-        return (int) Math.ceil((double) totalOrders / pageSize);
-    }
+            // Create request with headers
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    // ===== LEGACY METHODS (for backward compatibility) =====
+            // Make API call with retry logic
+            ResponseEntity<TikTokApiResponse> response = makeApiCallWithRetry(url, entity);
 
-    /**
-     * Legacy method for fetching orders by date (similar to Shopee API)
-     */
-    public TikTokApiResponse fetchOrders(LocalDate date) {
-        return fetchOrdersWithFilter(date, 1, pageSize, "update");
-    }
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                TikTokApiResponse apiResponse = response.getBody();
+                int orderCount = (apiResponse.getData() != null && apiResponse.getData().getOrders() != null)
+                        ? apiResponse.getData().getOrders().size() : 0;
 
-    /**
-     * Legacy method for fetching orders by date and page
-     */
-    public TikTokApiResponse fetchOrders(LocalDate date, int page) {
-        return fetchOrdersWithFilter(date, page, pageSize, "update");
-    }
-
-    /**
-     * Legacy method for fetching orders by date, page, and limit
-     */
-    public TikTokApiResponse fetchOrders(LocalDate date, int page, int limit) {
-        return fetchOrdersWithFilter(date, page, limit, "update");
-    }
-
-    // ===== CORE API IMPLEMENTATION =====
-
-    /**
-     * Core method to fetch orders with specific filter
-     */
-    public TikTokApiResponse fetchOrdersWithFilter(LocalDate date, int page, int limit, String filterType) {
-        try {
-//            String dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            String dateStr = "2025-07-23";
-
-            log.debug("Fetching TikTok orders for date: {} - page: {}, limit: {}, filter: {}",
-                    dateStr, page, limit, filterType);
-
-            TikTokApiResponse response = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .queryParam("date", dateStr)
-                            .queryParam("page", page)
-                            .queryParam("limit", limit)
-                            .queryParam("filter-date", filterType)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(TikTokApiResponse.class)
-                    .timeout(timeout)
-                    .retryWhen(Retry.backoff(maxRetries, Duration.ofMillis(500))
-                            .filter(this::isRetryableException)
-                            .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> {
-                                log.error("Max retries ({}) exceeded for TikTok API call", maxRetries);
-                                return retrySignal.failure();
-                            }))
-                    .block();
-
-            if (response != null) {
-                log.debug("TikTok API response: Status={}, Message={}, Orders={}",
-                        response.getStatus(), response.getMessage(),
-                        response.getData() != null ? response.getData().getOrders().size() : 0);
+                log.info("Successfully fetched {} TikTok orders for date: {}", orderCount, dateString);
+                return apiResponse;
+            } else {
+                log.warn("TikTok API returned no data for date: {}", dateString);
+                return null;
             }
 
-            return response;
-
         } catch (Exception e) {
-            log.error("Error fetching TikTok orders for date {} (page {}, limit {}): {}",
-                    date, page, limit, e.getMessage());
-            throw new RuntimeException("TikTok API call failed", e);
+            log.error("Failed to fetch TikTok orders for date {}: {}", dateString, e.getMessage());
+            throw new RuntimeException("TikTok API call failed for date: " + dateString, e);
         }
     }
 
-    // ===== HEALTH CHECK AND UTILITY METHODS =====
-
-    /**
-     * Check if TikTok API is healthy
-     */
-    public boolean isApiHealthy() {
+    public TikTokApiResponse fetchAllOrdersForDate(String dateString) {
         try {
-            TikTokApiResponse response = fetchUpdatedOrders(1, 1);
-            return response != null && response.getStatus() == 1;
+            log.info("Fetching ALL Shopee orders for date: {}", dateString);
+
+            List<TikTokOrderDto> allOrders = new ArrayList<>();
+            int currentPage = 1;
+            int totalCount = 0;
+
+            do {
+                TikTokApiResponse response = fetchOrders(dateString, currentPage, pageSize);
+
+                if (response != null && response.getData() != null && response.getData().getOrders() != null) {
+                    allOrders.addAll(response.getData().getOrders());
+                    totalCount = response.getData().getCount(); // Get total count
+
+                    log.info("Fetched page {}: {} orders, total: {}",
+                            currentPage, response.getData().getOrders().size(), totalCount);
+
+                    currentPage++;
+                } else {
+                    break;
+                }
+
+            } while (allOrders.size() < totalCount);
+
+            // Create combined response
+            TikTokApiResponse combinedResponse = new TikTokApiResponse();
+            TikTokApiResponse.TikTokDataWrapper dataWrapper = new TikTokApiResponse.TikTokDataWrapper();
+            dataWrapper.setOrders(allOrders);
+            dataWrapper.setCount(totalCount);
+            dataWrapper.setPage(1);
+            combinedResponse.setData(dataWrapper);
+
+            log.info("Completed fetching ALL {} Shopee orders for date: {}", allOrders.size(), dateString);
+            return combinedResponse;
+
         } catch (Exception e) {
-            log.warn("TikTok API health check failed: {}", e.getMessage());
-            return false;
+            log.error("Failed to fetch all Shopee orders for date {}: {}", dateString, e.getMessage());
+            throw new RuntimeException("Failed to fetch all orders", e);
         }
     }
 
     /**
      * Test TikTok API connection
+     * @return Connection test result
      */
     public String testConnection() {
         try {
             log.info("Testing TikTok API connection...");
 
-            TikTokApiResponse response = fetchUpdatedOrders(1, 1);
+            String testDate = LocalDate.now().minusDays(1).format(DATE_FORMATTER);
+            String url = String.format("%s?date=%s&page=1&limit=1&filter-date=update", baseUrl, testDate);
 
-            if (response != null) {
-                if (response.getStatus() == 1) {
-                    String result = "TikTok API connection successful";
-                    log.info(result);
-                    return result;
-                } else {
-                    String result = "TikTok API returned error: " + response.getMessage();
-                    log.warn(result);
-                    return result;
-                }
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<TikTokApiResponse> response = restTemplate.exchange(
+                    url, HttpMethod.GET, entity, TikTokApiResponse.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("TikTok API connection test successful");
+                return "TikTok API connection successful";
             } else {
-                String result = "TikTok API returned null response";
-                log.error(result);
-                return result;
+                log.warn("TikTok API connection test failed with status: {}", response.getStatusCode());
+                return "TikTok API connection failed: " + response.getStatusCode();
             }
 
         } catch (Exception e) {
-            String result = "TikTok API connection failed: " + e.getMessage();
-            log.error(result, e);
-            return result;
+            log.error("TikTok API connection test failed: {}", e.getMessage());
+            return "TikTok API connection failed: " + e.getMessage();
         }
     }
 
-    // ===== MULTI-PAGE SUPPORT =====
-
     /**
-     * Fetch all updated orders across multiple pages
+     * Check if TikTok API is healthy
+     * @return true if API is accessible
      */
-    public TikTokApiResponse fetchAllUpdatedOrders() {
-        return fetchAllUpdatedOrdersForDate(LocalDate.now());
+    public boolean isApiHealthy() {
+        try {
+            String result = testConnection();
+            return result.contains("successful");
+        } catch (Exception e) {
+            log.error("TikTok API health check failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     /**
-     * Fetch all updated orders for specific date across multiple pages
+     * Get total order count for a specific date
+     * @param date Target date
+     * @return Total number of orders
      */
-    public TikTokApiResponse fetchAllUpdatedOrdersForDate(LocalDate date) {
+    public long getTotalOrderCount(LocalDate date) {
         try {
-            // Get first page to determine total count
-            TikTokApiResponse firstPage = fetchUpdatedOrdersForDate(date, 1);
+            String dateString = date.format(DATE_FORMATTER);
+            TikTokApiResponse response = fetchOrders(dateString, 1, 1);
 
-            if (firstPage == null || firstPage.getData() == null) {
-                return firstPage;
+            if (response != null && response.getData() != null) {
+                // Assuming API returns total count in response metadata
+                // This might need adjustment based on actual TikTok API response structure
+                return response.getData().getCount() != null ? response.getData().getCount() : 0;
             }
 
-            // If only one page, return first page
-            int totalOrders = firstPage.getData().getCount();
-            int totalPages = (int) Math.ceil((double) totalOrders / pageSize);
+            return 0;
+        } catch (Exception e) {
+            log.error("Failed to get TikTok order count for date {}: {}", date, e.getMessage());
+            return 0;
+        }
+    }
 
-            if (totalPages <= 1) {
-                return firstPage;
+    /**
+     * Calculate total pages for pagination
+     * @param date Target date
+     * @return Total number of pages
+     */
+    public int calculateTotalPages(LocalDate date) {
+        try {
+            long totalOrders = getTotalOrderCount(date);
+            return (int) Math.ceil((double) totalOrders / pageSize);
+        } catch (Exception e) {
+            log.error("Failed to calculate total pages for date {}: {}", date, e.getMessage());
+            return 1;
+        }
+    }
+
+    // Private helper methods
+
+    private HttpHeaders createHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        if (authHeader != null && !authHeader.isEmpty() && apiKey != null && !apiKey.isEmpty()) {
+            headers.set(authHeader, apiKey);
+        }
+
+        return headers;
+    }
+
+    private ResponseEntity<TikTokApiResponse> makeApiCallWithRetry(String url, HttpEntity<String> entity) {
+        int attempts = 0;
+        Exception lastException = null;
+
+        while (attempts < maxRetries) {
+            try {
+                attempts++;
+                log.debug("TikTok API call attempt {} of {}", attempts, maxRetries);
+
+                ResponseEntity<TikTokApiResponse> response = restTemplate.exchange(
+                        url, HttpMethod.GET, entity, TikTokApiResponse.class);
+
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    return response;
+                }
+
+                log.warn("TikTok API returned non-success status: {} on attempt {}",
+                        response.getStatusCode(), attempts);
+
+            } catch (HttpClientErrorException e) {
+                lastException = e;
+                if (e.getStatusCode().value() >= 400 && e.getStatusCode().value() < 500) {
+                    // Client errors (4xx) - don't retry
+                    log.error("TikTok API client error (4xx): {}", e.getMessage());
+                    break;
+                }
+                log.warn("TikTok API server error on attempt {}: {}", attempts, e.getMessage());
+
+            } catch (ResourceAccessException e) {
+                lastException = e;
+                log.warn("TikTok API timeout/connection error on attempt {}: {}", attempts, e.getMessage());
+
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("TikTok API unexpected error on attempt {}: {}", attempts, e.getMessage());
             }
 
-            // Fetch remaining pages and combine results
-            for (int page = 2; page <= totalPages; page++) {
-                TikTokApiResponse nextPage = fetchUpdatedOrdersForDate(date, page);
-                if (nextPage != null && nextPage.getData() != null && nextPage.getData().getOrders() != null) {
-                    firstPage.getData().getOrders().addAll(nextPage.getData().getOrders());
+            // Wait before retry (except for last attempt)
+            if (attempts < maxRetries) {
+                try {
+                    Thread.sleep(1000L * attempts); // Exponential backoff
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
                 }
             }
-
-            log.info("Fetched {} TikTok orders across {} pages for date {}",
-                    firstPage.getData().getOrders().size(), totalPages, date);
-
-            return firstPage;
-
-        } catch (Exception e) {
-            log.error("Error fetching all TikTok orders for date {}: {}", date, e.getMessage());
-            throw new RuntimeException("Failed to fetch all TikTok orders", e);
-        }
-    }
-
-    // ===== HELPER METHODS =====
-
-    /**
-     * Determine if exception is retryable
-     */
-    private boolean isRetryableException(Throwable throwable) {
-        if (throwable instanceof WebClientResponseException) {
-            WebClientResponseException wcre = (WebClientResponseException) throwable;
-            int statusCode = wcre.getStatusCode().value();
-
-            // Retry on 5xx server errors and 429 rate limiting
-            return statusCode >= 500 || statusCode == 429;
         }
 
-        // Retry on connection timeouts and other network issues
-        return throwable instanceof WebClientException;
+        // All retries failed
+        String errorMessage = String.format("TikTok API failed after %d attempts", maxRetries);
+        if (lastException != null) {
+            errorMessage += ": " + lastException.getMessage();
+        }
+
+        log.error(errorMessage);
+        throw new RuntimeException(errorMessage, lastException);
     }
 
-    // ===== GETTERS FOR CONFIGURATION =====
-
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public int getDefaultPageSize() {
-        return pageSize;
-    }
-
-    public int getMaxRetries() {
-        return maxRetries;
-    }
-
-    public Duration getTimeout() {
-        return timeout;
-    }
+    // Getter methods for configuration inspection
+    public String getBaseUrl() { return baseUrl; }
+    public int getPageSize() { return pageSize; }
+    public int getTimeout() { return timeout; }
+    public int getMaxRetries() { return maxRetries; }
 }

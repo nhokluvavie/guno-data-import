@@ -3,7 +3,6 @@ package com.guno.etl.service;
 
 import com.guno.etl.service.ShopeeEtlService;
 import com.guno.etl.service.TikTokEtlService;
-import com.guno.etl.service.FacebookEtlService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,9 +34,6 @@ public class MultiPlatformScheduler {
 
     @Autowired(required = false)
     private TikTokEtlService tiktokEtlService;
-
-    @Autowired(required = false)
-    private FacebookEtlService facebookEtlService;
 
     // ===== CONFIGURATION =====
 
@@ -156,16 +152,8 @@ public class MultiPlatformScheduler {
             }
             return true;
         });
-
-        CompletableFuture<Boolean> facebookTask = CompletableFuture.supplyAsync(() -> {
-            if (facebookEnabled && facebookEtlService != null) {
-                return processPlatform("FACEBOOK", facebookEtlService::processUpdatedOrders);
-            }
-            return true;
-        });
-
         // Wait for all platforms to complete
-        CompletableFuture.allOf(shopeeTask, tiktokTask, facebookTask).join();
+        CompletableFuture.allOf(shopeeTask, tiktokTask).join();
     }
 
     /**
@@ -180,10 +168,6 @@ public class MultiPlatformScheduler {
 
         if (tiktokEnabled && tiktokEtlService != null) {
             processPlatform("TIKTOK", tiktokEtlService::processUpdatedOrders);
-        }
-
-        if (facebookEnabled && facebookEtlService != null) {
-            processPlatform("FACEBOOK", facebookEtlService::processUpdatedOrders);
         }
     }
 
@@ -231,8 +215,6 @@ public class MultiPlatformScheduler {
             return ((ShopeeEtlService.EtlResult) result).isSuccess();
         } else if (result instanceof TikTokEtlService.EtlResult) {
             return ((TikTokEtlService.EtlResult) result).isSuccess();
-        } else if (result instanceof FacebookEtlService.EtlResult) {
-            return ((FacebookEtlService.EtlResult) result).isSuccess();
         } else if (result instanceof Boolean) {
             return (Boolean) result;
         }
@@ -346,11 +328,6 @@ public class MultiPlatformScheduler {
             case "TIKTOK":
                 if (tiktokEnabled && tiktokEtlService != null) {
                     return processPlatform("TIKTOK", tiktokEtlService::processUpdatedOrders);
-                }
-                break;
-            case "FACEBOOK":
-                if (facebookEnabled && facebookEtlService != null) {
-                    return processPlatform("FACEBOOK", facebookEtlService::processUpdatedOrders);
                 }
                 break;
             default:
