@@ -1,9 +1,10 @@
-// FacebookOrderDto.java - Facebook Order DTO
 package com.guno.etl.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FacebookOrderDto {
 
     @JsonProperty("id")
@@ -24,11 +25,23 @@ public class FacebookOrderDto {
     @JsonProperty("data")
     private FacebookOrderData data;
 
-    @JsonProperty("created_at")
-    private String createdAt;
+    @JsonProperty("nhanh_order_id")
+    private Long nhanhOrderId;
+
+    @JsonProperty("source")
+    private String source;
+
+    @JsonProperty("last_synced")
+    private String lastSynced;
+
+    @JsonProperty("inserted_at")
+    private String insertedAt;
 
     @JsonProperty("updated_at")
     private String updatedAt;
+
+    @JsonProperty("createdAt")
+    private String createdAt;
 
     // Getters and setters
     public String getId() { return id; }
@@ -49,12 +62,16 @@ public class FacebookOrderDto {
     public FacebookOrderData getData() { return data; }
     public void setData(FacebookOrderData data) { this.data = data; }
 
-    public String getCreatedAt() { return createdAt; }
+    public String getCreatedAt() { return createdAt != null ? createdAt : insertedAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 
-    public String getUpdatedAt() { return updatedAt; }
+    public String getUpdatedAt() { return updatedAt != null ? updatedAt : updatedAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
 
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FacebookOrderData {
 
         @JsonProperty("id")
@@ -90,8 +107,9 @@ public class FacebookOrderDto {
         @JsonProperty("items")
         private List<FacebookItemDto> items;
 
-        @JsonProperty("total")
-        private Long total;
+        // CORRECTED: Use actual Facebook field names
+        @JsonProperty("total_price_after_sub_discount")
+        private Long totalPriceAfterSubDiscount;
 
         @JsonProperty("discount")
         private Long discount;
@@ -108,17 +126,60 @@ public class FacebookOrderDto {
         @JsonProperty("customer")
         private FacebookCustomer customer;
 
-        @JsonProperty("shipping_address")
-        private FacebookShippingAddress shippingAddress;
+        // Facebook uses different address structure
+        @JsonProperty("bill_phone_number")
+        private String billPhoneNumber;
 
-        @JsonProperty("payment_method")
-        private String paymentMethod;
+        @JsonProperty("new_province_name")
+        private String newProvinceName;
 
-        @JsonProperty("delivery_status")
-        private String deliveryStatus;
+        @JsonProperty("new_district_name")
+        private String newDistrictName;
 
-        @JsonProperty("order_source")
-        private String orderSource;
+        @JsonProperty("new_commune_id")
+        private String newCommuneId;
+
+        @JsonProperty("new_province_id")
+        private String newProvinceId;
+
+        @JsonProperty("new_full_address")
+        private String newFullAddress;
+
+        @JsonProperty("order_sources_name")
+        private String orderSourcesName;
+
+        @JsonProperty("bill_email")
+        private String billEmail;
+
+        @JsonProperty("surcharge")
+        private Long surcharge;
+
+        @JsonProperty("system_id")
+        private Long systemId;
+
+        @JsonProperty("note_print")
+        private String notePrint;
+
+        @JsonProperty("time_assign_seller")
+        private String timeAssignSeller;
+
+        @JsonProperty("assigning_seller_id")
+        private String assigningSellerId;
+
+        @JsonProperty("time_send_partner")
+        private String timeSendPartner;
+
+        @JsonProperty("buyer_total_amount")
+        private Long buyerTotalAmount;
+
+        @JsonProperty("link_confirm_order")
+        private String linkConfirmOrder;
+
+        @JsonProperty("estimate_delivery_date")
+        private String estimateDeliveryDate;
+
+        @JsonProperty("is_exchange_order")
+        private Boolean isExchangeOrder;
 
         // Getters and setters
         public Long getId() { return id; }
@@ -154,8 +215,9 @@ public class FacebookOrderDto {
         public List<FacebookItemDto> getItems() { return items; }
         public void setItems(List<FacebookItemDto> items) { this.items = items; }
 
-        public Long getTotal() { return total; }
-        public void setTotal(Long total) { this.total = total; }
+        // CORRECTED: Map to actual Facebook field
+        public Long getTotalPriceAfterSubDiscount() { return totalPriceAfterSubDiscount; }
+        public void setTotalPriceAfterSubDiscount(Long totalPriceAfterSubDiscount) { this.totalPriceAfterSubDiscount = totalPriceAfterSubDiscount; }
 
         public Long getDiscount() { return discount; }
         public void setDiscount(Long discount) { this.discount = discount; }
@@ -172,21 +234,62 @@ public class FacebookOrderDto {
         public FacebookCustomer getCustomer() { return customer; }
         public void setCustomer(FacebookCustomer customer) { this.customer = customer; }
 
-        public FacebookShippingAddress getShippingAddress() { return shippingAddress; }
-        public void setShippingAddress(FacebookShippingAddress shippingAddress) { this.shippingAddress = shippingAddress; }
+        // Address methods - Facebook has different structure
+        public String getBillPhoneNumber() { return billPhoneNumber; }
+        public void setBillPhoneNumber(String billPhoneNumber) { this.billPhoneNumber = billPhoneNumber; }
 
-        public String getPaymentMethod() { return paymentMethod; }
-        public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+        public String getNewProvinceName() { return newProvinceName; }
+        public void setNewProvinceName(String newProvinceName) { this.newProvinceName = newProvinceName; }
 
-        public String getDeliveryStatus() { return deliveryStatus; }
-        public void setDeliveryStatus(String deliveryStatus) { this.deliveryStatus = deliveryStatus; }
+        public String getNewDistrictName() { return newDistrictName; }
+        public void setNewDistrictName(String newDistrictName) { this.newDistrictName = newDistrictName; }
 
-        public String getOrderSource() { return orderSource; }
-        public void setOrderSource(String orderSource) { this.orderSource = orderSource; }
+        public String getNewFullAddress() { return newFullAddress; }
+        public void setNewFullAddress(String newFullAddress) { this.newFullAddress = newFullAddress; }
+
+        public String getOrderSourcesName() { return orderSourcesName; }
+        public void setOrderSourcesName(String orderSourcesName) { this.orderSourcesName = orderSourcesName; }
+
+        // Convenience methods for compatibility
+        public String getOrderSource() { return orderSourcesName; }
+        public String getDeliveryStatus() {
+            // Extract delivery status from tags if available
+            if (tags != null) {
+                for (FacebookTag tag : tags) {
+                    if (tag.getName() != null) {
+                        String tagName = tag.getName().toLowerCase();
+                        if (tagName.contains("delivery") || tagName.contains("shipped") ||
+                                tagName.contains("picked up") || tagName.contains("on delivery")) {
+                            return tag.getName();
+                        }
+                    }
+                }
+            }
+            return "Unknown";
+        }
+
+        // Facebook doesn't have a single shipping_address object, so create one from fields
+        public FacebookShippingAddress getShippingAddress() {
+            FacebookShippingAddress address = new FacebookShippingAddress();
+            address.setPhone(billPhoneNumber);
+            address.setCityName(newProvinceName);
+            address.setDistrictName(newDistrictName);
+            address.setFullAddress(newFullAddress);
+            return address;
+        }
+
+        public String getPaymentMethod() {
+            if (cod != null && cod > 0) {
+                return "COD";
+            } else if (cash != null && cash > 0) {
+                return "CASH";
+            }
+            return "UNKNOWN";
+        }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FacebookPage {
-
         @JsonProperty("id")
         private String id;
 
@@ -207,8 +310,8 @@ public class FacebookOrderDto {
         public void setUsername(String username) { this.username = username; }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FacebookTag {
-
         @JsonProperty("id")
         private Integer id;
 
@@ -223,8 +326,8 @@ public class FacebookOrderDto {
         public void setName(String name) { this.name = name; }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FacebookCustomer {
-
         @JsonProperty("id")
         private String id;
 
@@ -339,124 +442,49 @@ public class FacebookOrderDto {
         @JsonProperty("shop_customer_addresses")
         private List<FacebookShippingAddress> shopCustomerAddresses;
 
-        // Getters and setters
+        // Getters and setters (showing key ones)
         public String getId() { return id; }
         public void setId(String id) { this.id = id; }
 
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
 
-        public List<Object> getTags() { return tags; }
-        public void setTags(List<Object> tags) { this.tags = tags; }
-
-        public String getFbId() { return fbId; }
-        public void setFbId(String fbId) { this.fbId = fbId; }
-
-        public String getLevel() { return level; }
-        public void setLevel(String level) { this.level = level; }
-
-        public List<Object> getNotes() { return notes; }
-        public void setNotes(List<Object> notes) { this.notes = notes; }
-
-        public List<String> getEmails() { return emails; }
-        public void setEmails(List<String> emails) { this.emails = emails; }
-
         public String getGender() { return gender; }
         public void setGender(String gender) { this.gender = gender; }
-
-        public Long getShopId() { return shopId; }
-        public void setShopId(Long shopId) { this.shopId = shopId; }
-
-        public String getCurrency() { return currency; }
-        public void setCurrency(String currency) { this.currency = currency; }
-
-        public Boolean getIsBlock() { return isBlock; }
-        public void setIsBlock(Boolean isBlock) { this.isBlock = isBlock; }
-
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-
-        public String getCreatorId() { return creatorId; }
-        public void setCreatorId(String creatorId) { this.creatorId = creatorId; }
-
-        public String getUpdatedAt() { return updatedAt; }
-        public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
-
-        public String getCustomerId() { return customerId; }
-        public void setCustomerId(String customerId) { this.customerId = customerId; }
-
-        public String getInsertedAt() { return insertedAt; }
-        public void setInsertedAt(String insertedAt) { this.insertedAt = insertedAt; }
 
         public Integer getOrderCount() { return orderCount; }
         public void setOrderCount(Integer orderCount) { this.orderCount = orderCount; }
 
-        public List<Object> getListVoucher() { return listVoucher; }
-        public void setListVoucher(List<Object> listVoucher) { this.listVoucher = listVoucher; }
-
         public Integer getRewardPoint() { return rewardPoint; }
         public void setRewardPoint(Integer rewardPoint) { this.rewardPoint = rewardPoint; }
-
-        public Long getCurrentDebts() { return currentDebts; }
-        public void setCurrentDebts(Long currentDebts) { this.currentDebts = currentDebts; }
-
-        public String getDateOfBirth() { return dateOfBirth; }
-        public void setDateOfBirth(String dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-
-        public String getLastOrderAt() { return lastOrderAt; }
-        public void setLastOrderAt(String lastOrderAt) { this.lastOrderAt = lastOrderAt; }
-
-        public List<String> getOrderSources() { return orderSources; }
-        public void setOrderSources(List<String> orderSources) { this.orderSources = orderSources; }
-
-        public List<String> getPhoneNumbers() { return phoneNumbers; }
-        public void setPhoneNumbers(List<String> phoneNumbers) { this.phoneNumbers = phoneNumbers; }
-
-        public String getReferralCode() { return referralCode; }
-        public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
-
-        public String getUserBlockId() { return userBlockId; }
-        public void setUserBlockId(String userBlockId) { this.userBlockId = userBlockId; }
-
-        public Integer getCountReferrals() { return countReferrals; }
-        public void setCountReferrals(Integer countReferrals) { this.countReferrals = countReferrals; }
-
-        public Boolean getIsAdjustDebts() { return isAdjustDebts; }
-        public void setIsAdjustDebts(Boolean isAdjustDebts) { this.isAdjustDebts = isAdjustDebts; }
-
-        public String getAssignedUserId() { return assignedUserId; }
-        public void setAssignedUserId(String assignedUserId) { this.assignedUserId = assignedUserId; }
 
         public Long getPurchasedAmount() { return purchasedAmount; }
         public void setPurchasedAmount(Long purchasedAmount) { this.purchasedAmount = purchasedAmount; }
 
-        public Boolean getActiveLeveraPay() { return activeLeveraPay; }
-        public void setActiveLeveraPay(Boolean activeLeveraPay) { this.activeLeveraPay = activeLeveraPay; }
+        public List<String> getPhoneNumbers() { return phoneNumbers; }
+        public void setPhoneNumbers(List<String> phoneNumbers) { this.phoneNumbers = phoneNumbers; }
 
-        public String getConversationTags() { return conversationTags; }
-        public void setConversationTags(String conversationTags) { this.conversationTags = conversationTags; }
+        public List<String> getEmails() { return emails; }
+        public void setEmails(List<String> emails) { this.emails = emails; }
 
-        public Integer getUsedRewardPoint() { return usedRewardPoint; }
-        public void setUsedRewardPoint(Integer usedRewardPoint) { this.usedRewardPoint = usedRewardPoint; }
+        public String getReferralCode() { return referralCode; }
+        public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
 
-        public Integer getSucceedOrderCount() { return succeedOrderCount; }
-        public void setSucceedOrderCount(Integer succeedOrderCount) { this.succeedOrderCount = succeedOrderCount; }
+        public Integer getCountReferrals() { return countReferrals; }
+        public void setCountReferrals(Integer countReferrals) { this.countReferrals = countReferrals; }
 
-        public Boolean getIsDiscountByLevel() { return isDiscountByLevel; }
-        public void setIsDiscountByLevel(Boolean isDiscountByLevel) { this.isDiscountByLevel = isDiscountByLevel; }
+        public String getInsertedAt() { return insertedAt; }
+        public void setInsertedAt(String insertedAt) { this.insertedAt = insertedAt; }
 
-        public Integer getReturnedOrderCount() { return returnedOrderCount; }
-        public void setReturnedOrderCount(Integer returnedOrderCount) { this.returnedOrderCount = returnedOrderCount; }
-
-        public Long getTotalAmountReferred() { return totalAmountReferred; }
-        public void setTotalAmountReferred(Long totalAmountReferred) { this.totalAmountReferred = totalAmountReferred; }
+        public String getLastOrderAt() { return lastOrderAt; }
+        public void setLastOrderAt(String lastOrderAt) { this.lastOrderAt = lastOrderAt; }
 
         public List<FacebookShippingAddress> getShopCustomerAddresses() { return shopCustomerAddresses; }
         public void setShopCustomerAddresses(List<FacebookShippingAddress> shopCustomerAddresses) { this.shopCustomerAddresses = shopCustomerAddresses; }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FacebookShippingAddress {
-
         @JsonProperty("id")
         private String id;
 

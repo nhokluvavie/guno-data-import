@@ -276,7 +276,7 @@ public class FacebookEtlService {
                 .orderCount(1)
                 .itemQuantity(data.getItems() != null ? data.getItems().size() : 0)
                 .totalItemsInOrder(data.getItems() != null ? data.getItems().size() : 0)
-                .grossRevenue(data.getTotal() != null ? data.getTotal().doubleValue() : 0.0)
+                .grossRevenue(data.getTotalPriceAfterSubDiscount() != null ? data.getTotalPriceAfterSubDiscount().doubleValue() : 0.0)
                 .netRevenue(calculateNetRevenue(data))
                 .shippingFee(data.getShippingFee() != null ? data.getShippingFee().doubleValue() : 0.0)
                 .taxAmount(data.getTax() != null ? data.getTax().doubleValue() : 0.0)
@@ -294,12 +294,12 @@ public class FacebookEtlService {
                 .totalFulfillmentHours(0)
                 .customerOrderSequence(1)
                 .customerLifetimeOrders(1)
-                .customerLifetimeValue(data.getTotal() != null ? data.getTotal().doubleValue() : 0.0)
+                .customerLifetimeValue(data.getTotalPriceAfterSubDiscount() != null ? data.getTotalPriceAfterSubDiscount().doubleValue() : 0.0)
                 .daysSinceLastOrder(0)
                 .promotionImpact(0.0)
                 .adRevenue(0.0)
-                .organicRevenue(data.getTotal() != null ? data.getTotal().doubleValue() : 0.0)
-                .aov(data.getTotal() != null ? data.getTotal().doubleValue() : 0.0)
+                .organicRevenue(data.getTotalPriceAfterSubDiscount() != null ? data.getTotalPriceAfterSubDiscount().doubleValue() : 0.0)
+                .aov(data.getTotalPriceAfterSubDiscount() != null ? data.getTotalPriceAfterSubDiscount().doubleValue() : 0.0)
                 .shippingCostRatio(calculateShippingCostRatio(data))
                 .createdAt(parseDateTime(data.getCreatedAt()))
                 .rawData(1)
@@ -310,11 +310,11 @@ public class FacebookEtlService {
     private void updateOrderFromFacebook(Order order, FacebookOrderDto orderDto) {
         FacebookOrderDto.FacebookOrderData data = orderDto.getData();
 
-        if (data.getTotal() != null) {
-            order.setGrossRevenue(data.getTotal().doubleValue());
+        if (data.getTotalPriceAfterSubDiscount() != null) {
+            order.setGrossRevenue(data.getTotalPriceAfterSubDiscount().doubleValue());
             order.setNetRevenue(calculateNetRevenue(data));
-            order.setAov(data.getTotal().doubleValue());
-            order.setOrganicRevenue(data.getTotal().doubleValue());
+            order.setAov(data.getTotalPriceAfterSubDiscount().doubleValue());
+            order.setOrganicRevenue(data.getTotalPriceAfterSubDiscount().doubleValue());
         }
 
         if (data.getShippingFee() != null) {
@@ -957,7 +957,7 @@ public class FacebookEtlService {
     }
 
     private ProcessingDateInfo createDateInfoFromFacebook(FacebookOrderDto orderDto) {
-        LocalDateTime orderDate = parseDateTime(orderDto.getData().getCreatedAt());
+        LocalDateTime orderDate = parseDateTime(orderDto.getData().getUpdatedAt());
         if (orderDate == null) {
             orderDate = LocalDateTime.now();
         }
@@ -1035,7 +1035,7 @@ public class FacebookEtlService {
     }
 
     private Double calculateNetRevenue(FacebookOrderDto.FacebookOrderData data) {
-        Double gross = data.getTotal() != null ? data.getTotal().doubleValue() : 0.0;
+        Double gross = data.getTotalPriceAfterSubDiscount() != null ? data.getTotalPriceAfterSubDiscount().doubleValue() : 0.0;
         Double shipping = data.getShippingFee() != null ? data.getShippingFee().doubleValue() : 0.0;
         Double tax = data.getTax() != null ? data.getTax().doubleValue() : 0.0;
         return gross - shipping - tax;
@@ -1244,9 +1244,9 @@ public class FacebookEtlService {
      * Calculate insurance fee based on order value
      */
     private Double calculateInsuranceFee(FacebookOrderDto.FacebookOrderData data) {
-        if (data.getTotal() == null) return 0.0;
+        if (data.getTotalPriceAfterSubDiscount() == null) return 0.0;
 
-        Long totalAmount = data.getTotal();
+        Long totalAmount = data.getTotalPriceAfterSubDiscount();
         if (totalAmount > 1000000) { // Orders > 1M VND
             return totalAmount * 0.001; // 0.1% insurance
         }
@@ -1429,7 +1429,7 @@ public class FacebookEtlService {
         if (data == null) return "BASIC";
 
         // PREMIUM service for high-value orders in urban areas
-        if (data.getTotal() != null && data.getTotal() > 1000000) {
+        if (data.getTotalPriceAfterSubDiscount() != null && data.getTotalPriceAfterSubDiscount() > 1000000) {
             if (province != null && (province.toLowerCase().contains("hồ chí minh") ||
                     province.toLowerCase().contains("hà nội"))) {
                 return "PREMIUM";
@@ -1437,7 +1437,7 @@ public class FacebookEtlService {
         }
 
         // STANDARD service for medium-value orders or urban areas
-        if ((data.getTotal() != null && data.getTotal() > 300000) ||
+        if ((data.getTotalPriceAfterSubDiscount() != null && data.getTotalPriceAfterSubDiscount() > 300000) ||
                 (province != null && (province.toLowerCase().contains("đà nẵng") ||
                         province.toLowerCase().contains("cần thơ")))) {
             return "STANDARD";
@@ -1507,7 +1507,7 @@ public class FacebookEtlService {
         }
 
         // Default based on order value and location
-        if (data.getTotal() != null && data.getTotal() > 1000000) {
+        if (data.getTotalPriceAfterSubDiscount() != null && data.getTotalPriceAfterSubDiscount() > 1000000) {
             return "Premium";
         }
 
@@ -1735,10 +1735,10 @@ public class FacebookEtlService {
     }
 
     private Double calculateShippingCostRatio(FacebookOrderDto.FacebookOrderData data) {
-        if (data.getTotal() == null || data.getTotal() == 0 || data.getShippingFee() == null) {
+        if (data.getTotalPriceAfterSubDiscount() == null || data.getTotalPriceAfterSubDiscount() == 0 || data.getShippingFee() == null) {
             return 0.0;
         }
-        return data.getShippingFee().doubleValue() / data.getTotal().doubleValue();
+        return data.getShippingFee().doubleValue() / data.getTotalPriceAfterSubDiscount().doubleValue();
     }
 
     // ===== RESULT CLASSES =====

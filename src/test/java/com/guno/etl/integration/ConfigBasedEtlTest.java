@@ -1,7 +1,9 @@
+// ConfigBasedEtlTest_FacebookUpdate.java - Updated version with Facebook support
 package com.guno.etl.integration;
 
 import com.guno.etl.service.ShopeeEtlService;
 import com.guno.etl.service.TikTokEtlService;
+import com.guno.etl.service.FacebookEtlService;
 import com.guno.etl.repository.OrderRepository;
 import com.guno.etl.repository.CustomerRepository;
 import org.slf4j.Logger;
@@ -40,6 +42,9 @@ public class ConfigBasedEtlTest implements CommandLineRunner {
     @Value("${test.tiktok.enabled:false}")
     private boolean tiktokEnabled;
 
+    @Value("${test.facebook.enabled:false}")
+    private boolean facebookEnabled;
+
     @Value("${test.mode:SINGLE_DATE}")
     private String testMode;
 
@@ -55,6 +60,9 @@ public class ConfigBasedEtlTest implements CommandLineRunner {
 
     @Autowired(required = false)
     private TikTokEtlService tiktokEtlService;
+
+    @Autowired(required = false)
+    private FacebookEtlService facebookEtlService;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -76,10 +84,11 @@ public class ConfigBasedEtlTest implements CommandLineRunner {
 
     private void printBanner() {
         log.info("========================================");
-        log.info("📁 CONFIG-BASED ETL TEST");
+        log.info("📁 CONFIG-BASED ETL TEST (Multi-Platform)");
         log.info("========================================");
         log.info("🔧 Edit: src/test/resources/test-config.properties");
         log.info("▶️  Run: ConfigBasedEtlTest from IDE");
+        log.info("🏪 Supports: Shopee + TikTok + Facebook");
         log.info("========================================");
     }
 
@@ -108,6 +117,7 @@ public class ConfigBasedEtlTest implements CommandLineRunner {
         log.info("🏪 Platform: {}", platform);
         log.info("🛒 Shopee Enabled: {}", shopeeEnabled);
         log.info("📱 TikTok Enabled: {}", tiktokEnabled);
+        log.info("📘 Facebook Enabled: {}", facebookEnabled);
         log.info("🧪 Test Mode: {}", testMode);
         log.info("🐛 Debug Mode: {}", debugEnabled);
 
@@ -117,7 +127,7 @@ public class ConfigBasedEtlTest implements CommandLineRunner {
 
     private void runTest() {
         log.info("========================================");
-        log.info("🚀 Starting ETL Test");
+        log.info("🚀 Starting Multi-Platform ETL Test");
         log.info("========================================");
 
         try {
@@ -154,35 +164,56 @@ public class ConfigBasedEtlTest implements CommandLineRunner {
 
     private boolean processData() {
         boolean overallSuccess = true;
+        int platformsProcessed = 0;
 
         // Process Shopee if enabled
         if (shouldProcessShopee()) {
             overallSuccess &= processShopeeData();
+            platformsProcessed++;
         }
 
         // Process TikTok if enabled
         if (shouldProcessTikTok()) {
             overallSuccess &= processTikTokData();
+            platformsProcessed++;
         }
 
-        if (!shouldProcessShopee() && !shouldProcessTikTok()) {
+        // Process Facebook if enabled
+        if (shouldProcessFacebook()) {
+            overallSuccess &= processFacebookData();
+            platformsProcessed++;
+        }
+
+        if (platformsProcessed == 0) {
             log.warn("⚠️ No platforms enabled for processing!");
+            log.warn("   💡 Check test-config.properties:");
+            log.warn("   📝 test.shopee.enabled=true");
+            log.warn("   📝 test.tiktok.enabled=true");
+            log.warn("   📝 test.facebook.enabled=true");
+            log.warn("   📝 test.platform=SHOPEE (or TIKTOK, FACEBOOK, ALL)");
             return false;
         }
 
+        log.info("✅ Processed {} platform(s)", platformsProcessed);
         return overallSuccess;
     }
 
     private boolean shouldProcessShopee() {
         return shopeeEnabled &&
-                ("SHOPEE".equalsIgnoreCase(platform) || "BOTH".equalsIgnoreCase(platform)) &&
+                ("SHOPEE".equalsIgnoreCase(platform) || "ALL".equalsIgnoreCase(platform)) &&
                 shopeeEtlService != null;
     }
 
     private boolean shouldProcessTikTok() {
         return tiktokEnabled &&
-                ("TIKTOK".equalsIgnoreCase(platform) || "BOTH".equalsIgnoreCase(platform)) &&
+                ("TIKTOK".equalsIgnoreCase(platform) || "ALL".equalsIgnoreCase(platform)) &&
                 tiktokEtlService != null;
+    }
+
+    private boolean shouldProcessFacebook() {
+        return facebookEnabled &&
+                ("FACEBOOK".equalsIgnoreCase(platform) || "ALL".equalsIgnoreCase(platform)) &&
+                facebookEtlService != null;
     }
 
     private boolean processShopeeData() {
@@ -234,18 +265,43 @@ public class ConfigBasedEtlTest implements CommandLineRunner {
         }
     }
 
+    private boolean processFacebookData() {
+        log.info("   📘 Processing Facebook Data...");
+
+        try {
+            FacebookEtlService.EtlResult result = facebookEtlService.processOrdersForDate(targetDateString);
+
+            if (verboseLogging) {
+                log.info("     📥 API Response: {} total orders", result.getTotalOrders());
+                log.info("     ✅ Processed: {} orders", result.getOrdersProcessed());
+                log.info("     📈 Success Rate: {}%", result.getSuccessRate());
+                log.info("     ⏱️ Duration: {} ms", result.getDurationMs());
+            }
+
+            log.info("     💾 Facebook Result: {}", result.isSuccess() ? "✅ SUCCESS" : "❌ FAILED");
+            return result.isSuccess();
+
+        } catch (Exception e) {
+            log.error("     ❌ Facebook processing failed: {}", e.getMessage());
+            if (debugEnabled) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+    }
+
     private void showResults(long ordersBefore, long customersBefore,
                              long ordersAfter, long customersAfter, boolean success) {
 
         log.info("========================================");
-        log.info("📈 TEST RESULTS");
+        log.info("📈 MULTI-PLATFORM TEST RESULTS");
         log.info("========================================");
 
         long newOrders = ordersAfter - ordersBefore;
         long newCustomers = customersAfter - customersBefore;
 
         log.info("📅 Test Date: {}", targetDateString);
-        log.info("🏪 Platform: {}", platform);
+        log.info("🏪 Platform(s): {}", getPlatformSummary());
         log.info("📊 Database Changes:");
         log.info("   Orders: {} → {} (+{})", ordersBefore, ordersAfter, newOrders);
         log.info("   Customers: {} → {} (+{})", customersBefore, customersAfter, newCustomers);
@@ -263,9 +319,30 @@ public class ConfigBasedEtlTest implements CommandLineRunner {
         }
 
         log.info("========================================");
-        log.info("💡 To test different dates:");
+        log.info("💡 To test different configurations:");
         log.info("   📝 Edit: src/test/resources/test-config.properties");
+        log.info("   🛒 Shopee: test.shopee.enabled=true, test.platform=SHOPEE");
+        log.info("   📱 TikTok: test.tiktok.enabled=true, test.platform=TIKTOK");
+        log.info("   📘 Facebook: test.facebook.enabled=true, test.platform=FACEBOOK");
+        log.info("   🌐 All: test.platform=ALL (enable all desired platforms)");
         log.info("   ▶️  Re-run: ConfigBasedEtlTest");
         log.info("========================================");
+    }
+
+    private String getPlatformSummary() {
+        StringBuilder summary = new StringBuilder();
+
+        if (shouldProcessShopee()) {
+            summary.append("Shopee ");
+        }
+        if (shouldProcessTikTok()) {
+            summary.append("TikTok ");
+        }
+        if (shouldProcessFacebook()) {
+            summary.append("Facebook ");
+        }
+
+        String result = summary.toString().trim();
+        return result.isEmpty() ? "None" : result;
     }
 }
