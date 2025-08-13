@@ -1,9 +1,7 @@
 // FacebookEtlService.java - Facebook ETL Service (Complete Implementation)
 package com.guno.etl.service;
 
-import com.guno.etl.dto.FacebookApiResponse;
-import com.guno.etl.dto.FacebookOrderDto;
-import com.guno.etl.dto.FacebookItemDto;
+import com.guno.etl.dto.*;
 import com.guno.etl.entity.*;
 import com.guno.etl.repository.*;
 import com.guno.etl.util.HashUtil;
@@ -63,12 +61,11 @@ public class FacebookEtlService {
 
                 // Create EtlResult
                 EtlResult result = new EtlResult();
-                result.success = true;
-                result.totalOrders = 0;
-                result.ordersProcessed = 0;
-                result.durationMs = System.currentTimeMillis() - startTime;
-                result.errorMessage = "No data available for the specified date";
-                result.failedOrders = failedOrders;
+                result.setSuccess(true);
+                result.setTotalOrders(0);
+                result.setOrdersProcessed(0);
+                result.setErrorMessage("No data available for the specified date");
+                result.setFailedOrders(failedOrders);
                 return result;
             }
 
@@ -104,12 +101,12 @@ public class FacebookEtlService {
 
             // Create EtlResult
             EtlResult result = new EtlResult();
-            result.success = true;
-            result.totalOrders = totalOrders;
-            result.ordersProcessed = ordersProcessed;
-            result.durationMs = durationMs;
-            result.successRate = successRate;
-            result.failedOrders = failedOrders;
+            result.setSuccess(ordersProcessed > 0 || totalOrders == 0);
+            result.setTotalOrders(totalOrders);
+            result.setOrdersProcessed(ordersProcessed);
+            result.setErrorMessage(failedOrders.isEmpty() ? null :
+                    String.format("%d orders failed processing", failedOrders.size()));
+            result.setFailedOrders(failedOrders);
             return result;
 
         } catch (Exception e) {
@@ -118,12 +115,12 @@ public class FacebookEtlService {
 
             // Create failed result
             EtlResult result = new EtlResult();
-            result.success = false;
-            result.totalOrders = totalOrders;
-            result.ordersProcessed = ordersProcessed;
-            result.durationMs = durationMs;
-            result.errorMessage = e.getMessage();
-            result.failedOrders = failedOrders;
+            result.setSuccess(false);
+            result.setTotalOrders(totalOrders);
+            result.setOrdersProcessed(ordersProcessed);
+            result.setDurationMs(durationMs);
+            result.setErrorMessage(e.getMessage());
+            result.setFailedOrders(failedOrders);
             return result;
         }
     }
@@ -1739,38 +1736,5 @@ public class FacebookEtlService {
             return 0.0;
         }
         return data.getShippingFee().doubleValue() / data.getTotalPriceAfterSubDiscount().doubleValue();
-    }
-
-    // ===== RESULT CLASSES =====
-    public static class EtlResult {
-        public boolean success;
-        public int totalOrders;
-        public int ordersProcessed;
-        public long durationMs;
-        public double successRate;
-        public String errorMessage;
-        public List<FailedOrder> failedOrders;
-
-        // Getters for compatibility
-        public boolean isSuccess() { return success; }
-        public int getTotalOrders() { return totalOrders; }
-        public int getOrdersProcessed() { return ordersProcessed; }
-        public long getDurationMs() { return durationMs; }
-        public double getSuccessRate() { return successRate; }
-        public String getErrorMessage() { return errorMessage; }
-        public List<FailedOrder> getFailedOrders() { return failedOrders; }
-    }
-
-    public static class FailedOrder {
-        public String orderId;
-        public String errorMessage;
-
-        public FailedOrder(String orderId, String errorMessage) {
-            this.orderId = orderId;
-            this.errorMessage = errorMessage;
-        }
-
-        public String getOrderId() { return orderId; }
-        public String getErrorMessage() { return errorMessage; }
     }
 }

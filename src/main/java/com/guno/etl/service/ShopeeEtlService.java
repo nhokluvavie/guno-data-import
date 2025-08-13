@@ -1,9 +1,7 @@
     // ShopeeEtlService.java - Complete version with all 9 tables processing
     package com.guno.etl.service;
 
-    import com.guno.etl.dto.ShopeeApiResponse;
-    import com.guno.etl.dto.ShopeeOrderDto;
-    import com.guno.etl.dto.ShopeeItemDto;
+    import com.guno.etl.dto.*;
     import com.guno.etl.entity.*;
     import com.guno.etl.repository.*;
     import com.guno.etl.util.HashUtil;
@@ -1434,12 +1432,12 @@
 
                     // Create EtlResult using constructor
                     EtlResult result = new EtlResult();
-                    result.success = true;
-                    result.totalOrders = 0;
-                    result.ordersProcessed = 0;
-                    result.durationMs = System.currentTimeMillis() - startTime;
-                    result.errorMessage = "No data available for the specified date";
-                    result.failedOrders = failedOrders;
+                    result.setSuccess(true);
+                    result.setTotalOrders(0);
+                    result.setOrdersProcessed(0);
+                    result.setDurationMs(System.currentTimeMillis() - startTime);
+                    result.setErrorMessage("No data available for the specified date");
+                    result.setFailedOrders(failedOrders);
                     return result;
                 }
 
@@ -1475,13 +1473,13 @@
 
                 // Create success result
                 EtlResult result = new EtlResult();
-                result.success = (ordersProcessed > 0 || totalOrders == 0);
-                result.totalOrders = totalOrders;
-                result.ordersProcessed = ordersProcessed;
-                result.durationMs = durationMs;
-                result.errorMessage = failedOrders.isEmpty() ? null :
-                        String.format("%d orders failed processing", failedOrders.size());
-                result.failedOrders = failedOrders;
+                result.setSuccess(ordersProcessed > 0 || totalOrders == 0);
+                result.setTotalOrders(totalOrders);
+                result.setOrdersProcessed(ordersProcessed);
+                result.setDurationMs(durationMs);
+                result.setErrorMessage(failedOrders.isEmpty() ? null :
+                        String.format("%d orders failed processing", failedOrders.size()));
+                result.setFailedOrders(failedOrders);
                 return result;
 
             } catch (Exception e) {
@@ -1490,12 +1488,12 @@
 
                 // Create failure result
                 EtlResult result = new EtlResult();
-                result.success = false;
-                result.totalOrders = totalOrders;
-                result.ordersProcessed = ordersProcessed;
-                result.durationMs = durationMs;
-                result.errorMessage = e.getMessage();
-                result.failedOrders = failedOrders;
+                result.setSuccess(false);
+                result.setTotalOrders(totalOrders);
+                result.setOrdersProcessed(ordersProcessed);
+                result.setDurationMs(durationMs);
+                result.setErrorMessage(e.getMessage());
+                result.setFailedOrders(failedOrders);
                 return result;
             }
         }
@@ -1832,68 +1830,5 @@
                 default:
                     return 0.85; // Default 85% success rate
             }
-        }
-
-        // ===== ETL RESULT CLASSES =====
-
-        public static class EtlResult {
-            private boolean success;
-            private int totalOrders;
-            private int ordersProcessed;
-            private String errorMessage;
-            private LocalDateTime startTime;
-            private LocalDateTime endTime;
-            private long durationMs;
-            private List<FailedOrder> failedOrders = new ArrayList<>();
-
-            // Getters and setters
-            public boolean isSuccess() { return success; }
-            public void setSuccess(boolean success) { this.success = success; }
-
-            public int getTotalOrders() { return totalOrders; }
-            public void setTotalOrders(int totalOrders) { this.totalOrders = totalOrders; }
-
-            public int getOrdersProcessed() { return ordersProcessed; }
-            public void setOrdersProcessed(int ordersProcessed) { this.ordersProcessed = ordersProcessed; }
-            public void incrementProcessed() { this.ordersProcessed++; }
-
-            public String getErrorMessage() { return errorMessage; }
-            public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
-
-            public LocalDateTime getStartTime() { return startTime; }
-            public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-
-            public LocalDateTime getEndTime() { return endTime; }
-            public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
-
-            public long getDurationMs() { return durationMs; }
-            public void calculateDuration() {
-                if (startTime != null && endTime != null) {
-                    this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
-                }
-            }
-
-            public List<FailedOrder> getFailedOrders() { return failedOrders; }
-            public void addFailedOrder(String orderId, String error) {
-                this.failedOrders.add(new FailedOrder(orderId, error));
-            }
-
-            public double getSuccessRate() {
-                if (totalOrders == 0) return 0.0;
-                return (double) ordersProcessed / totalOrders * 100.0;
-            }
-        }
-
-        public static class FailedOrder {
-            private String orderId;
-            private String errorMessage;
-
-            public FailedOrder(String orderId, String errorMessage) {
-                this.orderId = orderId;
-                this.errorMessage = errorMessage;
-            }
-
-            public String getOrderId() { return orderId; }
-            public String getErrorMessage() { return errorMessage; }
         }
     }

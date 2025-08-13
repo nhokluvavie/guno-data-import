@@ -4,6 +4,7 @@ import com.guno.etl.dto.FacebookApiResponse;
 import com.guno.etl.dto.FacebookOrderDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class FacebookApiService {
@@ -30,6 +38,22 @@ public class FacebookApiService {
     private final int timeout;
     private final int pageSize;
     private final int maxRetries;
+
+    @Autowired
+    @Qualifier("facebookApiExecutor")
+    private Executor facebookApiExecutor;
+
+    @Value("${etl.optimization.facebook.enable-parallel-api-fetching:false}")
+    private boolean enableParallelApiFetching;
+
+    @Value("${etl.optimization.facebook.api-call-timeout:30000}")
+    private int apiCallTimeout;
+
+    @Value("${etl.optimization.facebook.max-concurrent-api-calls:5}")
+    private int maxConcurrentApiCalls;
+
+    @Value("${etl.optimization.facebook.parallel-fetch-threshold:2}")
+    private int parallelFetchThreshold;
 
     public FacebookApiService(
             RestTemplate restTemplate,
@@ -251,6 +275,16 @@ public class FacebookApiService {
         }
 
         return headers;
+    }
+
+    private FacebookApiResponse createEmptyResponse() {
+        FacebookApiResponse emptyResponse = new FacebookApiResponse();
+        FacebookApiResponse.FacebookDataWrapper emptyData = new FacebookApiResponse.FacebookDataWrapper();
+        emptyData.setOrders(new ArrayList<>());
+        emptyData.setCount(0);
+        emptyData.setPage(1);
+        emptyResponse.setData(emptyData);
+        return emptyResponse;
     }
 
     private ResponseEntity<FacebookApiResponse> makeApiCallWithRetry(String url, HttpEntity<String> entity) {

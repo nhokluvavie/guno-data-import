@@ -1521,3 +1521,429 @@ Identify and stop the process that's listening on port 8080 or configure this ap
 2025-08-13 12:08:36.514 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 2 of 2
 2025-08-13 12:08:59.169 [main] WARN  [c.g.etl.service.FacebookApiService] - Facebook API unexpected error on attempt 2: Error while extracting response for type [class com.guno.etl.dto.FacebookApiResponse] and content type [application/json;charset=utf-8]
 2025-08-13 12:08:59.169 [main] ERROR [c.g.etl.service.FacebookApiService] - Facebook API call failed after 2 attempts
+2025-08-13 12:19:14.065 [HikariPool-1 housekeeper] WARN  [com.zaxxer.hikari.pool.HikariPool] - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=10m22s130ms).
+2025-08-13 12:19:14.068 [main] ERROR [c.g.etl.service.FacebookApiService] - Failed to fetch Facebook orders for date 2025-08-12: Facebook API call failed after 2 attempts
+2025-08-13 12:19:14.075 [main] ERROR [c.g.etl.service.FacebookApiService] - Failed to fetch all Facebook orders for date 2025-08-12: Facebook API call failed for date: 2025-08-12
+2025-08-13 12:19:14.077 [main] ERROR [c.g.etl.service.FacebookEtlService] - Facebook ETL process failed for date 2025-08-12: Failed to fetch all orders
+2025-08-13 12:19:14.078 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      📥 API Response: 0 total orders
+2025-08-13 12:19:14.079 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      ✅ Processed: 0 orders
+2025-08-13 12:19:14.079 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      📈 Success Rate: 0.0%
+2025-08-13 12:19:14.079 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      ⏱️ Duration: 740477 ms
+2025-08-13 12:19:14.080 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      💾 Facebook Result: ❌ FAILED
+2025-08-13 12:19:14.080 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ✅ Processed 1 platform(s)
+2025-08-13 12:19:14.081 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📊 STEP 3: Database State AFTER
+2025-08-13 12:19:14.459 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Orders: 2070
+2025-08-13 12:19:14.459 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Customers: 1889
+2025-08-13 12:19:14.460 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 12:19:14.460 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📈 MULTI-PLATFORM TEST RESULTS
+2025-08-13 12:19:14.460 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 12:19:14.460 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📅 Test Date: 2025-08-12
+2025-08-13 12:19:14.460 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🏪 Platform(s): Facebook
+2025-08-13 12:19:14.460 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📊 Database Changes:
+2025-08-13 12:19:14.460 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Orders: 2070 → 2070 (+0)
+2025-08-13 12:19:14.460 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Customers: 1889 → 1889 (+0)
+2025-08-13 12:19:14.460 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ❌ Result: FAILED
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    🔧 Check configuration and logs above
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 💡 To test different configurations:
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    📝 Edit: src/test/resources/test-config.properties
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    🛒 Shopee: test.shopee.enabled=true, test.platform=SHOPEE
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    📱 TikTok: test.tiktok.enabled=true, test.platform=TIKTOK
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    📘 Facebook: test.facebook.enabled=true, test.platform=FACEBOOK
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    🌐 All: test.platform=ALL (enable all desired platforms)
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    ▶️  Re-run: ConfigBasedEtlTest
+2025-08-13 12:19:14.461 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 12:19:14.471 [main] INFO  [c.g.e.c.StatusMappingInitializer] - === Initializing Status Mappings ===
+2025-08-13 12:19:14.471 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing SHOPEE status mappings...
+2025-08-13 12:19:14.828 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ SHOPEE status mappings: 0 created, 10 already existed
+2025-08-13 12:19:14.828 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing TIKTOK status mappings...
+2025-08-13 12:19:15.099 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ TIKTOK status mappings: 0 created, 10 already existed
+2025-08-13 12:19:15.100 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing FACEBOOK status mappings...
+2025-08-13 12:19:15.267 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ FACEBOOK status mappings: 0 created, 6 already existed
+2025-08-13 12:19:15.267 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ Status mappings initialization completed successfully
+2025-08-13 12:19:15.296 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-13 12:19:15.296 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🎉 SHOPEE ETL APPLICATION STARTED SUCCESSFULLY 🎉
+2025-08-13 12:19:15.296 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-13 12:19:15.297 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Application: shopee-etl-test
+2025-08-13 12:19:15.297 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Profile: test
+2025-08-13 12:19:15.297 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Java Version: 21.0.7
+2025-08-13 12:19:15.303 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Spring Boot Version: 3.2.0
+2025-08-13 12:19:15.304 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 12:19:15.304 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 📋 Configuration Summary:
+2025-08-13 12:19:15.304 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ----------------------------------------
+2025-08-13 12:19:15.304 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Database URL: jdbc:postgresql://103.97.125.92:5432/guno_db_test?useSSL=false
+2025-08-13 12:19:15.304 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Database User: guno_user
+2025-08-13 12:19:15.304 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API URL: Not configured
+2025-08-13 12:19:15.305 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API Timeout: Not configured
+2025-08-13 12:19:15.305 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API Page Size: Not configured
+2025-08-13 12:19:15.305 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Scheduler Enabled: false
+2025-08-13 12:19:15.305 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Scheduler Rate: 10000 ms
+2025-08-13 12:19:15.305 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Log Level: INFO
+2025-08-13 12:19:15.306 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Log File: logs/shopee-etl-production.log
+2025-08-13 12:19:15.306 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 12:19:15.306 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🌐 Access Information:
+2025-08-13 12:19:15.306 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ----------------------------------------
+2025-08-13 12:19:15.435 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Server Port: 8080
+2025-08-13 12:19:15.435 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Local Access: http://localhost:8080
+2025-08-13 12:19:15.436 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Network Access: http://127.0.0.1:8080
+2025-08-13 12:19:15.436 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 12:19:15.436 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 📚 API Documentation:
+2025-08-13 12:19:15.436 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Help: http://localhost:8080/api/etl/help
+2025-08-13 12:19:15.436 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Status: http://localhost:8080/api/etl/status
+2025-08-13 12:19:15.436 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Test API: http://localhost:8080/api/etl/api-test
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Manual ETL: POST http://localhost:8080/api/etl/trigger
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🔧 Management Endpoints:
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Health Check: http://localhost:8080/actuator/health
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Application Info: http://localhost:8080/actuator/info
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ⚡ ETL Operations:
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ⚠️ Automated ETL: DISABLED
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 💡 Use POST /api/etl/trigger for manual processing
+2025-08-13 12:19:15.437 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 12:19:15.438 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-13 12:19:15.438 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🚀 Ready to process Shopee orders!
+2025-08-13 12:19:15.438 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-13 12:19:16.296 [SpringApplicationShutdownHook] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13 12:19:16.306 [SpringApplicationShutdownHook] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown initiated...
+2025-08-13 12:19:16.307 [SpringApplicationShutdownHook] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown completed.
+2025-08-13 12:19:20.949 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - Starting ConfigBasedEtlTest using Java 21.0.7 with PID 9729 (/Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test/target/test-classes started by nhokluvavie in /Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test)
+2025-08-13 12:19:20.951 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - The following 1 profile is active: "test"
+2025-08-13 12:19:21.573 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-13 12:19:21.846 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 265 ms. Found 11 JPA repository interfaces.
+2025-08-13 12:19:22.874 [main] INFO  [o.h.jpa.internal.util.LogHelper] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-13 12:19:23.015 [main] INFO  [org.hibernate.Version] - HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-08-13 12:19:23.087 [main] INFO  [o.h.c.i.RegionFactoryInitiator] - HHH000026: Second-level cache disabled
+2025-08-13 12:19:23.540 [main] INFO  [o.s.o.j.p.SpringPersistenceUnitInfo] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-13 12:19:23.576 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Starting...
+2025-08-13 12:19:24.043 [main] INFO  [com.zaxxer.hikari.pool.HikariPool] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@59371066
+2025-08-13 12:19:24.045 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Start completed.
+2025-08-13 12:19:24.115 [main] WARN  [org.hibernate.orm.deprecation] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-13 12:19:25.588 [main] INFO  [o.h.e.t.j.p.i.JtaPlatformInitiator] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-13 12:19:25.591 [main] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13 12:19:25.643 [main] INFO  [c.guno.etl.service.ShopeeApiService] - ShopeeApiService initialized with base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/shopee
+2025-08-13 12:19:25.993 [main] INFO  [o.s.d.j.r.query.QueryEnhancerFactory] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-13 12:19:27.429 [main] INFO  [c.guno.etl.service.TikTokApiService] - TikTokApiService initialized with base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/tiktok
+2025-08-13 12:19:27.450 [main] INFO  [c.g.etl.service.FacebookApiService] - FacebookApiService initialized with base URL: https://hub-bak.guno.store/api/v1/pos/pos-pancake-fm/order/search
+2025-08-13 12:19:27.459 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Database configuration initialized
+2025-08-13 12:19:27.460 [main] INFO  [com.guno.etl.config.DatabaseConfig] - JPA repositories enabled for package: com.guno.etl.repository
+2025-08-13 12:19:27.460 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Entity scan enabled for package: com.guno.etl.entity
+2025-08-13 12:19:27.475 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - FacebookApiDebugTool initialized
+2025-08-13 12:19:27.476 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - Base URL: https://hub-bak.guno.store/api/v1/pos/pos-pancake-fm/order/search
+2025-08-13 12:19:27.476 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - Auth Header: x-webhook-api-key
+2025-08-13 12:19:27.476 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - API Key: ***configured***
+2025-08-13 12:19:27.485 [main] INFO  [c.guno.etl.config.SchedulingConfig] - ETL Task Scheduler configured:
+2025-08-13 12:19:27.485 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Pool Size: 2
+2025-08-13 12:19:27.485 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Name Prefix: ETL-Scheduler-
+2025-08-13 12:19:27.485 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Await Termination: 20 seconds
+2025-08-13 12:19:28.145 [main] INFO  [o.s.b.w.e.netty.NettyWebServer] - Netty started on port 8080
+2025-08-13 12:19:28.155 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - Started ConfigBasedEtlTest in 7.768 seconds (process running for 9.891)
+2025-08-13 12:19:28.158 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 12:19:28.158 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📁 CONFIG-BASED ETL TEST (Multi-Platform)
+2025-08-13 12:19:28.158 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 12:19:28.158 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🔧 Edit: src/test/resources/test-config.properties
+2025-08-13 12:19:28.158 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ▶️  Run: ConfigBasedEtlTest from IDE
+2025-08-13 12:19:28.158 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🏪 Supports: Shopee + TikTok + Facebook
+2025-08-13 12:19:28.158 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 12:19:28.158 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📋 Loading Configuration...
+2025-08-13 12:19:28.159 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📅 Target Date: 2025-08-12
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🏪 Platform: FACEBOOK
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🛒 Shopee Enabled: false
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📱 TikTok Enabled: false
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📘 Facebook Enabled: true
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🧪 Test Mode: SINGLE_DATE
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🐛 Debug Mode: true
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🚀 Starting Multi-Platform ETL Test
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 12:19:28.160 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📊 STEP 1: Database State BEFORE
+2025-08-13 12:19:28.394 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Orders: 2070
+2025-08-13 12:19:28.395 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Customers: 1889
+2025-08-13 12:19:28.395 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🔄 STEP 2: Processing Data for 2025-08-12
+2025-08-13 12:19:28.396 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    📘 Processing Facebook Data...
+2025-08-13 12:19:28.396 [main] INFO  [c.g.etl.service.FacebookEtlService] - Starting Facebook ETL process for date: 2025-08-12
+2025-08-13 12:19:28.396 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching ALL Facebook orders for date: 2025-08-12
+2025-08-13 12:19:32.488 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 1, limit: 100
+2025-08-13 12:19:32.500 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 12:19:38.164 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 12:19:47.666 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 1: 100 orders, total: 9252
+2025-08-13 12:19:52.896 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 2, limit: 100
+2025-08-13 12:19:52.903 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 12:19:55.200 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 12:21:12.969 [HikariPool-1 housekeeper] WARN  [com.zaxxer.hikari.pool.HikariPool] - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m18s818ms).
+2025-08-13 12:21:12.973 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 2: 100 orders, total: 9252
+2025-08-13 12:21:12.976 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 3, limit: 100
+2025-08-13 12:21:12.978 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 12:21:14.878 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 12:21:14.878 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 3: 100 orders, total: 9251
+2025-08-13 12:21:14.879 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 4, limit: 100
+2025-08-13 12:21:14.879 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 12:21:15.160 [SpringApplicationShutdownHook] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13 12:21:15.169 [SpringApplicationShutdownHook] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown initiated...
+2025-08-13 12:21:15.172 [SpringApplicationShutdownHook] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown completed.
+2025-08-13 14:19:51.616 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - Starting ConfigBasedEtlTest using Java 21.0.7 with PID 10026 (/Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test/target/test-classes started by nhokluvavie in /Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test)
+2025-08-13 14:19:51.618 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - The following 1 profile is active: "test"
+2025-08-13 14:19:52.427 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-13 14:19:52.711 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 273 ms. Found 11 JPA repository interfaces.
+2025-08-13 14:19:53.857 [main] INFO  [o.h.jpa.internal.util.LogHelper] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-13 14:19:53.938 [main] INFO  [org.hibernate.Version] - HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-08-13 14:19:53.987 [main] INFO  [o.h.c.i.RegionFactoryInitiator] - HHH000026: Second-level cache disabled
+2025-08-13 14:19:54.416 [main] INFO  [o.s.o.j.p.SpringPersistenceUnitInfo] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-13 14:19:54.443 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Starting...
+2025-08-13 14:19:54.931 [main] INFO  [com.zaxxer.hikari.pool.HikariPool] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@6060146b
+2025-08-13 14:19:54.933 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Start completed.
+2025-08-13 14:19:55.014 [main] WARN  [org.hibernate.orm.deprecation] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-13 14:19:56.689 [main] INFO  [o.h.e.t.j.p.i.JtaPlatformInitiator] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-13 14:19:56.694 [main] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13 14:19:56.759 [main] INFO  [c.guno.etl.service.ShopeeApiService] - ShopeeApiService initialized with base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/shopee
+2025-08-13 14:19:57.155 [main] INFO  [o.s.d.j.r.query.QueryEnhancerFactory] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-13 14:19:58.949 [main] INFO  [c.guno.etl.service.TikTokApiService] - TikTokApiService initialized with base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/tiktok
+2025-08-13 14:19:58.970 [main] INFO  [c.g.etl.service.FacebookApiService] - FacebookApiService initialized with base URL: https://hub-bak.guno.store/api/v1/pos/pos-pancake-fm/order/search
+2025-08-13 14:19:58.984 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Database configuration initialized
+2025-08-13 14:19:58.984 [main] INFO  [com.guno.etl.config.DatabaseConfig] - JPA repositories enabled for package: com.guno.etl.repository
+2025-08-13 14:19:58.984 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Entity scan enabled for package: com.guno.etl.entity
+2025-08-13 14:19:59.003 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - FacebookApiDebugTool initialized
+2025-08-13 14:19:59.003 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - Base URL: https://hub-bak.guno.store/api/v1/pos/pos-pancake-fm/order/search
+2025-08-13 14:19:59.003 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - Auth Header: x-webhook-api-key
+2025-08-13 14:19:59.004 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - API Key: ***configured***
+2025-08-13 14:19:59.019 [main] INFO  [c.guno.etl.config.SchedulingConfig] - ETL Task Scheduler configured:
+2025-08-13 14:19:59.019 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Pool Size: 2
+2025-08-13 14:19:59.019 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Name Prefix: ETL-Scheduler-
+2025-08-13 14:19:59.020 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Await Termination: 20 seconds
+2025-08-13 14:19:59.729 [main] INFO  [o.s.b.w.e.netty.NettyWebServer] - Netty started on port 8080
+2025-08-13 14:19:59.740 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - Started ConfigBasedEtlTest in 8.792 seconds (process running for 10.471)
+2025-08-13 14:19:59.743 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:19:59.743 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📁 CONFIG-BASED ETL TEST (Multi-Platform)
+2025-08-13 14:19:59.743 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:19:59.743 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🔧 Edit: src/test/resources/test-config.properties
+2025-08-13 14:19:59.743 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ▶️  Run: ConfigBasedEtlTest from IDE
+2025-08-13 14:19:59.743 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🏪 Supports: Shopee + TikTok + Facebook
+2025-08-13 14:19:59.743 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:19:59.743 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📋 Loading Configuration...
+2025-08-13 14:19:59.745 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📅 Target Date: 2025-08-12
+2025-08-13 14:19:59.745 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🏪 Platform: FACEBOOK
+2025-08-13 14:19:59.746 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🛒 Shopee Enabled: false
+2025-08-13 14:19:59.746 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📱 TikTok Enabled: false
+2025-08-13 14:19:59.746 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📘 Facebook Enabled: true
+2025-08-13 14:19:59.746 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🧪 Test Mode: SINGLE_DATE
+2025-08-13 14:19:59.746 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🐛 Debug Mode: true
+2025-08-13 14:19:59.746 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:19:59.746 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🚀 Starting Multi-Platform ETL Test
+2025-08-13 14:19:59.746 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:19:59.747 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📊 STEP 1: Database State BEFORE
+2025-08-13 14:19:59.979 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Orders: 2070
+2025-08-13 14:19:59.980 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Customers: 1889
+2025-08-13 14:19:59.981 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🔄 STEP 2: Processing Data for 2025-08-12
+2025-08-13 14:19:59.982 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    📘 Processing Facebook Data...
+2025-08-13 14:19:59.983 [main] INFO  [c.g.etl.service.FacebookEtlService] - Starting Facebook ETL process for date: 2025-08-12
+2025-08-13 14:19:59.983 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching ALL Facebook orders for date: 2025-08-12
+2025-08-13 14:19:59.984 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 1, limit: 100
+2025-08-13 14:19:59.989 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:01.374 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:01.374 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 1: 100 orders, total: 9044
+2025-08-13 14:20:01.374 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 2, limit: 100
+2025-08-13 14:20:01.374 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:01.841 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:01.842 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 2: 100 orders, total: 9044
+2025-08-13 14:20:01.842 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 3, limit: 100
+2025-08-13 14:20:01.842 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:02.255 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:02.261 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 3: 100 orders, total: 9044
+2025-08-13 14:20:02.262 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 4, limit: 100
+2025-08-13 14:20:02.262 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:02.729 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:02.729 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 4: 100 orders, total: 9044
+2025-08-13 14:20:02.730 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 5, limit: 100
+2025-08-13 14:20:02.730 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:03.476 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:03.477 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 5: 100 orders, total: 9044
+2025-08-13 14:20:03.477 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 6, limit: 100
+2025-08-13 14:20:03.477 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:04.295 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:04.295 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 6: 100 orders, total: 9044
+2025-08-13 14:20:04.295 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 7, limit: 100
+2025-08-13 14:20:04.295 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:05.025 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:05.025 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 7: 100 orders, total: 9044
+2025-08-13 14:20:05.025 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 8, limit: 100
+2025-08-13 14:20:05.026 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:06.060 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:06.060 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 8: 100 orders, total: 9044
+2025-08-13 14:20:06.060 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 9, limit: 100
+2025-08-13 14:20:06.060 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:07.384 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:07.385 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 9: 100 orders, total: 9044
+2025-08-13 14:20:07.385 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 10, limit: 100
+2025-08-13 14:20:07.386 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:08.928 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:08.928 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 10: 100 orders, total: 9044
+2025-08-13 14:20:08.928 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 11, limit: 100
+2025-08-13 14:20:08.928 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:10.292 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:10.292 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 11: 100 orders, total: 9044
+2025-08-13 14:20:10.292 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 12, limit: 100
+2025-08-13 14:20:10.292 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:11.455 [main] INFO  [c.g.etl.service.FacebookApiService] - Successfully fetched 100 Facebook orders for date: 2025-08-12
+2025-08-13 14:20:11.455 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetched page 12: 100 orders, total: 9044
+2025-08-13 14:20:11.455 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 13, limit: 100
+2025-08-13 14:20:11.455 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:20:12.747 [main] WARN  [c.g.etl.service.FacebookApiService] - Facebook API unexpected error on attempt 1: Error while extracting response for type [class com.guno.etl.dto.FacebookApiResponse] and content type [application/json;charset=utf-8]
+2025-08-13 14:20:12.747 [main] DEBUG [c.g.etl.service.FacebookApiService] - Waiting 1000ms before retry
+2025-08-13 14:20:13.751 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 2 of 5
+2025-08-13 14:20:15.310 [main] WARN  [c.g.etl.service.FacebookApiService] - Facebook API unexpected error on attempt 2: Error while extracting response for type [class com.guno.etl.dto.FacebookApiResponse] and content type [application/json;charset=utf-8]
+2025-08-13 14:20:15.311 [main] DEBUG [c.g.etl.service.FacebookApiService] - Waiting 2000ms before retry
+2025-08-13 14:20:17.314 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 3 of 5
+2025-08-13 14:20:18.492 [main] WARN  [c.g.etl.service.FacebookApiService] - Facebook API unexpected error on attempt 3: Error while extracting response for type [class com.guno.etl.dto.FacebookApiResponse] and content type [application/json;charset=utf-8]
+2025-08-13 14:20:18.492 [main] DEBUG [c.g.etl.service.FacebookApiService] - Waiting 3000ms before retry
+2025-08-13 14:20:21.493 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 4 of 5
+2025-08-13 14:20:22.971 [main] WARN  [c.g.etl.service.FacebookApiService] - Facebook API unexpected error on attempt 4: Error while extracting response for type [class com.guno.etl.dto.FacebookApiResponse] and content type [application/json;charset=utf-8]
+2025-08-13 14:20:22.971 [main] DEBUG [c.g.etl.service.FacebookApiService] - Waiting 4000ms before retry
+2025-08-13 14:20:26.972 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 5 of 5
+2025-08-13 14:20:28.372 [main] WARN  [c.g.etl.service.FacebookApiService] - Facebook API unexpected error on attempt 5: Error while extracting response for type [class com.guno.etl.dto.FacebookApiResponse] and content type [application/json;charset=utf-8]
+2025-08-13 14:20:28.373 [main] ERROR [c.g.etl.service.FacebookApiService] - Facebook API call failed after 5 attempts
+2025-08-13 14:20:28.373 [main] ERROR [c.g.etl.service.FacebookApiService] - Failed to fetch Facebook orders for date 2025-08-12: Facebook API call failed after 5 attempts
+2025-08-13 14:20:28.373 [main] ERROR [c.g.etl.service.FacebookApiService] - Failed to fetch all Facebook orders for date 2025-08-12: Facebook API call failed for date: 2025-08-12
+2025-08-13 14:20:28.373 [main] ERROR [c.g.etl.service.FacebookEtlService] - Facebook ETL process failed for date 2025-08-12: Failed to fetch all orders
+2025-08-13 14:20:28.374 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      📥 API Response: 0 total orders
+2025-08-13 14:20:28.374 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      ✅ Processed: 0 orders
+2025-08-13 14:20:28.374 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      📈 Success Rate: 0.0%
+2025-08-13 14:20:28.374 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      ⏱️ Duration: 28390 ms
+2025-08-13 14:20:28.374 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -      💾 Facebook Result: ❌ FAILED
+2025-08-13 14:20:28.374 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ✅ Processed 1 platform(s)
+2025-08-13 14:20:28.375 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📊 STEP 3: Database State AFTER
+2025-08-13 14:20:28.522 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Orders: 2070
+2025-08-13 14:20:28.522 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Customers: 1889
+2025-08-13 14:20:28.522 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:20:28.522 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📈 MULTI-PLATFORM TEST RESULTS
+2025-08-13 14:20:28.522 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:20:28.522 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📅 Test Date: 2025-08-12
+2025-08-13 14:20:28.522 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🏪 Platform(s): Facebook
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📊 Database Changes:
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Orders: 2070 → 2070 (+0)
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Customers: 1889 → 1889 (+0)
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ❌ Result: FAILED
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    🔧 Check configuration and logs above
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 💡 To test different configurations:
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    📝 Edit: src/test/resources/test-config.properties
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    🛒 Shopee: test.shopee.enabled=true, test.platform=SHOPEE
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    📱 TikTok: test.tiktok.enabled=true, test.platform=TIKTOK
+2025-08-13 14:20:28.523 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    📘 Facebook: test.facebook.enabled=true, test.platform=FACEBOOK
+2025-08-13 14:20:28.524 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    🌐 All: test.platform=ALL (enable all desired platforms)
+2025-08-13 14:20:28.524 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    ▶️  Re-run: ConfigBasedEtlTest
+2025-08-13 14:20:28.524 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:20:28.531 [main] INFO  [c.g.e.c.StatusMappingInitializer] - === Initializing Status Mappings ===
+2025-08-13 14:20:28.531 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing SHOPEE status mappings...
+2025-08-13 14:20:28.875 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ SHOPEE status mappings: 0 created, 10 already existed
+2025-08-13 14:20:28.875 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing TIKTOK status mappings...
+2025-08-13 14:20:29.169 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ TIKTOK status mappings: 0 created, 10 already existed
+2025-08-13 14:20:29.170 [main] INFO  [c.g.e.c.StatusMappingInitializer] - Initializing FACEBOOK status mappings...
+2025-08-13 14:20:29.351 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ FACEBOOK status mappings: 0 created, 6 already existed
+2025-08-13 14:20:29.351 [main] INFO  [c.g.e.c.StatusMappingInitializer] - ✅ Status mappings initialization completed successfully
+2025-08-13 14:20:29.379 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-13 14:20:29.380 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🎉 SHOPEE ETL APPLICATION STARTED SUCCESSFULLY 🎉
+2025-08-13 14:20:29.380 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-13 14:20:29.380 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Application: shopee-etl-test
+2025-08-13 14:20:29.380 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Profile: test
+2025-08-13 14:20:29.381 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Java Version: 21.0.7
+2025-08-13 14:20:29.382 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Spring Boot Version: 3.2.0
+2025-08-13 14:20:29.382 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 14:20:29.382 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 📋 Configuration Summary:
+2025-08-13 14:20:29.383 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ----------------------------------------
+2025-08-13 14:20:29.383 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Database URL: jdbc:postgresql://103.97.125.92:5432/guno_db_test?useSSL=false
+2025-08-13 14:20:29.383 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Database User: guno_user
+2025-08-13 14:20:29.383 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API URL: Not configured
+2025-08-13 14:20:29.383 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API Timeout: Not configured
+2025-08-13 14:20:29.383 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - API Page Size: Not configured
+2025-08-13 14:20:29.383 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Scheduler Enabled: false
+2025-08-13 14:20:29.384 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Scheduler Rate: 10000 ms
+2025-08-13 14:20:29.384 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Log Level: INFO
+2025-08-13 14:20:29.384 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Log File: logs/shopee-etl-production.log
+2025-08-13 14:20:29.384 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 14:20:29.384 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🌐 Access Information:
+2025-08-13 14:20:29.385 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ----------------------------------------
+2025-08-13 14:20:29.387 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Server Port: 8080
+2025-08-13 14:20:29.387 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Local Access: http://localhost:8080
+2025-08-13 14:20:29.387 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Network Access: http://127.0.0.1:8080
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 📚 API Documentation:
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Help: http://localhost:8080/api/etl/help
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Status: http://localhost:8080/api/etl/status
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Test API: http://localhost:8080/api/etl/api-test
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Manual ETL: POST http://localhost:8080/api/etl/trigger
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🔧 Management Endpoints:
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Health Check: http://localhost:8080/actuator/health
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - Application Info: http://localhost:8080/actuator/info
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ⚡ ETL Operations:
+2025-08-13 14:20:29.388 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ⚠️ Automated ETL: DISABLED
+2025-08-13 14:20:29.389 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 💡 Use POST /api/etl/trigger for manual processing
+2025-08-13 14:20:29.389 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 
+2025-08-13 14:20:29.389 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-13 14:20:29.389 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - 🚀 Ready to process Shopee orders!
+2025-08-13 14:20:29.389 [main] INFO  [com.guno.etl.ShopeeEtlApplication] - ============================================================
+2025-08-13 14:23:51.917 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - Starting ConfigBasedEtlTest using Java 21.0.7 with PID 10042 (/Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test/target/test-classes started by nhokluvavie in /Users/nhokluvavie/IdeaProjects/Guno/push-order-data-test)
+2025-08-13 14:23:51.919 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - The following 1 profile is active: "test"
+2025-08-13 14:23:52.614 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-13 14:23:52.868 [main] INFO  [o.s.d.r.c.RepositoryConfigurationDelegate] - Finished Spring Data repository scanning in 245 ms. Found 11 JPA repository interfaces.
+2025-08-13 14:23:53.841 [main] INFO  [o.h.jpa.internal.util.LogHelper] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-13 14:23:53.903 [main] INFO  [org.hibernate.Version] - HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-08-13 14:23:53.943 [main] INFO  [o.h.c.i.RegionFactoryInitiator] - HHH000026: Second-level cache disabled
+2025-08-13 14:23:54.236 [main] INFO  [o.s.o.j.p.SpringPersistenceUnitInfo] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-13 14:23:54.263 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Starting...
+2025-08-13 14:23:54.748 [main] INFO  [com.zaxxer.hikari.pool.HikariPool] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7bede4ea
+2025-08-13 14:23:54.749 [main] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Start completed.
+2025-08-13 14:23:54.832 [main] WARN  [org.hibernate.orm.deprecation] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-13 14:23:56.408 [main] INFO  [o.h.e.t.j.p.i.JtaPlatformInitiator] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-13 14:23:56.411 [main] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13 14:23:56.469 [main] INFO  [c.guno.etl.service.ShopeeApiService] - ShopeeApiService initialized with base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/shopee
+2025-08-13 14:23:56.771 [main] INFO  [o.s.d.j.r.query.QueryEnhancerFactory] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-13 14:23:58.463 [main] INFO  [c.guno.etl.service.TikTokApiService] - TikTokApiService initialized with base URL: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/tiktok
+2025-08-13 14:23:58.478 [main] INFO  [c.g.etl.service.FacebookApiService] - FacebookApiService initialized with base URL: https://hub-bak.guno.store/api/v1/pos/pos-pancake-fm/order/search
+2025-08-13 14:23:58.488 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Database configuration initialized
+2025-08-13 14:23:58.489 [main] INFO  [com.guno.etl.config.DatabaseConfig] - JPA repositories enabled for package: com.guno.etl.repository
+2025-08-13 14:23:58.489 [main] INFO  [com.guno.etl.config.DatabaseConfig] - Entity scan enabled for package: com.guno.etl.entity
+2025-08-13 14:23:58.505 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - FacebookApiDebugTool initialized
+2025-08-13 14:23:58.505 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - Base URL: https://hub-bak.guno.store/api/v1/pos/pos-pancake-fm/order/search
+2025-08-13 14:23:58.505 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - Auth Header: x-webhook-api-key
+2025-08-13 14:23:58.505 [main] INFO  [c.g.etl.debug.FacebookApiDebugTool] - API Key: ***configured***
+2025-08-13 14:23:58.516 [main] INFO  [c.guno.etl.config.SchedulingConfig] - ETL Task Scheduler configured:
+2025-08-13 14:23:58.516 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Pool Size: 2
+2025-08-13 14:23:58.516 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Thread Name Prefix: ETL-Scheduler-
+2025-08-13 14:23:58.517 [main] INFO  [c.guno.etl.config.SchedulingConfig] -   Await Termination: 20 seconds
+2025-08-13 14:23:59.285 [main] INFO  [o.s.b.w.e.netty.NettyWebServer] - Netty started on port 8080
+2025-08-13 14:23:59.293 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - Started ConfigBasedEtlTest in 8.077 seconds (process running for 9.403)
+2025-08-13 14:23:59.295 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:23:59.295 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📁 CONFIG-BASED ETL TEST (Multi-Platform)
+2025-08-13 14:23:59.295 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:23:59.295 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🔧 Edit: src/test/resources/test-config.properties
+2025-08-13 14:23:59.295 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ▶️  Run: ConfigBasedEtlTest from IDE
+2025-08-13 14:23:59.295 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🏪 Supports: Shopee + TikTok + Facebook
+2025-08-13 14:23:59.295 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:23:59.295 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📋 Loading Configuration...
+2025-08-13 14:23:59.297 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📅 Target Date: 2025-08-12
+2025-08-13 14:23:59.297 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🏪 Platform: FACEBOOK
+2025-08-13 14:23:59.297 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🛒 Shopee Enabled: false
+2025-08-13 14:23:59.297 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📱 TikTok Enabled: false
+2025-08-13 14:23:59.298 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📘 Facebook Enabled: true
+2025-08-13 14:23:59.298 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🧪 Test Mode: SINGLE_DATE
+2025-08-13 14:23:59.298 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🐛 Debug Mode: true
+2025-08-13 14:23:59.298 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:23:59.298 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🚀 Starting Multi-Platform ETL Test
+2025-08-13 14:23:59.298 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - ========================================
+2025-08-13 14:23:59.298 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 📊 STEP 1: Database State BEFORE
+2025-08-13 14:23:59.539 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Orders: 2070
+2025-08-13 14:23:59.539 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    Customers: 1889
+2025-08-13 14:23:59.539 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] - 🔄 STEP 2: Processing Data for 2025-08-12
+2025-08-13 14:23:59.539 [main] INFO  [c.g.e.integration.ConfigBasedEtlTest] -    📘 Processing Facebook Data...
+2025-08-13 14:23:59.540 [main] INFO  [c.g.etl.service.FacebookEtlService] - Starting Facebook ETL process for date: 2025-08-12
+2025-08-13 14:23:59.540 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching ALL Facebook orders for date: 2025-08-12
+2025-08-13 14:23:59.540 [main] INFO  [c.g.etl.service.FacebookApiService] - Fetching Facebook orders for date: 2025-08-12, page: 1, limit: 10000
+2025-08-13 14:23:59.545 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 1 of 5
+2025-08-13 14:25:14.478 [main] WARN  [c.g.etl.service.FacebookApiService] - Facebook API unexpected error on attempt 1: Error while extracting response for type [class com.guno.etl.dto.FacebookApiResponse] and content type [application/json;charset=utf-8]
+2025-08-13 14:25:14.484 [main] DEBUG [c.g.etl.service.FacebookApiService] - Waiting 1000ms before retry
+2025-08-13 14:25:15.488 [main] DEBUG [c.g.etl.service.FacebookApiService] - Facebook API call attempt 2 of 5
+2025-08-13 14:25:19.226 [SpringApplicationShutdownHook] INFO  [o.s.o.j.LocalContainerEntityManagerFactoryBean] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13 14:25:19.235 [SpringApplicationShutdownHook] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown initiated...
+2025-08-13 14:25:19.236 [SpringApplicationShutdownHook] INFO  [com.zaxxer.hikari.HikariDataSource] - HikariPool-1 - Shutdown completed.

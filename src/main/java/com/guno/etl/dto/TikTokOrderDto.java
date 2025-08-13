@@ -314,7 +314,7 @@ public class TikTokOrderDto {
         private String shippingFee;
 
         @JsonProperty("total_amount")
-        private String totalAmount;
+        private Double totalAmount;
 
         @JsonProperty("seller_discount")
         private String sellerDiscount;
@@ -350,8 +350,8 @@ public class TikTokOrderDto {
         public String getShippingFee() { return shippingFee; }
         public void setShippingFee(String shippingFee) { this.shippingFee = shippingFee; }
 
-        public String getTotalAmount() { return totalAmount; }
-        public void setTotalAmount(String totalAmount) { this.totalAmount = totalAmount; }
+        public Double getTotalAmount() { return totalAmount; }
+        public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
 
         public String getSellerDiscount() { return sellerDiscount; }
         public void setSellerDiscount(String sellerDiscount) { this.sellerDiscount = sellerDiscount; }

@@ -1,10 +1,7 @@
 // TikTokEtlService.java - TikTok ETL Service (Clean Implementation)
 package com.guno.etl.service;
 
-import com.guno.etl.dto.ShopeeOrderDto;
-import com.guno.etl.dto.TikTokApiResponse;
-import com.guno.etl.dto.TikTokOrderDto;
-import com.guno.etl.dto.TikTokItemDto;
+import com.guno.etl.dto.*;
 import com.guno.etl.entity.*;
 import com.guno.etl.repository.*;
 import com.guno.etl.util.HashUtil;
@@ -67,11 +64,11 @@ public class TikTokEtlService {
 
                 // Create EtlResult using constructor
                 EtlResult result = new EtlResult();
-                result.success = true;
-                result.totalOrders = 0;
-                result.ordersProcessed = 0;
-                result.errorMessage = "No data available for the specified date";
-                result.failedOrders = failedOrders;
+                result.setSuccess(true);
+                result.setTotalOrders(0);
+                result.setOrdersProcessed(0);
+                result.setErrorMessage("No data available for the specified date");
+                result.setFailedOrders(failedOrders);
                 return result;
             }
 
@@ -107,12 +104,12 @@ public class TikTokEtlService {
 
             // Create success result
             EtlResult result = new EtlResult();
-            result.success = (ordersProcessed > 0 || totalOrders == 0);
-            result.totalOrders = totalOrders;
-            result.ordersProcessed = ordersProcessed;
-            result.errorMessage = failedOrders.isEmpty() ? null :
-                    String.format("%d orders failed processing", failedOrders.size());
-            result.failedOrders = failedOrders;
+            result.setSuccess(ordersProcessed > 0 || totalOrders == 0);
+            result.setTotalOrders(totalOrders);
+            result.setOrdersProcessed(ordersProcessed);
+            result.setErrorMessage(failedOrders.isEmpty() ? null :
+                    String.format("%d orders failed processing", failedOrders.size()));
+            result.setFailedOrders(failedOrders);
             return result;
 
         } catch (Exception e) {
@@ -121,11 +118,11 @@ public class TikTokEtlService {
 
             // Create failure result
             EtlResult result = new EtlResult();
-            result.success = false;
-            result.totalOrders = totalOrders;
-            result.ordersProcessed = ordersProcessed;
-            result.errorMessage = e.getMessage();
-            result.failedOrders = failedOrders;
+            result.setSuccess(false);
+            result.setTotalOrders(totalOrders);
+            result.setOrdersProcessed(ordersProcessed);
+            result.setErrorMessage(e.getMessage());
+            result.setFailedOrders(failedOrders);
             return result;
         }
     }
@@ -1284,67 +1281,5 @@ public class TikTokEtlService {
             case "AWAITING_PAYMENT": return "PENDING";
             default: return "PROCESSING";
         }
-    }
-
-    // ===== RESULT CLASSES =====
-
-    public static class EtlResult {
-        private boolean success;
-        private String errorMessage;
-        private int totalOrders;
-        private int ordersProcessed;
-        private LocalDateTime startTime;
-        private LocalDateTime endTime;
-        private java.util.List<FailedOrder> failedOrders = new java.util.ArrayList<>();
-
-        // Getters and setters
-        public boolean isSuccess() { return success; }
-        public void setSuccess(boolean success) { this.success = success; }
-
-        public String getErrorMessage() { return errorMessage; }
-        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
-
-        public int getTotalOrders() { return totalOrders; }
-        public void setTotalOrders(int totalOrders) { this.totalOrders = totalOrders; }
-
-        public int getOrdersProcessed() { return ordersProcessed; }
-        public void setOrdersProcessed(int ordersProcessed) { this.ordersProcessed = ordersProcessed; }
-
-        public LocalDateTime getStartTime() { return startTime; }
-        public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-
-        public LocalDateTime getEndTime() { return endTime; }
-        public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
-
-        public java.util.List<FailedOrder> getFailedOrders() { return failedOrders; }
-        public void setFailedOrders(java.util.List<FailedOrder> failedOrders) { this.failedOrders = failedOrders; }
-
-        public void addFailedOrder(String orderId, String error) {
-            failedOrders.add(new FailedOrder(orderId, error));
-        }
-
-        public long getDurationMs() {
-            if (startTime != null && endTime != null) {
-                return java.time.Duration.between(startTime, endTime).toMillis();
-            }
-            return 0;
-        }
-    }
-
-    public static class FailedOrder {
-        private String orderId;
-        private String errorMessage;
-
-        public FailedOrder(String orderId, String errorMessage) {
-            this.orderId = orderId;
-            this.errorMessage = errorMessage;
-        }
-
-        // Getters and setters
-        public String getOrderId() { return orderId; }
-        public void setOrderId(String orderId) { this.orderId = orderId; }
-
-        public String getErrorMessage() { return errorMessage; }
-        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
     }
 }

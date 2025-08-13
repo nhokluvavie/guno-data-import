@@ -1,4 +1,4 @@
-# application.yml - Production Configuration
+# application.yml - Updated with Parallel Processing Support
 
 spring:
   application:
@@ -19,27 +19,35 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate  # More conservative for production
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
         jdbc:
-          batch_size: 50  # Larger batch size for production
+          batch_size: 50
         order_inserts: true
         order_updates: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   main:
-    banner-mode: "console"  # Show banner in production
+    banner-mode: "console"
 
 # ETL Configuration for Production
 etl:
+  # 🆕 PARALLEL PROCESSING CONFIGURATION
+  parallel:
+    enabled: true                    # Enable/disable parallel processing
+    timeout-minutes: 15              # Global timeout for all platforms
+    thread-pool-size: 5              # Thread pool size for parallel execution
+    facebook-special-timeout: 10     # Special timeout for Facebook (minutes)
+    enable-detailed-logging: true    # Enable detailed parallel processing logs
+
   # Platform Settings
   platforms:
     shopee:
-      enabled: false
+      enabled: true
       name: SHOPEE
     tiktok:
       enabled: true
@@ -48,56 +56,59 @@ etl:
       enabled: true
       name: FACEBOOK
 
-  # API Configuration
+  # 🆕 UPDATED API CONFIGURATION - INCREASED PAGE SIZES
   api:
     shopee:
       base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/shopee
       auth-header: x-webhook-api-key
       api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
-      timeout: 300  # Longer timeout for production
-      page-size: 1000  # Larger page size for efficiency
-      max-retries: 3  # More retries for stability
+      timeout: 300
+      page-size: 1500                # 🆕 INCREASED from 1000 to 1500
+      max-retries: 3
 
     tiktok:
       base-url: https://n8n.guno.club/webhook/ddaece67-7b38-4c3d-a31d-d50c9cfd89c8/hub-data/orders/tiktok
       auth-header: x-webhook-api-key
       api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
       timeout: 300
-      page-size: 1000
+      page-size: 1500                # 🆕 INCREASED from 1000 to 1500
       max-retries: 3
 
     facebook:
       base-url: https://hub-bak.guno.store/api/v1/pos/pos-pancake-fm/order/search
       auth-header: x-webhook-api-key
       api-key: iuKqTys2XUNJOFLhByaH3woWsrLDC5yajHu7dvSe63U34qN57Zi9bNxeMj2FQc9qcn8sgQr
-      timeout: 300
-      page-size: 1000
-      max-retries: 3
+      timeout: 600                   # 🆕 INCREASED from 300 to 600 (10 minutes)
+      page-size: 1000                # Keep at 1000 for Facebook due to API constraints
+      max-retries: 5                 # 🆕 INCREASED from 3 to 5
+      retry-delay-seconds: 2         # 🆕 NEW: Delay between retries
+      enable-exponential-backoff: true # 🆕 NEW: Enable exponential backoff for retries
 
-  # Scheduler Settings - Production
+  # Scheduler Settings
   scheduler:
-    enabled: true  # ENABLED for production
-    fixed-rate: 30000  # 30 seconds as requested
-    initial-delay: 5000  # 5 second startup delay
-    max-consecutive-failures: 5  # More tolerance for production
+    enabled: true
+    fixed-rate: 30000              # 30 seconds
+    initial-delay: 5000            # 5 second startup delay
+    max-consecutive-failures: 5
+    use-parallel-processing: true   # 🆕 NEW: Use parallel processing in scheduler
 
   # Database Settings
   database:
-    batch-size: 50  # Larger batches for production
+    batch-size: 50
 
-# Production Logging
+# Production Logging - Enhanced for Parallel Processing
 logging:
   level:
     root: INFO
     com.guno.etl: INFO
     com.guno.etl.service: INFO
+    com.guno.etl.service.ParallelApiService: DEBUG  # 🆕 NEW: Detailed logging for parallel service
     com.guno.etl.scheduler: INFO
     org.springframework.web.reactive: WARN
     org.springframework.transaction: WARN
     org.hibernate.SQL: WARN
     org.springframework.boot: INFO
 
-  # Log to file in production
   file:
     name: logs/shopee-etl-production.log
     max-size: 100MB
@@ -117,3 +128,17 @@ server:
   tomcat:
     max-threads: 200
     min-spare-threads: 10
+
+# 🆕 NEW: Performance Monitoring Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      simple:
+        enabled: true
